@@ -752,7 +752,7 @@ async function sendMessage() {
     const resp = await fetch(`${ORG_URL}/organizador/chat`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({mensaje: text, user_id: USER_ID})
+      body: JSON.stringify({mensaje: text, user_id: USER_ID, telegram_chat_id: USER_ID})
     });
     const data = await resp.json();
     removeTyping();
