@@ -183,6 +183,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .config-input:focus{border-color:var(--accent)}
 .config-save{background:var(--accent);color:#0c0c0e;border:none;border-radius:var(--r);padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);margin-top:10px}
 </style>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#c8a96e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Agencia AI">
+<script>
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+</script>
 </head>
 <body>
 
