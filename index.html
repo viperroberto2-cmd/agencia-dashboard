@@ -729,45 +729,14 @@ async function sendMessage() {
   showTyping();
 
   try {
-    const orgEndpoint = localStorage.getItem('cfg_org');
-    if (orgEndpoint) {
-      const jobId = Math.random().toString(36).slice(2,10);
-      const resp = await fetch(`${orgEndpoint}/organizador/webhook`, {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({
-          update_id: Date.now(),
-          message: {
-            message_id: Date.now(),
-            from: {id: parseInt(USER_ID), is_bot: false, first_name: 'Roberto'},
-            chat: {id: parseInt(USER_ID), type: 'private'},
-            date: Math.floor(Date.now()/1000),
-            text: text
-          }
-        })
-      });
-      removeTyping();
-      addMessage('agent', '✓ Mensaje enviado al Organizador. La respuesta llegará por Telegram o puedes recargar en unos momentos.');
-    } else {
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: `Eres el Organizador de Agencia AI — el agente central que coordina una agencia de marketing con IA. 
-Tienes 4 bots especializados: Director (Bot 1, copy y análisis), Crew (Bot 2, producción y contenido), Estrategia (Bot 3, campañas y SEO), y tú mismo como Organizador.
-Tu dueño es Roberto. Hablas en español, eres directo, piensas como CEO de la agencia, tomas decisiones y delegas.
-Cuando Roberto te da una tarea, analizas, decides qué bot la ejecuta, y le reportas el plan.
-Tienes acceso a clientes: Arranca Financial (educación financiera hispana, Turo), Sofía (GLP-1 weight loss clinic, A2P 10DLC en proceso).`,
-          messages: chatHistory
-        })
-      });
-      const data = await resp.json();
-      removeTyping();
-      const reply = data.content?.[0]?.text || 'Error procesando respuesta';
-      addMessage('agent', reply);
-    }
+    const resp = await fetch(`${ORG_URL}/organizador/chat`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({mensaje: text, user_id: USER_ID})
+    });
+    const data = await resp.json();
+    removeTyping();
+    addMessage('agent', data.respuesta || 'Sin respuesta del Organizador.');
   } catch (e) {
     removeTyping();
     addMessage('agent', `Error de conexión. Verifica que el Organizador esté online en Railway.\n\n_${e.message}_`);
@@ -801,18 +770,21 @@ const BOT_HEALTH = [
 ];
 
 async function checkBotHealth() {
-  for (const bot of BOT_HEALTH) {
-    try {
-      const r = await fetch(bot.url, {signal: AbortSignal.timeout(5000)});
-      const ok = r.ok;
-      document.getElementById('dot-'+bot.id).className = 'bot-dot '+(ok?'dot-green':'dot-red');
-      document.getElementById('status-'+bot.id).textContent = ok?'online':'error';
-      document.getElementById('status-'+bot.id).style.color = ok?'var(--success)':'var(--danger)';
-    } catch {
-      document.getElementById('dot-'+bot.id).className = 'bot-dot dot-red';
-      document.getElementById('status-'+bot.id).textContent = 'offline';
-      document.getElementById('status-'+bot.id).style.color = 'var(--danger)';
+  try {
+    const r = await fetch('/api/health');
+    if (!r.ok) return;
+    const results = await r.json();
+    for (const [id, data] of Object.entries(results)) {
+      const ok = data.ok;
+      const dot = document.getElementById('dot-'+id);
+      const status = document.getElementById('status-'+id);
+      if (!dot || !status) continue;
+      dot.className = 'bot-dot '+(ok?'dot-green':'dot-red');
+      status.textContent = ok?'online':'offline';
+      status.style.color = ok?'var(--success)':'var(--danger)';
     }
+  } catch {
+    // silently fail if not on Railway
   }
 }
 
