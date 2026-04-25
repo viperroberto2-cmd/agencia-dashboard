@@ -6,7 +6,7 @@ const app = express();
 const BOTS = {
   b1:  'https://worker-production-0c858.up.railway.app/bot1/health',
   b2:  'https://worker-production-34f9.up.railway.app/crew/health',
-  b3:  'https://worker-production-035f.up.railway.app/strategy/health',
+  b3: 'https://worker-production-035f.up.railway.app/health',
   org: 'https://web-production-77871.up.railway.app/health',
 };
 
@@ -36,3 +36,4 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Dashboard running on port ${PORT}`));
+
