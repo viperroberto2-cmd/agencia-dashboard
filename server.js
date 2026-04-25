@@ -8,7 +8,6 @@ const BOTS = {
   b2:  'https://worker-production-34f9.up.railway.app/crew/health',
   b3: 'https://worker-production-035f.up.railway.app/strategy/health',
   org: 'https://web-production-77871.up.railway.app/health',
-  b4: 'https://agencia-ai-analytics-production.up.railway.app/health',
   b5: 'https://worker-production-aa53.up.railway.app/scheduler/health',
 };
 

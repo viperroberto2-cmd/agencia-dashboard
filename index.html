@@ -448,7 +448,7 @@ const ORG_URL  = 'https://web-production-77871.up.railway.app';
 const SUPA_URL = 'https://ydggwvpndcazmyvsdbec.supabase.co';
 const SUPA_KEY = localStorage.getItem('supa_key') || '';
 
-let chatHistory = [];
+let chatHistory = JSON.parse(localStorage.getItem('agencia_chat_history') || '[]');
 let orgUrl = ORG_URL;
 let orgSecret = 'agencia-org-2025';
 
@@ -720,6 +720,7 @@ function addMessage(role, text) {
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
   chatHistory.push({role: role==='user'?'user':'assistant', content: text});
+  localStorage.setItem('agencia_chat_history', JSON.stringify(chatHistory.slice(-50)));
 }
 
 function showTyping() {
@@ -787,7 +788,6 @@ const BOT_HEALTH = [
   {id:'b2', url: BOT2_URL+'/crew/health', name:'Crew'},
   {id:'b3', url: BOT3_URL+'/strategy/health', name:'Estrategia'},
   {id:'org', url: ORG_URL+'/health', name:'Organizador'},
-  {id:'b4', url: 'https://agencia-ai-analytics-production.up.railway.app/health', name:'Analytics'},
   {id:'b5', url: 'https://worker-production-aa53.up.railway.app/scheduler/health', name:'Scheduler'},
 ];
 
@@ -826,4 +826,5 @@ setInterval(checkBotHealth, 60000);
 </script>
 </body>
 </html>
+ 
  
