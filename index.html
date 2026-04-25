@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agencia AI — Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c0e;
+  --surface:#131316;
+  --surface2:#1a1a1f;
+  --border:#ffffff12;
+  --border2:#ffffff20;
+  --text:#f0efe8;
+  --muted:#888880;
+  --accent:#c8a96e;
+  --accent2:#7c9e6e;
+  --accent3:#6e8cb8;
+  --danger:#c46a5a;
+  --success:#5a9e72;
+  --warn:#c4965a;
+  --r:10px;
+  --r2:16px;
+  --font:'DM Sans',sans-serif;
+  --mono:'DM Mono',monospace;
+  --serif:'Fraunces',serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh;display:flex;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden;transition:width .25s}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.logo-mark{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--accent);letter-spacing:.02em}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+.nav{padding:12px 8px;flex:1;overflow-y:auto}
+.nav-section{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:8px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;color:var(--muted);font-size:13px;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--surface2);color:var(--text);border-left:2px solid var(--accent)}
+.nav-icon{width:16px;height:16px;opacity:.7;flex-shrink:0}
+.nav-item.active .nav-icon{opacity:1}
+
+/* ── BOT STATUS ── */
+.bot-status{padding:12px 8px;border-top:1px solid var(--border)}
+.bot-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-green{background:var(--success)}
+.dot-red{background:var(--danger)}
+.dot-gray{background:var(--muted)}
+.bot-row{display:flex;align-items:center;gap:8px;padding:5px 10px;font-size:11px;color:var(--muted)}
+.bot-name{flex:1}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{height:52px;min-height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px}
+.topbar-title{font-family:var(--serif);font-size:15px;font-weight:300;flex:1}
+.topbar-btn{background:none;border:1px solid var(--border2);color:var(--muted);padding:5px 12px;border-radius:var(--r);font-size:12px;cursor:pointer;font-family:var(--font);transition:all .15s}
+.topbar-btn:hover{border-color:var(--border2);color:var(--text);background:var(--surface2)}
+.badge{background:var(--accent);color:#0c0c0e;font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;margin-left:4px}
+
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── PANELS ── */
+.panel{display:none}
+.panel.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;margin-bottom:16px}
+.card-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+
+/* ── METRICS ── */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px}
+.metric-val{font-size:28px;font-weight:300;font-family:var(--serif);color:var(--text);line-height:1}
+.metric-label{font-size:11px;color:var(--muted);margin-top:4px}
+.metric-trend{font-size:11px;color:var(--accent2);margin-top:6px}
+
+/* ── TABLE ── */
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
+.data-table tr:hover td{background:var(--surface2)}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.pill-green{background:#1a3325;color:#5a9e72}
+.pill-amber{background:#2e2210;color:#c4965a}
+.pill-red{background:#2e1010;color:#c46a5a}
+.pill-blue{background:#101a2e;color:#6e8cb8}
+.pill-gray{background:#1a1a1f;color:#888880}
+
+/* ── CHAT ── */
+.chat-panel{display:flex;flex-direction:column;height:calc(100vh - 52px)}
+.chat-messages{flex:1;overflow-y:auto;padding:20px}
+.chat-meta{font-size:10px;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.chat-meta::after{content:'';flex:1;height:1px;background:var(--border)}
+.msg{margin-bottom:16px;display:flex;flex-direction:column}
+.msg.user{align-items:flex-end}
+.msg.agent{align-items:flex-start}
+.msg-bubble{max-width:72%;padding:10px 14px;border-radius:var(--r2);font-size:13px;line-height:1.65}
+.msg.user .msg-bubble{background:var(--accent);color:#0c0c0e;border-radius:var(--r2) var(--r2) 4px var(--r2)}
+.msg.agent .msg-bubble{background:var(--surface);border:1px solid var(--border);border-radius:4px var(--r2) var(--r2) var(--r2)}
+.msg-time{font-size:10px;color:var(--muted);margin-top:4px;padding:0 4px}
+.typing{display:flex;gap:4px;padding:12px 14px;align-items:center}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.chat-input-area{padding:16px 20px;background:var(--surface);border-top:1px solid var(--border)}
+.chat-input-row{display:flex;gap:10px;align-items:flex-end}
+.chat-textarea{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:13px;padding:10px 14px;resize:none;min-height:42px;max-height:140px;outline:none;line-height:1.5}
+.chat-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)20}
+.chat-textarea::placeholder{color:var(--muted)}
+.send-btn{background:var(--accent);color:#0c0c0e;border:none;border-radius:var(--r);padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;font-family:var(--font);white-space:nowrap;transition:opacity .15s}
+.send-btn:hover{opacity:.85}
+.send-btn:disabled{opacity:.4;cursor:default}
+.chat-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.chip{background:none;border:1px solid var(--border2);color:var(--muted);padding:4px 10px;border-radius:20px;font-size:11px;cursor:pointer;font-family:var(--font);transition:all .15s}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── INBOX ── */
+.inbox-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+.inbox-icon{width:32px;height:32px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.inbox-icon-blue{background:#101a2e}
+.inbox-icon-amber{background:#2e2210}
+.inbox-icon-green{background:#1a3325}
+.inbox-body{flex:1;min-width:0}
+.inbox-title{font-size:13px;font-weight:500;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inbox-meta{font-size:11px;color:var(--muted)}
+.inbox-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-sm{background:none;border:1px solid var(--border2);color:var(--muted);padding:4px 10px;border-radius:var(--r);font-size:11px;cursor:pointer;font-family:var(--font);transition:all .15s}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm.danger:hover{border-color:var(--danger);color:var(--danger)}
+
+/* ── LOGS ── */
+.log-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.log-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.log-time{color:var(--muted);font-family:var(--mono);white-space:nowrap}
+.log-text{flex:1;color:var(--text)}
+.log-badge{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:4px;border:1px solid}
+
+/* ── PROJECTS ── */
+.project-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;margin-bottom:12px}
+.project-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.project-client{font-size:14px;font-weight:500;flex:1}
+.project-steps{display:flex;gap:4px;margin-top:10px}
+.step-dot{width:28px;height:4px;border-radius:2px;background:var(--border2)}
+.step-dot.done{background:var(--accent2)}
+.step-dot.active{background:var(--accent)}
+.step-dot.fail{background:var(--danger)}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* ── MOBILE ── */
+@media(max-width:700px){
+  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;width:200px;transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{width:100%}
+  .topbar .menu-toggle{display:flex}
+  .metrics{grid-template-columns:1fr 1fr}
+}
+.menu-toggle{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:4px;align-items:center}
+.overlay{display:none;position:fixed;inset:0;background:#00000080;z-index:99}
+.overlay.open{display:block}
+
+/* ── SECTION HEADER ── */
+.section-header{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
+.section-title{font-family:var(--serif);font-size:22px;font-weight:300;color:var(--text)}
+.section-count{font-size:12px;color:var(--muted)}
+.section-actions{margin-left:auto;display:flex;gap:8px}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.empty-icon{font-size:32px;margin-bottom:10px;opacity:.4}
+
+/* ── CONFIG BOX ── */
+.config-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.config-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.config-input{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:8px 12px;border-radius:var(--r);font-family:var(--mono);font-size:12px;outline:none}
+.config-input:focus{border-color:var(--accent)}
+.config-save{background:var(--accent);color:#0c0c0e;border:none;border-radius:var(--r);padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);margin-top:10px}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">Agencia AI</div>
+    <div class="logo-sub">Panel de Control</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Principal</div>
+    <button class="nav-item active" onclick="showPanel('dashboard',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".3"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-item" onclick="showPanel('chat',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 2V3z" fill="currentColor" opacity=".7"/></svg>
+      Organizador
+      <span class="badge" id="badge-chat" style="display:none">•</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('inbox',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M1 4a1 1 0 011-1h12a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4zm0 6h4l1.5 2h3L11 10h4" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".7"/></svg>
+      Inbox
+    </button>
+    <div class="nav-section">Operaciones</div>
+    <button class="nav-item" onclick="showPanel('proyectos',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".7"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".7"/></svg>
+      Proyectos
+    </button>
+    <button class="nav-item" onclick="showPanel('clientes',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".7"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".7"/></svg>
+      Clientes
+    </button>
+    <button class="nav-item" onclick="showPanel('logs',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".7"/></svg>
+      Logs
+    </button>
+    <div class="nav-section">Sistema</div>
+    <button class="nav-item" onclick="showPanel('config',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".7"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.3 3.3l1.4 1.4M11.3 11.3l1.4 1.4M3.3 12.7l1.4-1.4M11.3 4.7l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".7"/></svg>
+      Configuración
+    </button>
+  </nav>
+
+  <div class="bot-status">
+    <div class="bot-row">
+      <div class="bot-dot dot-green" id="dot-b1"></div>
+      <span class="bot-name">Director</span>
+      <span style="font-size:10px;color:#5a9e72" id="status-b1">online</span>
+    </div>
+    <div class="bot-row">
+      <div class="bot-dot dot-gray" id="dot-b2"></div>
+      <span class="bot-name">Crew</span>
+      <span style="font-size:10px;color:var(--muted)" id="status-b2">—</span>
+    </div>
+    <div class="bot-row">
+      <div class="bot-dot dot-green" id="dot-b3"></div>
+      <span class="bot-name">Estrategia</span>
+      <span style="font-size:10px;color:#5a9e72" id="status-b3">online</span>
+    </div>
+    <div class="bot-row">
+      <div class="bot-dot dot-green" id="dot-org"></div>
+      <span class="bot-name">Organizador</span>
+      <span style="font-size:10px;color:#5a9e72" id="status-org">online</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 4h14M2 9h14M2 14h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <span class="topbar-title" id="topbar-title">Dashboard</span>
+    <button class="topbar-btn" onclick="showPanel('chat',document.querySelector('.nav-item:nth-child(3)'))">+ Nueva tarea</button>
+    <button class="topbar-btn" style="border-color:var(--accent);color:var(--accent)" id="refresh-btn" onclick="refreshData()">↻ Actualizar</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="panel active content" id="panel-dashboard">
+    <div class="metrics" id="metrics-grid">
+      <div class="metric"><div class="metric-val" id="m-clientes">—</div><div class="metric-label">Clientes activos</div></div>
+      <div class="metric"><div class="metric-val" id="m-proyectos">—</div><div class="metric-label">Proyectos en curso</div></div>
+      <div class="metric"><div class="metric-val" id="m-inbox">—</div><div class="metric-label">Inbox pendiente</div></div>
+      <div class="metric"><div class="metric-val" id="m-logs">—</div><div class="metric-label">Acciones hoy</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Actividad reciente entre bots</div>
+      <div id="logs-preview">
+        <div class="empty"><div class="empty-icon">◌</div><div>Cargando actividad...</div></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="card">
+        <div class="card-title">Bots activos</div>
+        <div id="bots-summary">
+          <div class="bot-row" style="padding:6px 0"><div class="bot-dot dot-green"></div><span style="flex:1;font-size:13px">Director (Bot 1)</span></div>
+          <div class="bot-row" style="padding:6px 0"><div class="bot-dot dot-gray"></div><span style="flex:1;font-size:13px">Crew (Bot 2)</span></div>
+          <div class="bot-row" style="padding:6px 0"><div class="bot-dot dot-green"></div><span style="flex:1;font-size:13px">Estrategia (Bot 3)</span></div>
+          <div class="bot-row" style="padding:6px 0"><div class="bot-dot dot-green"></div><span style="flex:1;font-size:13px">Organizador</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Acceso rápido</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn-sm" style="text-align:left;padding:8px 12px" onclick="showPanel('chat',document.querySelectorAll('.nav-item')[1])">💬 Hablar con el Organizador</button>
+          <button class="btn-sm" style="text-align:left;padding:8px 12px" onclick="showPanel('inbox',document.querySelectorAll('.nav-item')[2])">📥 Ver inbox</button>
+          <button class="btn-sm" style="text-align:left;padding:8px 12px" onclick="showPanel('proyectos',document.querySelectorAll('.nav-item')[4])">🚀 Ver proyectos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT / ORGANIZADOR -->
+  <div class="panel chat-panel" id="panel-chat">
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-meta">Hoy — sesión nueva</div>
+      <div class="msg agent">
+        <div class="msg-bubble">
+          Hola Roberto. Soy el Organizador. Cuéntame lo que tienes en mente — una idea, un cliente nuevo, una campaña, lo que sea — y lo analizo, delego o ejecuto.
+        </div>
+        <span class="msg-time">ahora</span>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <div class="chat-chips">
+        <button class="chip" onclick="quickChat('¿Cuál es el estado de los proyectos activos?')">Estado proyectos</button>
+        <button class="chip" onclick="quickChat('Procesa el inbox y dime qué hay pendiente')">Procesar inbox</button>
+        <button class="chip" onclick="quickChat('Necesito una campaña completa para un cliente nuevo')">Nueva campaña</button>
+        <button class="chip" onclick="quickChat('Dame un reporte rápido de la semana')">Reporte semanal</button>
+      </div>
+      <div class="chat-input-row">
+        <textarea class="chat-textarea" id="chat-input" placeholder="Escríbele al Organizador..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INBOX -->
+  <div class="panel content" id="panel-inbox">
+    <div class="section-header">
+      <span class="section-title">Inbox</span>
+      <span class="section-count" id="inbox-count">cargando...</span>
+      <div class="section-actions">
+        <select id="inbox-filter" onchange="loadInbox()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:var(--r);font-family:var(--font);font-size:12px;outline:none">
+          <option value="all">Todos</option>
+          <option value="sin_procesar">Sin procesar</option>
+          <option value="tarea">Tareas</option>
+          <option value="proyecto">Proyectos</option>
+        </select>
+      </div>
+    </div>
+    <div id="inbox-list"><div class="empty"><div class="empty-icon">◌</div><div>Cargando...</div></div></div>
+  </div>
+
+  <!-- PROYECTOS -->
+  <div class="panel content" id="panel-proyectos">
+    <div class="section-header">
+      <span class="section-title">Proyectos</span>
+      <span class="section-count" id="proyectos-count">cargando...</span>
+    </div>
+    <div id="proyectos-list"><div class="empty"><div class="empty-icon">◌</div><div>Cargando...</div></div></div>
+  </div>
+
+  <!-- CLIENTES -->
+  <div class="panel content" id="panel-clientes">
+    <div class="section-header">
+      <span class="section-title">Clientes</span>
+      <div class="section-actions">
+        <button class="topbar-btn" onclick="showAddClient()">+ Agregar</button>
+      </div>
+    </div>
+    <div id="clientes-list"><div class="empty"><div class="empty-icon">◌</div><div>Cargando...</div></div></div>
+  </div>
+
+  <!-- LOGS -->
+  <div class="panel content" id="panel-logs">
+    <div class="section-header">
+      <span class="section-title">Logs de comunicación</span>
+    </div>
+    <div class="card">
+      <div id="logs-list"><div class="empty"><div class="empty-icon">◌</div><div>Cargando...</div></div></div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="panel content" id="panel-config">
+    <div class="section-header">
+      <span class="section-title">Configuración</span>
+    </div>
+    <div class="card">
+      <div class="card-title">URLs de los bots (Railway)</div>
+      <div class="config-box">
+        <div class="config-label">Bot 1 — Director</div>
+        <input class="config-input" id="cfg-bot1" placeholder="https://..." value="">
+      </div>
+      <div class="config-box">
+        <div class="config-label">Bot 2 — Crew</div>
+        <input class="config-input" id="cfg-bot2" placeholder="https://..." value="">
+      </div>
+      <div class="config-box">
+        <div class="config-label">Bot 3 — Estrategia</div>
+        <input class="config-input" id="cfg-bot3" placeholder="https://..." value="">
+      </div>
+      <div class="config-box">
+        <div class="config-label">Organizador</div>
+        <input class="config-input" id="cfg-org" placeholder="https://..." value="">
+      </div>
+      <div class="config-box">
+        <div class="config-label">Supabase URL</div>
+        <input class="config-input" id="cfg-supa-url" placeholder="https://xxx.supabase.co" value="">
+      </div>
+      <div class="config-box">
+        <div class="config-label">Supabase Anon Key</div>
+        <input class="config-input" id="cfg-supa-key" placeholder="eyJ..." value="" type="password">
+      </div>
+      <button class="config-save" onclick="saveConfig()">Guardar configuración</button>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">Información del sistema</div>
+      <table class="data-table">
+        <tr><td style="color:var(--muted)">Versión dashboard</td><td>1.0 — Agencia AI</td></tr>
+        <tr><td style="color:var(--muted)">Arquitectura</td><td>Railway + Claude API + Supabase</td></tr>
+        <tr><td style="color:var(--muted)">Bots activos</td><td>Bot 1, Bot 3, Organizador, María, Sofía</td></tr>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script>
+
+const USER_ID = '8534665260';
+const BOT1_URL = 'https://worker-production-0c858.up.railway.app';
+const BOT2_URL = 'https://worker-production-34f9.up.railway.app';
+const BOT3_URL = 'https://worker-production-035f.up.railway.app';
+const ORG_URL  = 'https://web-production-77871.up.railway.app';
+const SUPA_URL = 'https://ydggwvpndcazmyvsdbec.supabase.co';
+const SUPA_KEY = localStorage.getItem('supa_key') || '';
+
+let chatHistory = [];
+let orgUrl = ORG_URL;
+let orgSecret = 'agencia-org-2025';
+
+function initSupabase() {
+  const key = localStorage.getItem('supa_key') || SUPA_KEY;
+  if (!key) return null;
+  return { url: SUPA_URL, key };
+}
+
+async function supaFetch(table, params = '') {
+  const cfg = initSupabase();
+  if (!cfg) return [];
+  try {
+    const r = await fetch(`${cfg.url}/rest/v1/${table}${params}`, {
+      headers: {
+        'apikey': cfg.key,
+        'Authorization': `Bearer ${cfg.key}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!r.ok) return [];
+    return await r.json();
+  } catch { return []; }
+}
+
+async function supaUpdate(table, id, data) {
+  const cfg = initSupabase();
+  if (!cfg) return;
+  await fetch(`${cfg.url}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: {
+      'apikey': cfg.key,
+      'Authorization': `Bearer ${cfg.key}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(data)
+  });
+}
+
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  const titles = {dashboard:'Dashboard',chat:'Organizador',inbox:'Inbox',proyectos:'Proyectos',clientes:'Clientes',logs:'Logs',config:'Configuración'};
+  document.getElementById('topbar-title').textContent = titles[id] || id;
+  closeSidebar();
+  if (id === 'inbox') loadInbox();
+  if (id === 'proyectos') loadProyectos();
+  if (id === 'clientes') loadClientes();
+  if (id === 'logs') loadLogs();
+  if (id === 'dashboard') loadDashboard();
+  if (id === 'config') loadConfig();
+}
+
+function toggleSidebar() {
+  const s = document.getElementById('sidebar');
+  const o = document.getElementById('overlay');
+  s.classList.toggle('open');
+  o.classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+async function loadDashboard() {
+  const logs = await supaFetch('log_bots', '?order=ts.desc&limit=6');
+  const proyectos = await supaFetch('proyectos_agencia', `?user_id=eq.${USER_ID}&estado=in.(planificando,ejecutando)`);
+  const inbox = await supaFetch('inbox_organizador', `?user_id=eq.${USER_ID}&tipo=not.in.(completado,descartar)&select=id`);
+
+  document.getElementById('m-proyectos').textContent = proyectos.length || '0';
+  document.getElementById('m-inbox').textContent = inbox.length || '0';
+  document.getElementById('m-logs').textContent = logs.length || '0';
+
+  const clientes = await supaFetch('clientes', `?user_id=eq.${USER_ID}&select=user_id`);
+  document.getElementById('m-clientes').textContent = clientes.length || '0';
+
+  const container = document.getElementById('logs-preview');
+  if (!logs.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div>Sin actividad registrada</div></div>';
+    return;
+  }
+  container.innerHTML = logs.map(l => {
+    const tipo = l.tipo || '?';
+    const colors = {delegacion:'dot-green',error:'dot-red',callback:'dot-green',retry:'dot-amber'};
+    const ts = (l.ts||'').slice(11,19);
+    const origen = l.bot_origen || '?';
+    const destino = l.bot_destino || '?';
+    return `<div class="log-row">
+      <div class="log-dot ${colors[tipo]||'dot-gray'}"></div>
+      <span class="log-time">${ts}</span>
+      <span class="log-text">${origen} → ${destino}</span>
+      <span class="log-badge" style="color:var(--muted);border-color:var(--border2)">${tipo}</span>
+    </div>`;
+  }).join('');
+}
+
+async function loadInbox() {
+  const filter = document.getElementById('inbox-filter').value;
+  let params = `?user_id=eq.${USER_ID}&tipo=not.in.(completado,descartar)&order=ts_creado.desc&limit=50`;
+  if (filter !== 'all') params += `&tipo=eq.${filter}`;
+  const items = await supaFetch('inbox_organizador', params);
+  document.getElementById('inbox-count').textContent = `${items.length} ítems`;
+
+  const container = document.getElementById('inbox-list');
+  if (!items.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">✓</div><div>Inbox vacío</div></div>';
+    return;
+  }
+  const typeColors = {sin_procesar:'inbox-icon-blue',tarea:'inbox-icon-green',proyecto:'inbox-icon-amber',idea:'inbox-icon-blue'};
+  const typeEmoji = {sin_procesar:'·',tarea:'✓',proyecto:'▲',idea:'◆'};
+  const typeLabels = {sin_procesar:'Sin procesar',tarea:'Tarea',proyecto:'Proyecto',idea:'Idea'};
+  const botNames = {bot1:'Director',bot2:'Crew',bot3:'Estrategia',yo:'Manual'};
+  const priBadge = {alta:'pill-red',normal:'pill-amber',baja:'pill-gray'};
+
+  container.innerHTML = items.map(item => {
+    const tipo = item.tipo || 'sin_procesar';
+    const pri = item.prioridad || 'normal';
+    const bot = item.bot_destino || '—';
+    const ts = (item.ts_creado||'').slice(0,10);
+    const content = (item.contenido||'').slice(0,120);
+    return `<div class="inbox-item">
+      <div class="inbox-icon ${typeColors[tipo]||'inbox-icon-blue'}">${typeEmoji[tipo]||'·'}</div>
+      <div class="inbox-body">
+        <div class="inbox-title">${content}</div>
+        <div class="inbox-meta">
+          <span class="pill ${priBadge[pri]}">${pri}</span>
+          &nbsp;<span class="pill pill-gray">${typeLabels[tipo]||tipo}</span>
+          ${bot!=='—'?`&nbsp;<span class="pill pill-blue">→ ${botNames[bot]||bot}</span>`:''}
+          &nbsp;<span style="color:var(--muted)">${ts}</span>
+        </div>
+      </div>
+      <div class="inbox-actions">
+        <button class="btn-sm" onclick="delegarInbox(${item.id},'${bot}')">Delegar</button>
+        <button class="btn-sm danger" onclick="descartarInbox(${item.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function delegarInbox(id, bot) {
+  await supaUpdate('inbox_organizador', id, {tipo:'delegado'});
+  loadInbox();
+}
+async function descartarInbox(id) {
+  await supaUpdate('inbox_organizador', id, {tipo:'descartar'});
+  loadInbox();
+}
+
+async function loadProyectos() {
+  const items = await supaFetch('proyectos_agencia', `?user_id=eq.${USER_ID}&order=ts_creado.desc&limit=30`);
+  document.getElementById('proyectos-count').textContent = `${items.length} proyectos`;
+  const container = document.getElementById('proyectos-list');
+  if (!items.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div>Sin proyectos registrados</div></div>';
+    return;
+  }
+  const stateColors = {completado:'pill-green',ejecutando:'pill-amber',planificando:'pill-blue',fallido:'pill-red'};
+  container.innerHTML = items.map(p => {
+    const pasos = p.pasos || [];
+    const done = pasos.filter(s=>s.estado==='completado').length;
+    const active = pasos.filter(s=>s.estado==='en_progreso').length;
+    const failed = pasos.filter(s=>s.estado==='fallido').length;
+    const steps = pasos.map((s,i)=>{
+      let cls = 'step-dot';
+      if(s.estado==='completado') cls+=' done';
+      else if(s.estado==='en_progreso') cls+=' active';
+      else if(s.estado==='fallido') cls+=' fail';
+      return `<div class="${cls}" title="${s.descripcion||''}"></div>`;
+    }).join('');
+    const ts = (p.ts_creado||'').slice(0,10);
+    const estado = p.estado || '?';
+    return `<div class="project-card">
+      <div class="project-header">
+        <div class="project-client">${p.cliente||'Sin cliente'}</div>
+        <span class="pill ${stateColors[estado]||'pill-gray'}">${estado}</span>
+        <span style="font-size:11px;color:var(--muted)">${ts}</span>
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">${(p.objetivo||'').slice(0,80)}</div>
+      ${pasos.length?`<div class="project-steps">${steps}</div><div style="font-size:11px;color:var(--muted);margin-top:6px">${done}/${pasos.length} pasos completados</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+async function loadClientes() {
+  const rows = await supaFetch('clientes', `?user_id=eq.${USER_ID}`);
+  const container = document.getElementById('clientes-list');
+  if (!rows.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div>Sin clientes registrados</div></div>';
+    return;
+  }
+  const data = rows[0]?.data || {};
+  const clientes = data.clientes || {};
+  const activo = data.cliente_activo;
+  const names = Object.keys(clientes);
+  if (!names.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div>Sin clientes registrados</div></div>';
+    return;
+  }
+  container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">` +
+    names.map(n => {
+      const c = clientes[n];
+      const isActive = n === activo;
+      return `<div class="card" style="${isActive?'border-color:var(--accent)':''}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:38px;height:38px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:16px;color:var(--accent)">${n.charAt(0).toUpperCase()}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:500">${n}</div>
+            <div style="font-size:11px;color:var(--muted)">${c.industria||'—'}</div>
+          </div>
+          ${isActive?'<span class="pill pill-green">activo</span>':''}
+        </div>
+        <div style="font-size:12px;color:var(--muted);display:flex;gap:12px">
+          <span>📍 ${c.ciudad||'—'}</span>
+          <span>🗣 ${c.idioma||'—'}</span>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+}
+
+async function loadLogs() {
+  const items = await supaFetch('log_bots', '?order=ts.desc&limit=50');
+  const container = document.getElementById('logs-list');
+  if (!items.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div>Sin logs registrados</div></div>';
+    return;
+  }
+  const typeColors = {delegacion:'dot-green',error:'dot-red',callback:'dot-green',retry:'dot-amber'};
+  container.innerHTML = items.map(l => {
+    const tipo = l.tipo || '?';
+    const ts = (l.ts||'').slice(11,19);
+    const origen = l.bot_origen || '?';
+    const destino = l.bot_destino || '?';
+    const payload = l.payload || {};
+    const cliente = typeof payload === 'object' ? (payload.cliente||'') : '';
+    return `<div class="log-row">
+      <div class="log-dot ${typeColors[tipo]||'dot-gray'}"></div>
+      <span class="log-time">${ts}</span>
+      <span class="log-text"><strong>${origen}</strong> → <strong>${destino}</strong>${cliente?` · ${cliente}`:''}</span>
+      <span class="log-badge" style="color:var(--muted);border-color:var(--border2)">${tipo}</span>
+    </div>`;
+  }).join('');
+}
+
+function saveConfig() {
+  localStorage.setItem('supa_key', document.getElementById('cfg-supa-key').value.trim());
+  const btn = document.querySelector('.config-save');
+  btn.textContent = '✓ Guardado';
+  setTimeout(() => btn.textContent = 'Guardar configuración', 2000);
+}
+
+function refreshData() {
+  const btn = document.getElementById('refresh-btn');
+  btn.textContent = '↻ ...';
+  loadDashboard().then(() => {
+    btn.textContent = '↻ Actualizar';
+  });
+}
+
+// ── CHAT ──
+function addMessage(role, text) {
+  const container = document.getElementById('chat-messages');
+  const now = new Date().toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'});
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `<div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><span class="msg-time">${now}</span>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  chatHistory.push({role: role==='user'?'user':'assistant', content: text});
+}
+
+function showTyping() {
+  const container = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'msg agent';
+  div.id = 'typing-indicator';
+  div.innerHTML = `<div class="msg-bubble typing"><span></span><span></span><span></span></div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  autoResize(input);
+
+  addMessage('user', text);
+  document.getElementById('send-btn').disabled = true;
+  showTyping();
+
+  try {
+    const orgEndpoint = localStorage.getItem('cfg_org');
+    if (orgEndpoint) {
+      const jobId = Math.random().toString(36).slice(2,10);
+      const resp = await fetch(`${orgEndpoint}/organizador/webhook`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          update_id: Date.now(),
+          message: {
+            message_id: Date.now(),
+            from: {id: parseInt(USER_ID), is_bot: false, first_name: 'Roberto'},
+            chat: {id: parseInt(USER_ID), type: 'private'},
+            date: Math.floor(Date.now()/1000),
+            text: text
+          }
+        })
+      });
+      removeTyping();
+      addMessage('agent', '✓ Mensaje enviado al Organizador. La respuesta llegará por Telegram o puedes recargar en unos momentos.');
+    } else {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `Eres el Organizador de Agencia AI — el agente central que coordina una agencia de marketing con IA. 
+Tienes 4 bots especializados: Director (Bot 1, copy y análisis), Crew (Bot 2, producción y contenido), Estrategia (Bot 3, campañas y SEO), y tú mismo como Organizador.
+Tu dueño es Roberto. Hablas en español, eres directo, piensas como CEO de la agencia, tomas decisiones y delegas.
+Cuando Roberto te da una tarea, analizas, decides qué bot la ejecuta, y le reportas el plan.
+Tienes acceso a clientes: Arranca Financial (educación financiera hispana, Turo), Sofía (GLP-1 weight loss clinic, A2P 10DLC en proceso).`,
+          messages: chatHistory
+        })
+      });
+      const data = await resp.json();
+      removeTyping();
+      const reply = data.content?.[0]?.text || 'Error procesando respuesta';
+      addMessage('agent', reply);
+    }
+  } catch (e) {
+    removeTyping();
+    addMessage('agent', `Error de conexión. Verifica que el Organizador esté online en Railway.\n\n_${e.message}_`);
+  }
+
+  document.getElementById('send-btn').disabled = false;
+}
+
+function quickChat(text) {
+  document.getElementById('chat-input').value = text;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+}
+
+const BOT_HEALTH = [
+  {id:'b1', url: BOT1_URL+'/health', name:'Director'},
+  {id:'b2', url: BOT2_URL+'/crew/health', name:'Crew'},
+  {id:'b3', url: BOT3_URL+'/strategy/health', name:'Estrategia'},
+  {id:'org', url: ORG_URL+'/health', name:'Organizador'},
+];
+
+async function checkBotHealth() {
+  for (const bot of BOT_HEALTH) {
+    try {
+      const r = await fetch(bot.url, {signal: AbortSignal.timeout(5000)});
+      const ok = r.ok;
+      document.getElementById('dot-'+bot.id).className = 'bot-dot '+(ok?'dot-green':'dot-red');
+      document.getElementById('status-'+bot.id).textContent = ok?'online':'error';
+      document.getElementById('status-'+bot.id).style.color = ok?'var(--success)':'var(--danger)';
+    } catch {
+      document.getElementById('dot-'+bot.id).className = 'bot-dot dot-red';
+      document.getElementById('status-'+bot.id).textContent = 'offline';
+      document.getElementById('status-'+bot.id).style.color = 'var(--danger)';
+    }
+  }
+}
+
+function loadConfig() {
+  document.getElementById('cfg-bot1').value = BOT1_URL;
+  document.getElementById('cfg-bot2').value = BOT2_URL;
+  document.getElementById('cfg-bot3').value = BOT3_URL;
+  document.getElementById('cfg-org').value = ORG_URL;
+  document.getElementById('cfg-supa-url').value = SUPA_URL;
+  document.getElementById('cfg-supa-key').value = localStorage.getItem('supa_key')||'';
+}
+
+loadDashboard();
+loadConfig();
+checkBotHealth();
+setInterval(checkBotHealth, 60000);
+</script>
+</body>
+</html>
