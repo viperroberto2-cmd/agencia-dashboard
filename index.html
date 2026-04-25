@@ -250,6 +250,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
       <span class="bot-name">Organizador</span>
       <span style="font-size:10px;color:#5a9e72" id="status-org">online</span>
     </div>
+    <div class="bot-row">
+      <div class="bot-dot dot-gray" id="dot-b4"></div>
+      <span class="bot-name">Analytics</span>
+      <span style="font-size:10px;color:var(--muted)" id="status-b4">—</span>
+    </div>
+    <div class="bot-row">
+      <div class="bot-dot dot-gray" id="dot-b5"></div>
+      <span class="bot-name">Scheduler</span>
+      <span style="font-size:10px;color:var(--muted)" id="status-b5">—</span>
+    </div>
   </div>
 </aside>
 
@@ -767,6 +777,8 @@ const BOT_HEALTH = [
   {id:'b2', url: BOT2_URL+'/crew/health', name:'Crew'},
   {id:'b3', url: BOT3_URL+'/strategy/health', name:'Estrategia'},
   {id:'org', url: ORG_URL+'/health', name:'Organizador'},
+  {id:'b4', url: 'https://agencia-ai-analytics-production.up.railway.app/health', name:'Analytics'},
+  {id:'b5', url: 'https://worker-production-aa53.up.railway.app/scheduler/health', name:'Scheduler'},
 ];
 
 async function checkBotHealth() {
@@ -804,3 +816,4 @@ setInterval(checkBotHealth, 60000);
 </script>
 </body>
 </html>
+ 
