@@ -801,18 +801,21 @@ const BOT_HEALTH = [
 ];
 
 async function checkBotHealth() {
-  for (const bot of BOT_HEALTH) {
-    try {
-      const r = await fetch(bot.url, {signal: AbortSignal.timeout(5000)});
-      const ok = r.ok;
-      document.getElementById('dot-'+bot.id).className = 'bot-dot '+(ok?'dot-green':'dot-red');
-      document.getElementById('status-'+bot.id).textContent = ok?'online':'error';
-      document.getElementById('status-'+bot.id).style.color = ok?'var(--success)':'var(--danger)';
-    } catch {
-      document.getElementById('dot-'+bot.id).className = 'bot-dot dot-red';
-      document.getElementById('status-'+bot.id).textContent = 'offline';
-      document.getElementById('status-'+bot.id).style.color = 'var(--danger)';
+  try {
+    const r = await fetch('/api/health');
+    if (!r.ok) return;
+    const results = await r.json();
+    for (const [id, data] of Object.entries(results)) {
+      const ok = data.ok;
+      const dot = document.getElementById('dot-'+id);
+      const status = document.getElementById('status-'+id);
+      if (!dot || !status) continue;
+      dot.className = 'bot-dot '+(ok?'dot-green':'dot-red');
+      status.textContent = ok?'online':'offline';
+      status.style.color = ok?'var(--success)':'var(--danger)';
     }
+  } catch {
+    // silently fail if not on Railway
   }
 }
 
