@@ -6,7 +6,7 @@ const app = express();
 const BOTS = {
   b1:  'https://worker-production-0c858.up.railway.app/bot1/health',
   b2:  'https://worker-production-34f9.up.railway.app/crew/health',
-  b3: 'https://worker-production-035f.up.railway.app/health',
+  b3: 'https://worker-production-035f.up.railway.app/strategy/health',
   org: 'https://web-production-77871.up.railway.app/health',
 };
 
