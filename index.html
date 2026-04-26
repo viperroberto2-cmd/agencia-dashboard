@@ -585,6 +585,23 @@ const ORG_URL = 'https://web-production-77871.up.railway.app';
 const USER_ID = '8534665260';
 let chatHistory = JSON.parse(localStorage.getItem('agencia_chat_history') || '[]');
 
+// ─── Auto-reload on Railway deploy ───────────────────────────────────────────
+(function() {
+  let _buildId = null;
+  async function _checkDeploy() {
+    try {
+      const r = await fetch('/?' + Date.now(), {method: 'HEAD', cache: 'no-store'});
+      const id = r.headers.get('etag') || r.headers.get('last-modified');
+      if (!id) return;
+      if (_buildId === null) { _buildId = id; return; }
+      if (_buildId !== id) { console.log('[AutoReload] Nueva versión detectada'); location.reload(true); }
+    } catch(_) {}
+  }
+  _checkDeploy();
+  setInterval(_checkDeploy, 60000);
+})();
+// ─────────────────────────────────────────────────────────────────────────────
+
 const TITLES = {home:'Dashboard',chat:'Organizador',agents:'Agentes',clients:'Clientes',integrations:'Integraciones',aprobacion:'✅ Aprobar Posts','crear-bot':'🤖 Crear Bot',gdrive:'📁 Google Drive',crm:'👥 CRM — Leads'};
 
 let _aprobacionTimer = null;
