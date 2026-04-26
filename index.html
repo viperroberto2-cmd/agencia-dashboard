@@ -837,7 +837,7 @@ function renderDriveGrid(items) {
     grid.innerHTML = '<p style="color:var(--text-dim);padding:20px">Sin archivos.</p>';
     return;
   }
-  const iconos = {video:'🎬', audio:'🔊', image:'🖼️'};
+  const iconos = {video:'🎬', audio:'🔊', imagen:'🖼️'};
   grid.innerHTML = items.map(f => {
     const tipo = f.tipo || 'archivo';
     const icono = iconos[tipo] || '📄';
@@ -869,7 +869,7 @@ function filtrarDrive(tipo) {
       <button class="drive-filter-btn active" onclick="filtrarDrive('todos')" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:13px">Todos</button>
       <button class="drive-filter-btn" onclick="filtrarDrive('video')" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:13px">🎬 Videos</button>
       <button class="drive-filter-btn" onclick="filtrarDrive('audio')" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:13px">🔊 Audios</button>
-      <button class="drive-filter-btn" onclick="filtrarDrive('image')" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:13px">🖼️ Imágenes</button>
+      <button class="drive-filter-btn" onclick="filtrarDrive('imagen')" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:13px">🖼️ Imágenes</button>
     </div>
     <button onclick="loadGoogleDrive()" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:13px">↻ Actualizar</button>
   </div>
