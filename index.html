@@ -357,10 +357,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
           <button class="chip" onclick="sendQ('Reporte semanal')">Reporte semanal</button>
           <button class="chip" onclick="sendQ('¿Qué sabes sobre Arranca Financial?')">Ver cliente</button>
         </div>
-        <div class="chat-input-row">
+        <div id="img-preview-wrap" style="display:none;padding:6px 16px 0">
+          <div style="position:relative;display:inline-block">
+            <img id="img-preview-thumb" style="max-height:80px;max-width:160px;border-radius:8px;border:1px solid var(--border)">
+            <button onclick="_clearPendingImage()" title="Quitar imagen"
+              style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;border:none;cursor:pointer;font-size:11px;line-height:18px;text-align:center;padding:0">✕</button>
+          </div>
+          <span style="font-size:11px;color:var(--muted);margin-left:8px">Imagen lista — escribe un mensaje opcional y envía</span>
+        </div>
+        <div class="chat-input-row" id="chat-input-row">
           <input type="file" id="img-input" accept="image/*" style="display:none" onchange="sendImage(this)">
           <button onclick="document.getElementById('img-input').click()" title="Enviar imagen" style="background:none;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;color:var(--muted);font-size:16px;line-height:1">📎</button>
-          <input class="chat-input" id="chat-input" placeholder="Escríbele al Organizador..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}">
+          <input class="chat-input" id="chat-input" placeholder="Escríbele al Organizador... (pega o arrastra una imagen)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}">
           <button class="send-btn" id="send-btn" onclick="sendMsg()">Enviar</button>
         </div>
       </div>
@@ -656,25 +664,104 @@ function showTyping() {
 
 function removeTyping() { const t = document.getElementById('typing'); if(t) t.remove(); }
 
+// ─── Pending image (paste / drag-drop) ───────────────────────────────────────
+let _pendingImage = null; // {b64, type}
+
+function _fileToB64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result.split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function _setPendingImage(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const b64 = await _fileToB64(file);
+  _pendingImage = {b64, type: file.type || 'image/jpeg'};
+  const thumb = document.getElementById('img-preview-thumb');
+  thumb.src = 'data:' + file.type + ';base64,' + b64;
+  document.getElementById('img-preview-wrap').style.display = 'block';
+  document.getElementById('chat-input').focus();
+}
+
+function _clearPendingImage() {
+  _pendingImage = null;
+  document.getElementById('img-preview-wrap').style.display = 'none';
+  document.getElementById('img-preview-thumb').src = '';
+}
+
+// Paste listener
+document.addEventListener('paste', e => {
+  const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items || [];
+  for (const item of items) {
+    if (item.kind === 'file' && item.type.startsWith('image/')) {
+      e.preventDefault();
+      _setPendingImage(item.getAsFile());
+      break;
+    }
+  }
+});
+
+// Drag-drop listener on the chat messages area
+document.addEventListener('DOMContentLoaded', () => {
+  const dropZone = document.getElementById('chat-msgs');
+  if (!dropZone) return;
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.style.outline = '2px dashed var(--purple)';
+  });
+  dropZone.addEventListener('dragleave', () => { dropZone.style.outline = ''; });
+  dropZone.addEventListener('drop', async e => {
+    e.preventDefault();
+    dropZone.style.outline = '';
+    const file = e.dataTransfer?.files?.[0];
+    if (file) await _setPendingImage(file);
+  });
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 async function sendMsg() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
-  if(!text) return;
+  if (!text && !_pendingImage) return;
   input.value = '';
-  addMsg('user', text);
   document.getElementById('send-btn').disabled = true;
-  showTyping();
-  try {
-    const r = await fetch(`${ORG_URL}/organizador/chat`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({mensaje: text, user_id: USER_ID, telegram_chat_id: USER_ID})
-    });
-    const d = await r.json();
-    removeTyping();
-    addMsg('agent', d.respuesta || 'Sin respuesta del Organizador.');
-  } catch(e) {
-    removeTyping();
-    addMsg('agent', 'Error de conexión. Verifica que el Organizador esté online en Railway.');
+
+  if (_pendingImage) {
+    const caption = text || 'Analiza esta imagen.';
+    const {b64, type} = _pendingImage;
+    addMsg('user', text ? `🖼️ ${text}` : '🖼️ [imagen]');
+    _clearPendingImage();
+    showTyping();
+    try {
+      const r = await fetch(`${ORG_URL}/organizador/vision`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({imagen_b64: b64, caption, user_id: USER_ID, media_type: type})
+      });
+      const d = await r.json();
+      removeTyping();
+      addMsg('agent', d.respuesta || 'Sin respuesta.');
+    } catch(e) {
+      removeTyping();
+      addMsg('agent', 'Error enviando imagen: ' + e.message);
+    }
+  } else {
+    addMsg('user', text);
+    showTyping();
+    try {
+      const r = await fetch(`${ORG_URL}/organizador/chat`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({mensaje: text, user_id: USER_ID, telegram_chat_id: USER_ID})
+      });
+      const d = await r.json();
+      removeTyping();
+      addMsg('agent', d.respuesta || 'Sin respuesta del Organizador.');
+    } catch(e) {
+      removeTyping();
+      addMsg('agent', 'Error de conexión. Verifica que el Organizador esté online en Railway.');
+    }
   }
   document.getElementById('send-btn').disabled = false;
 }
