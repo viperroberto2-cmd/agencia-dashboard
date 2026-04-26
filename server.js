@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const https = require('https');
+const fs = require('fs');
 const app = express();
 
 const BOTS = {
@@ -21,7 +22,18 @@ function checkUrl(url) {
   });
 }
 
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname), { index: false }));
+
+function serveIndex(res) {
+  const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8')
+    .replace(/__SUPABASE_URL__/g, process.env.SUPABASE_URL || '')
+    .replace(/__SUPABASE_ANON_KEY__/g, process.env.SUPABASE_ANON_KEY || '');
+  res.setHeader('Content-Type', 'text/html');
+  res.send(html);
+}
+
+app.get('/', (req, res) => serveIndex(res));
+app.get('/index.html', (req, res) => serveIndex(res));
 
 app.get('/api/health', async (req, res) => {
   const results = {};
@@ -33,7 +45,6 @@ app.get('/api/health', async (req, res) => {
   res.json(results);
 });
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Dashboard running on port ${PORT}`));
