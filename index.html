@@ -3,871 +3,552 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agencia AI — Control</title>
+<title>Agencia AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#7C3AED">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Agencia AI">
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0c0c0e;
-  --surface:#131316;
-  --surface2:#1a1a1f;
-  --border:#ffffff12;
-  --border2:#ffffff20;
-  --text:#f0efe8;
-  --muted:#888880;
-  --accent:#c8a96e;
-  --accent2:#7c9e6e;
-  --accent3:#6e8cb8;
-  --danger:#c46a5a;
-  --success:#5a9e72;
-  --warn:#c4965a;
-  --r:10px;
-  --r2:16px;
-  --font:'DM Sans',sans-serif;
-  --mono:'DM Mono',monospace;
-  --serif:'Fraunces',serif;
+  --bg:#F5F3FF;
+  --surface:#fff;
+  --border:#E8E4F8;
+  --text:#1A1033;
+  --muted:#6B7280;
+  --purple:#7C3AED;
+  --purple-light:#EDE9FE;
+  --purple-mid:#DDD6FE;
+  --green:#059669;
+  --green-light:#D1FAE5;
+  --amber:#D97706;
+  --amber-light:#FEF3C7;
+  --red:#DC2626;
+  --font:'Plus Jakarta Sans',sans-serif;
 }
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;min-height:100vh;display:flex;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;display:flex;min-height:100vh;overflow:hidden}
 
-/* ── SIDEBAR ── */
-.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden;transition:width .25s}
-.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
-.logo-mark{font-family:var(--serif);font-size:18px;font-weight:300;color:var(--accent);letter-spacing:.02em}
-.logo-sub{font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
-.nav{padding:12px 8px;flex:1;overflow-y:auto}
-.nav-section{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:8px 10px 4px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r);cursor:pointer;color:var(--muted);font-size:13px;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
-.nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:var(--surface2);color:var(--text);border-left:2px solid var(--accent)}
-.nav-icon{width:16px;height:16px;opacity:.7;flex-shrink:0}
-.nav-item.active .nav-icon{opacity:1}
+/* SIDEBAR */
+.sidebar{width:64px;min-width:64px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:4px;height:100vh}
+.logo-icon{width:40px;height:40px;background:var(--purple);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;flex-shrink:0}
+.logo-icon svg{fill:#fff}
+.nav-btn{width:40px;height:40px;border-radius:10px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;position:relative}
+.nav-btn:hover{background:var(--purple-light);color:var(--purple)}
+.nav-btn.active{background:var(--purple-light);color:var(--purple)}
+.nav-btn .badge{position:absolute;top:4px;right:4px;width:16px;height:16px;background:var(--purple);color:#fff;font-size:10px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.sidebar-bottom{margin-top:auto;display:flex;flex-direction:column;gap:4px;align-items:center}
 
-/* ── BOT STATUS ── */
-.bot-status{padding:12px 8px;border-top:1px solid var(--border)}
-.bot-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.dot-green{background:var(--success)}
-.dot-red{background:var(--danger)}
-.dot-gray{background:var(--muted)}
-.bot-row{display:flex;align-items:center;gap:8px;padding:5px 10px;font-size:11px;color:var(--muted)}
-.bot-name{flex:1}
-
-/* ── MAIN ── */
+/* MAIN */
 .main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-.topbar{height:52px;min-height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px}
-.topbar-title{font-family:var(--serif);font-size:15px;font-weight:300;flex:1}
-.topbar-btn{background:none;border:1px solid var(--border2);color:var(--muted);padding:5px 12px;border-radius:var(--r);font-size:12px;cursor:pointer;font-family:var(--font);transition:all .15s}
-.topbar-btn:hover{border-color:var(--border2);color:var(--text);background:var(--surface2)}
-.badge{background:var(--accent);color:#0c0c0e;font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;margin-left:4px}
 
+/* TOPBAR */
+.topbar{height:56px;min-height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px}
+.topbar-title{font-size:20px;font-weight:700;flex:1;color:var(--text)}
+.topbar-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--font);font-weight:500;transition:all .15s;display:flex;align-items:center;gap:6px}
+.topbar-btn:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-light)}
+.topbar-btn-primary{background:var(--purple);color:#fff;border-color:var(--purple)}
+.topbar-btn-primary:hover{background:#6D28D9;border-color:#6D28D9;color:#fff}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;cursor:pointer}
+
+/* CONTENT */
 .content{flex:1;overflow-y:auto;padding:24px}
 
-/* ── PANELS ── */
+/* PANELS */
 .panel{display:none}
 .panel.active{display:block}
 
-/* ── CARDS ── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:18px 20px;margin-bottom:16px}
-.card-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+/* HERO CARD */
+.hero-card{background:linear-gradient(135deg,#6D28D9 0%,#7C3AED 50%,#8B5CF6 100%);border-radius:20px;padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;gap:24px;position:relative;overflow:hidden}
+.hero-card::before{content:'';position:absolute;right:-20px;top:-20px;width:200px;height:200px;background:rgba(255,255,255,.06);border-radius:50%}
+.hero-card::after{content:'';position:absolute;right:40px;bottom:-40px;width:150px;height:150px;background:rgba(255,255,255,.04);border-radius:50%}
+.hero-text{flex:1;z-index:1}
+.hero-title{font-size:24px;font-weight:800;color:#fff;margin-bottom:6px}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.75);margin-bottom:20px}
+.hero-stats{display:flex;gap:24px}
+.hero-stat{text-align:center}
+.hero-stat-val{font-size:22px;font-weight:800;color:#fff;line-height:1}
+.hero-stat-label{font-size:11px;color:rgba(255,255,255,.65);margin-top:2px}
+.hero-avatar{width:100px;height:100px;z-index:1;flex-shrink:0;font-size:64px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 8px 16px rgba(0,0,0,.3))}
 
-/* ── METRICS ── */
-.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
-.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px}
-.metric-val{font-size:28px;font-weight:300;font-family:var(--serif);color:var(--text);line-height:1}
-.metric-label{font-size:11px;color:var(--muted);margin-top:4px}
-.metric-trend{font-size:11px;color:var(--accent2);margin-top:6px}
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
+.metric-val{font-size:28px;font-weight:800;color:var(--text);line-height:1}
+.metric-label{font-size:12px;color:var(--muted);margin-top:4px;font-weight:500}
+.metric-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;margin-top:8px}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-purple{background:var(--purple-light);color:var(--purple)}
+.badge-amber{background:var(--amber-light);color:var(--amber)}
 
-/* ── TABLE ── */
-.data-table{width:100%;border-collapse:collapse;font-size:13px}
-.data-table th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
-.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
-.data-table tr:hover td{background:var(--surface2)}
-.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
-.pill-green{background:#1a3325;color:#5a9e72}
-.pill-amber{background:#2e2210;color:#c4965a}
-.pill-red{background:#2e1010;color:#c46a5a}
-.pill-blue{background:#101a2e;color:#6e8cb8}
-.pill-gray{background:#1a1a1f;color:#888880}
-
-/* ── CHAT ── */
-.chat-panel{display:flex;flex-direction:column;height:calc(100vh - 52px)}
-.chat-messages{flex:1;overflow-y:auto;padding:20px}
-.chat-meta{font-size:10px;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.chat-meta::after{content:'';flex:1;height:1px;background:var(--border)}
-.msg{margin-bottom:16px;display:flex;flex-direction:column}
-.msg.user{align-items:flex-end}
-.msg.agent{align-items:flex-start}
-.msg-bubble{max-width:72%;padding:10px 14px;border-radius:var(--r2);font-size:13px;line-height:1.65}
-.msg.user .msg-bubble{background:var(--accent);color:#0c0c0e;border-radius:var(--r2) var(--r2) 4px var(--r2)}
-.msg.agent .msg-bubble{background:var(--surface);border:1px solid var(--border);border-radius:4px var(--r2) var(--r2) var(--r2)}
-.msg-time{font-size:10px;color:var(--muted);margin-top:4px;padding:0 4px}
-.typing{display:flex;gap:4px;padding:12px 14px;align-items:center}
-.typing span{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite}
-.typing span:nth-child(2){animation-delay:.2s}
-.typing span:nth-child(3){animation-delay:.4s}
-@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
-.chat-input-area{padding:16px 20px;background:var(--surface);border-top:1px solid var(--border)}
-.chat-input-row{display:flex;gap:10px;align-items:flex-end}
-.chat-textarea{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-family:var(--font);font-size:13px;padding:10px 14px;resize:none;min-height:42px;max-height:140px;outline:none;line-height:1.5}
-.chat-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)20}
-.chat-textarea::placeholder{color:var(--muted)}
-.send-btn{background:var(--accent);color:#0c0c0e;border:none;border-radius:var(--r);padding:10px 16px;cursor:pointer;font-size:13px;font-weight:500;font-family:var(--font);white-space:nowrap;transition:opacity .15s}
-.send-btn:hover{opacity:.85}
-.send-btn:disabled{opacity:.4;cursor:default}
-.chat-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.chip{background:none;border:1px solid var(--border2);color:var(--muted);padding:4px 10px;border-radius:20px;font-size:11px;cursor:pointer;font-family:var(--font);transition:all .15s}
-.chip:hover{border-color:var(--accent);color:var(--accent)}
-
-/* ── INBOX ── */
-.inbox-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
-.inbox-icon{width:32px;height:32px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
-.inbox-icon-blue{background:#101a2e}
-.inbox-icon-amber{background:#2e2210}
-.inbox-icon-green{background:#1a3325}
-.inbox-body{flex:1;min-width:0}
-.inbox-title{font-size:13px;font-weight:500;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.inbox-meta{font-size:11px;color:var(--muted)}
-.inbox-actions{display:flex;gap:6px;flex-shrink:0}
-.btn-sm{background:none;border:1px solid var(--border2);color:var(--muted);padding:4px 10px;border-radius:var(--r);font-size:11px;cursor:pointer;font-family:var(--font);transition:all .15s}
-.btn-sm:hover{border-color:var(--accent);color:var(--accent)}
-.btn-sm.danger:hover{border-color:var(--danger);color:var(--danger)}
-
-/* ── LOGS ── */
-.log-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
-.log-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0}
-.log-time{color:var(--muted);font-family:var(--mono);white-space:nowrap}
-.log-text{flex:1;color:var(--text)}
-.log-badge{font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:4px;border:1px solid}
-
-/* ── PROJECTS ── */
-.project-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px;margin-bottom:12px}
-.project-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.project-client{font-size:14px;font-weight:500;flex:1}
-.project-steps{display:flex;gap:4px;margin-top:10px}
-.step-dot{width:28px;height:4px;border-radius:2px;background:var(--border2)}
-.step-dot.done{background:var(--accent2)}
-.step-dot.active{background:var(--accent)}
-.step-dot.fail{background:var(--danger)}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
-
-/* ── MOBILE ── */
-@media(max-width:700px){
-  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;width:200px;transform:translateX(-100%)}
-  .sidebar.open{transform:translateX(0)}
-  .main{width:100%}
-  .topbar .menu-toggle{display:flex}
-  .metrics{grid-template-columns:1fr 1fr}
-}
-.menu-toggle{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:4px;align-items:center}
-.overlay{display:none;position:fixed;inset:0;background:#00000080;z-index:99}
-.overlay.open{display:block}
-
-/* ── SECTION HEADER ── */
-.section-header{display:flex;align-items:baseline;gap:12px;margin-bottom:20px}
-.section-title{font-family:var(--serif);font-size:22px;font-weight:300;color:var(--text)}
-.section-count{font-size:12px;color:var(--muted)}
+/* SECTION */
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.section-title{font-size:16px;font-weight:700;color:var(--text)}
+.section-count{font-size:13px;color:var(--muted);font-weight:500}
 .section-actions{margin-left:auto;display:flex;gap:8px}
 
-/* ── EMPTY ── */
-.empty{text-align:center;padding:40px;color:var(--muted)}
-.empty-icon{font-size:32px;margin-bottom:10px;opacity:.4}
+/* AGENTS GRID */
+.agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:28px}
+.agent-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;transition:all .2s;position:relative}
+.agent-card:hover{border-color:var(--purple);box-shadow:0 4px 20px rgba(124,58,237,.12);transform:translateY(-1px)}
+.agent-card.active{border-color:var(--purple);box-shadow:0 4px 20px rgba(124,58,237,.15)}
+.agent-emoji{font-size:40px;margin-bottom:12px;display:block;filter:drop-shadow(0 4px 8px rgba(0,0,0,.15))}
+.agent-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px}
+.agent-role{font-size:12px;color:var(--muted);margin-bottom:12px;font-weight:500}
+.agent-status{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;margin-bottom:10px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-online{background:var(--green)}
+.dot-offline{background:#9CA3AF}
+.txt-online{color:var(--green)}
+.txt-offline{color:#9CA3AF}
+.agent-tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--purple-light);color:var(--purple)}
 
-/* ── CONFIG BOX ── */
-.config-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px}
-.config-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-.config-input{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:8px 12px;border-radius:var(--r);font-family:var(--mono);font-size:12px;outline:none}
-.config-input:focus{border-color:var(--accent)}
-.config-save{background:var(--accent);color:#0c0c0e;border:none;border-radius:var(--r);padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);margin-top:10px}
+/* INTEGRATIONS */
+.integrations-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:28px}
+.int-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;transition:all .15s;cursor:pointer}
+.int-card:hover{border-color:var(--purple);background:var(--purple-light)}
+.int-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.int-name{font-size:13px;font-weight:700;color:var(--text)}
+.int-status{font-size:11px;font-weight:600;margin-top:2px}
+.int-status.connected{color:var(--green)}
+.int-status.pending{color:var(--amber)}
+.int-status.offline{color:#9CA3AF}
+.int-connect{margin-left:auto;background:var(--purple);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)}
 
-/* ── INTEGRATIONS ── */
-.int-card{display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:12px}
-.int-icon{width:40px;height:40px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.int-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px}
-.int-status{font-size:11px;color:var(--muted)}
-.int-status.connected{color:var(--success)}
-.int-connect{background:var(--accent);color:#0c0c0e;border:none;border-radius:var(--r);padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:opacity .15s;margin-left:auto}
-.int-connect:hover{opacity:.85}
+/* CLIENTS */
+.clients-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:28px}
+.client-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px}
+.client-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.client-av{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.client-name{font-size:14px;font-weight:700;color:var(--text)}
+.client-industry{font-size:12px;color:var(--muted);font-weight:500}
+.client-stats{display:flex;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.client-stat{text-align:center;flex:1}
+.client-stat-val{font-size:16px;font-weight:800;color:var(--purple)}
+.client-stat-label{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+
+/* CHAT */
+.chat-layout{display:grid;grid-template-columns:280px 1fr;gap:16px;height:calc(100vh - 104px)}
+.chat-agents{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow-y:auto;padding:16px}
+.chat-agents-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.chat-agent-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;cursor:pointer;transition:all .15s;margin-bottom:4px}
+.chat-agent-item:hover{background:var(--purple-light)}
+.chat-agent-item.active{background:var(--purple-light);border:1px solid var(--purple-mid)}
+.chat-agent-emoji{font-size:24px;flex-shrink:0}
+.chat-agent-name{font-size:13px;font-weight:700;color:var(--text)}
+.chat-agent-role{font-size:11px;color:var(--muted)}
+.chat-main{background:var(--surface);border:1px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden}
+.chat-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.chat-header-emoji{font-size:32px}
+.chat-header-name{font-size:15px;font-weight:700}
+.chat-header-status{font-size:12px;font-weight:600;color:var(--green)}
+.chat-msgs{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:10px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.msg-av{width:32px;height:32px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
+.msg-av-user{background:var(--purple);color:#fff;font-size:13px;font-weight:700}
+.msg-bubble{max-width:72%;padding:11px 15px;border-radius:14px;font-size:13px;line-height:1.6;font-weight:500}
+.msg.agent .msg-bubble{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:4px 14px 14px 14px}
+.msg.user .msg-bubble{background:var(--purple);color:#fff;border-radius:14px 4px 14px 14px}
+.msg-time{font-size:10px;color:var(--muted);margin-top:4px;font-weight:500}
+.chat-chips-row{padding:0 16px 10px;display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:var(--font);font-weight:600;transition:all .15s}
+.chip:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-light)}
+.chat-input-row{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center}
+.chat-input{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font);font-size:13px;padding:10px 14px;outline:none;font-weight:500;transition:border .15s}
+.chat-input:focus{border-color:var(--purple)}
+.chat-input::placeholder{color:#9CA3AF}
+.send-btn{background:var(--purple);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .15s}
+.send-btn:hover{background:#6D28D9}
+.send-btn:disabled{opacity:.5;cursor:default}
+
+/* TYPING */
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;animation:blink 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+/* ACTIVITY */
+.activity-list{display:flex;flex-direction:column;gap:2px}
+.activity-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;transition:background .1s}
+.activity-row:hover{background:var(--bg)}
+.activity-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.activity-text{flex:1;font-size:13px;font-weight:500;color:var(--text)}
+.activity-time{font-size:11px;color:var(--muted);font-weight:500}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--purple-mid);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
 </style>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#c8a96e">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Agencia AI">
-<script>
-if('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js');
-}
-</script>
 </head>
 <body>
 
-<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
 <!-- SIDEBAR -->
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-mark">Agencia AI</div>
-    <div class="logo-sub">Panel de Control</div>
+<aside class="sidebar">
+  <div class="logo-icon">
+    <svg width="22" height="22" viewBox="0 0 22 22"><path d="M11 2L3 7v8l8 5 8-5V7L11 2z"/></svg>
   </div>
-  <nav class="nav">
-    <div class="nav-section">Principal</div>
-    <button class="nav-item active" onclick="showPanel('dashboard',this)">
-      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".7"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".3"/></svg>
-      Dashboard
-    </button>
-    <button class="nav-item" onclick="showPanel('chat',this)">
-      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 2V3z" fill="currentColor" opacity=".7"/></svg>
-      Organizador
-      <span class="badge" id="badge-chat" style="display:none">•</span>
-    </button>
-    <button class="nav-item" onclick="showPanel('inbox',this)">
-      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M1 4a1 1 0 011-1h12a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4zm0 6h4l1.5 2h3L11 10h4" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".7"/></svg>
-      Inbox
-    </button>
-    <div class="nav-section">Operaciones</div>
-    <button class="nav-item" onclick="showPanel('proyectos',this)">
-      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".7"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".7"/></svg>
-      Proyectos
-    </button>
-    <button class="nav-item" onclick="showPanel('clientes',this)">
-      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".7"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".7"/></svg>
-      Clientes
-    </button>
-    <button class="nav-item" onclick="showPanel('logs',this)">
-      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".7"/></svg>
-      Logs
-    </button>
-    <div class="nav-section">Sistema</div>
-    <button class="nav-item" onclick="showPanel('integraciones',this)">
-      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M6 8a2 2 0 104 0 2 2 0 00-4 0z" fill="currentColor" opacity=".7"/><path d="M2 8a6 6 0 1012 0A6 6 0 002 8z" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".4"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".5"/></svg>
-      Integraciones
-    </button>
-    <button class="nav-item" onclick="showPanel('config',this)">
-      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".7"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.3 3.3l1.4 1.4M11.3 11.3l1.4 1.4M3.3 12.7l1.4-1.4M11.3 4.7l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".7"/></svg>
-      Configuración
-    </button>
-  </nav>
 
-  <div class="bot-status">
-    <div class="bot-row">
-      <div class="bot-dot dot-green" id="dot-b1"></div>
-      <span class="bot-name">Director</span>
-      <span style="font-size:10px;color:#5a9e72" id="status-b1">online</span>
-    </div>
-    <div class="bot-row">
-      <div class="bot-dot dot-gray" id="dot-b2"></div>
-      <span class="bot-name">Crew</span>
-      <span style="font-size:10px;color:var(--muted)" id="status-b2">—</span>
-    </div>
-    <div class="bot-row">
-      <div class="bot-dot dot-green" id="dot-b3"></div>
-      <span class="bot-name">Estrategia</span>
-      <span style="font-size:10px;color:#5a9e72" id="status-b3">online</span>
-    </div>
-    <div class="bot-row">
-      <div class="bot-dot dot-green" id="dot-org"></div>
-      <span class="bot-name">Organizador</span>
-      <span style="font-size:10px;color:#5a9e72" id="status-org">online</span>
-    </div>
-    <div class="bot-row">
-      <div class="bot-dot dot-gray" id="dot-b4"></div>
-      <span class="bot-name">Analytics</span>
-      <span style="font-size:10px;color:var(--muted)" id="status-b4">—</span>
-    </div>
-    <div class="bot-row">
-      <div class="bot-dot dot-gray" id="dot-b5"></div>
-      <span class="bot-name">Scheduler</span>
-      <span style="font-size:10px;color:var(--muted)" id="status-b5">—</span>
-    </div>
+  <button class="nav-btn active" onclick="showPanel('home',this)" title="Dashboard">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="7" height="7" rx="2" fill="currentColor" opacity=".8"/><rect x="10" y="1" width="7" height="7" rx="2" fill="currentColor" opacity=".8"/><rect x="1" y="10" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/><rect x="10" y="10" width="7" height="7" rx="2" fill="currentColor" opacity=".8"/></svg>
+  </button>
+
+  <button class="nav-btn" onclick="showPanel('chat',this)" title="Organizador">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 3a1 1 0 011-1h12a1 1 0 011 1v10a1 1 0 01-1 1H5l-3 2V3z" fill="currentColor" opacity=".8"/></svg>
+    <span class="badge">6</span>
+  </button>
+
+  <button class="nav-btn" onclick="showPanel('agents',this)" title="Agentes">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><path d="M2 16c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/></svg>
+  </button>
+
+  <button class="nav-btn" onclick="showPanel('clients',this)" title="Clientes">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="3" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><path d="M2 7h14" stroke="currentColor" stroke-width="1.5" opacity=".8"/><path d="M6 11h2M10 11h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".6"/></svg>
+  </button>
+
+  <button class="nav-btn" onclick="showPanel('integrations',this)" title="Integraciones">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="5" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><circle cx="13" cy="4" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><circle cx="13" cy="14" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><path d="M7.5 9h3M7.5 8l3-3M7.5 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".6"/></svg>
+  </button>
+
+  <div class="sidebar-bottom">
+    <button class="nav-btn" onclick="showPanel('home',this)" title="Configuración">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".6"/></svg>
+    </button>
+    <div class="avatar">R</div>
   </div>
 </aside>
 
 <!-- MAIN -->
 <main class="main">
   <div class="topbar">
-    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 4h14M2 9h14M2 14h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span class="topbar-title" id="page-title">Dashboard</span>
+    <button class="topbar-btn" onclick="showPanel('chat',document.querySelectorAll('.nav-btn')[1])">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v6M4 4l3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M1 10v2a1 1 0 001 1h10a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Nueva tarea
     </button>
-    <span class="topbar-title" id="topbar-title">Dashboard</span>
-    <button class="topbar-btn" onclick="showPanel('chat',document.querySelector('.nav-item:nth-child(3)'))">+ Nueva tarea</button>
-    <button class="topbar-btn" style="border-color:var(--accent);color:var(--accent)" id="refresh-btn" onclick="refreshData()">↻ Actualizar</button>
+    <button class="topbar-btn topbar-btn-primary" onclick="refreshAll()">↻ Actualizar</button>
   </div>
 
-  <!-- DASHBOARD -->
-  <div class="panel active content" id="panel-dashboard">
-    <div class="metrics" id="metrics-grid">
-      <div class="metric"><div class="metric-val" id="m-clientes">—</div><div class="metric-label">Clientes activos</div></div>
-      <div class="metric"><div class="metric-val" id="m-proyectos">—</div><div class="metric-label">Proyectos en curso</div></div>
-      <div class="metric"><div class="metric-val" id="m-inbox">—</div><div class="metric-label">Inbox pendiente</div></div>
-      <div class="metric"><div class="metric-val" id="m-logs">—</div><div class="metric-label">Acciones hoy</div></div>
+  <!-- ── DASHBOARD ── -->
+  <div class="panel active content" id="panel-home">
+    <div class="hero-card">
+      <div class="hero-text">
+        <div class="hero-title">Agencia AI 🚀</div>
+        <div class="hero-sub">Tu equipo de agentes trabajando 24/7 para tus clientes.</div>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="hero-stat-val">6</div><div class="hero-stat-label">Agentes</div></div>
+          <div class="hero-stat"><div class="hero-stat-val">2</div><div class="hero-stat-label">Clientes</div></div>
+          <div class="hero-stat"><div class="hero-stat-val" id="h-projects">0</div><div class="hero-stat-label">Proyectos</div></div>
+          <div class="hero-stat"><div class="hero-stat-val" id="h-inbox">0</div><div class="hero-stat-label">Inbox</div></div>
+        </div>
+      </div>
+      <div class="hero-avatar">🤖</div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Actividad reciente entre bots</div>
-      <div id="logs-preview">
-        <div class="empty"><div class="empty-icon">◌</div><div>Cargando actividad...</div></div>
-      </div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-val" id="m-clientes">2</div><div class="metric-label">Clientes activos</div><div class="metric-badge badge-green">● activos</div></div>
+      <div class="metric"><div class="metric-val">6</div><div class="metric-label">Agentes online</div><div class="metric-badge badge-purple">● en línea</div></div>
+      <div class="metric"><div class="metric-val" id="m-proyectos">0</div><div class="metric-label">Proyectos en curso</div><div class="metric-badge badge-amber">● revisando</div></div>
+      <div class="metric"><div class="metric-val" id="m-inbox">0</div><div class="metric-label">Inbox pendiente</div></div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div class="card">
-        <div class="card-title">Bots activos</div>
-        <div id="bots-summary">
-          <div class="bot-row" style="padding:6px 0"><div class="bot-dot dot-green"></div><span style="flex:1;font-size:13px">Director (Bot 1)</span></div>
-          <div class="bot-row" style="padding:6px 0"><div class="bot-dot dot-gray"></div><span style="flex:1;font-size:13px">Crew (Bot 2)</span></div>
-          <div class="bot-row" style="padding:6px 0"><div class="bot-dot dot-green"></div><span style="flex:1;font-size:13px">Estrategia (Bot 3)</span></div>
-          <div class="bot-row" style="padding:6px 0"><div class="bot-dot dot-green"></div><span style="flex:1;font-size:13px">Organizador</span></div>
+      <div>
+        <div class="section-header"><span class="section-title">Actividad reciente</span></div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px">
+          <div class="activity-list" id="activity-list">
+            <div class="activity-row"><div class="activity-icon" style="background:#EDE9FE">🎬</div><span class="activity-text">Director entregó dirección musical</span><span class="activity-time">hoy</span></div>
+            <div class="activity-row"><div class="activity-icon" style="background:#D1FAE5">📊</div><span class="activity-text">Estrategia completó plan Arranca Financial</span><span class="activity-time">hoy</span></div>
+            <div class="activity-row"><div class="activity-icon" style="background:#FEF3C7">🎨</div><span class="activity-text">Crew generó campaña 30 días</span><span class="activity-time">ayer</span></div>
+            <div class="activity-row"><div class="activity-icon" style="background:#EDE9FE">🎯</div><span class="activity-text">Organizador delegó 3 tareas</span><span class="activity-time">ayer</span></div>
+          </div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-title">Acceso rápido</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <button class="btn-sm" style="text-align:left;padding:8px 12px" onclick="showPanel('chat',document.querySelectorAll('.nav-item')[1])">💬 Hablar con el Organizador</button>
-          <button class="btn-sm" style="text-align:left;padding:8px 12px" onclick="showPanel('inbox',document.querySelectorAll('.nav-item')[2])">📥 Ver inbox</button>
-          <button class="btn-sm" style="text-align:left;padding:8px 12px" onclick="showPanel('proyectos',document.querySelectorAll('.nav-item')[4])">🚀 Ver proyectos</button>
+      <div>
+        <div class="section-header"><span class="section-title">Clientes</span><div class="section-actions"><button class="topbar-btn" onclick="showPanel('clients',document.querySelectorAll('.nav-btn')[3])">Ver todos</button></div></div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px">
+            <div style="width:44px;height:44px;border-radius:12px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:22px">💰</div>
+            <div style="flex:1"><div style="font-size:14px;font-weight:700">Arranca Financial</div><div style="font-size:12px;color:var(--muted);font-weight:500">Educación financiera · Turo</div></div>
+            <span class="metric-badge badge-green">activo</span>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px">
+            <div style="width:44px;height:44px;border-radius:12px;background:#D1FAE5;display:flex;align-items:center;justify-content:center;font-size:22px">💊</div>
+            <div style="flex:1"><div style="font-size:14px;font-weight:700">Sofía</div><div style="font-size:12px;color:var(--muted);font-weight:500">Clínica GLP-1 · Leads por llamada</div></div>
+            <span class="metric-badge badge-green">activo</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- CHAT / ORGANIZADOR -->
-  <div class="panel chat-panel" id="panel-chat">
-    <div class="chat-messages" id="chat-messages">
-      <div class="chat-meta">Hoy — sesión nueva</div>
-      <div class="msg agent">
-        <div class="msg-bubble">
-          Hola Roberto. Soy el Organizador. Cuéntame lo que tienes en mente — una idea, un cliente nuevo, una campaña, lo que sea — y lo analizo, delego o ejecuto.
+  <!-- ── CHAT ── -->
+  <div class="panel content" id="panel-chat" style="padding:20px">
+    <div class="chat-layout">
+      <div class="chat-agents">
+        <div class="chat-agents-title">Tu equipo</div>
+        <div class="chat-agent-item active" onclick="selectAgent(this,'🎯','Organizador','CEO · Delega y coordina')" data-name="Organizador">
+          <span class="chat-agent-emoji">🎯</span>
+          <div><div class="chat-agent-name">Organizador</div><div class="chat-agent-role">CEO · Delega y coordina</div></div>
         </div>
-        <span class="msg-time">ahora</span>
+        <div class="chat-agent-item" onclick="selectAgent(this,'🎬','Director','Creativo · Copy y guiones')" data-name="Director">
+          <span class="chat-agent-emoji">🎬</span>
+          <div><div class="chat-agent-name">Director</div><div class="chat-agent-role">Creativo · Copy y guiones</div></div>
+        </div>
+        <div class="chat-agent-item" onclick="selectAgent(this,'🎨','Crew','Producción · Video e imágenes')" data-name="Crew">
+          <span class="chat-agent-emoji">🎨</span>
+          <div><div class="chat-agent-name">Crew</div><div class="chat-agent-role">Producción · Video</div></div>
+        </div>
+        <div class="chat-agent-item" onclick="selectAgent(this,'📊','Estrategia','Marketing · Campañas y SEO')" data-name="Estrategia">
+          <span class="chat-agent-emoji">📊</span>
+          <div><div class="chat-agent-name">Estrategia</div><div class="chat-agent-role">Marketing · Campañas</div></div>
+        </div>
+        <div class="chat-agent-item" onclick="selectAgent(this,'📅','Scheduler','Publicación automática')" data-name="Scheduler">
+          <span class="chat-agent-emoji">📅</span>
+          <div><div class="chat-agent-name">Scheduler</div><div class="chat-agent-role">Publicación automática</div></div>
+        </div>
+        <div class="chat-agent-item" onclick="selectAgent(this,'📈','Analytics','Reportes semanales')" data-name="Analytics">
+          <span class="chat-agent-emoji">📈</span>
+          <div><div class="chat-agent-name">Analytics</div><div class="chat-agent-role">Reportes semanales</div></div>
+        </div>
       </div>
-    </div>
-    <div class="chat-input-area">
-      <div class="chat-chips">
-        <button class="chip" onclick="quickChat('¿Cuál es el estado de los proyectos activos?')">Estado proyectos</button>
-        <button class="chip" onclick="quickChat('Procesa el inbox y dime qué hay pendiente')">Procesar inbox</button>
-        <button class="chip" onclick="quickChat('Necesito una campaña completa para un cliente nuevo')">Nueva campaña</button>
-        <button class="chip" onclick="quickChat('Dame un reporte rápido de la semana')">Reporte semanal</button>
-      </div>
-      <div class="chat-input-row">
-        <textarea class="chat-textarea" id="chat-input" placeholder="Escríbele al Organizador..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-        <button class="send-btn" id="send-btn" onclick="sendMessage()">Enviar</button>
+      <div class="chat-main">
+        <div class="chat-header">
+          <span class="chat-header-emoji" id="chat-emoji">🎯</span>
+          <div style="flex:1"><div class="chat-header-name" id="chat-name">Organizador</div><div class="chat-header-status">● online · responde al instante</div></div>
+        </div>
+        <div class="chat-msgs" id="chat-msgs">
+          <div class="msg agent">
+            <div class="msg-av">🎯</div>
+            <div><div class="msg-bubble">Hola Roberto. Soy el Organizador — el CEO de tu agencia. Cuéntame qué necesitas y lo ejecuto.</div><div class="msg-time">ahora</div></div>
+          </div>
+        </div>
+        <div class="chat-chips-row">
+          <button class="chip" onclick="sendQ('¿Qué proyectos tenemos activos?')">Estado proyectos</button>
+          <button class="chip" onclick="sendQ('Nueva campaña para Arranca Financial')">Nueva campaña</button>
+          <button class="chip" onclick="sendQ('Reporte semanal')">Reporte semanal</button>
+          <button class="chip" onclick="sendQ('¿Qué sabes sobre Arranca Financial?')">Ver cliente</button>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" id="chat-input" placeholder="Escríbele al Organizador..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}">
+          <button class="send-btn" id="send-btn" onclick="sendMsg()">Enviar</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- INBOX -->
-  <div class="panel content" id="panel-inbox">
+  <!-- ── AGENTS ── -->
+  <div class="panel content" id="panel-agents">
     <div class="section-header">
-      <span class="section-title">Inbox</span>
-      <span class="section-count" id="inbox-count">cargando...</span>
-      <div class="section-actions">
-        <select id="inbox-filter" onchange="loadInbox()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:var(--r);font-family:var(--font);font-size:12px;outline:none">
-          <option value="all">Todos</option>
-          <option value="sin_procesar">Sin procesar</option>
-          <option value="tarea">Tareas</option>
-          <option value="proyecto">Proyectos</option>
-        </select>
+      <span class="section-title">Tu equipo de agentes</span>
+      <span class="section-count">6 agentes activos</span>
+    </div>
+    <div class="agents-grid">
+      <div class="agent-card active" onclick="showPanel('chat',document.querySelectorAll('.nav-btn')[1])">
+        <span class="agent-emoji">🎯</span>
+        <div class="agent-name">Organizador</div>
+        <div class="agent-role">CEO · Delega y coordina toda la agencia</div>
+        <div class="agent-status"><div class="dot dot-online"></div><span class="txt-online">online</span></div>
+        <div class="agent-tags"><span class="tag">Razona</span><span class="tag">Delega</span><span class="tag">Evalúa</span><span class="tag">Memoria</span></div>
+      </div>
+      <div class="agent-card">
+        <span class="agent-emoji">🎬</span>
+        <div class="agent-name">Director</div>
+        <div class="agent-role">Creativo · Copy, guiones y dirección musical</div>
+        <div class="agent-status"><div class="dot dot-online"></div><span class="txt-online">online</span></div>
+        <div class="agent-tags"><span class="tag">Copy</span><span class="tag">Guiones</span><span class="tag">Audio AI</span><span class="tag">Análisis</span></div>
+      </div>
+      <div class="agent-card">
+        <span class="agent-emoji">🎨</span>
+        <div class="agent-name">Crew</div>
+        <div class="agent-role">Producción · Video, imágenes y música</div>
+        <div class="agent-status"><div class="dot dot-online"></div><span class="txt-online">online</span></div>
+        <div class="agent-tags"><span class="tag">Veo 3.1</span><span class="tag">Flux</span><span class="tag">Suno</span><span class="tag">Runway</span></div>
+      </div>
+      <div class="agent-card">
+        <span class="agent-emoji">📊</span>
+        <div class="agent-name">Estrategia</div>
+        <div class="agent-role">Marketing · Campañas, SEO y funnels</div>
+        <div class="agent-status"><div class="dot dot-online"></div><span class="txt-online">online</span></div>
+        <div class="agent-tags"><span class="tag">Facebook Ads</span><span class="tag">SEO</span><span class="tag">Funnels</span></div>
+      </div>
+      <div class="agent-card">
+        <span class="agent-emoji">📅</span>
+        <div class="agent-name">Scheduler</div>
+        <div class="agent-role">Publicación automática en redes sociales</div>
+        <div class="agent-status"><div class="dot dot-online"></div><span class="txt-online">online</span></div>
+        <div class="agent-tags"><span class="tag">Facebook</span><span class="tag">Instagram</span><span class="tag">Auto-post</span></div>
+      </div>
+      <div class="agent-card">
+        <span class="agent-emoji">📈</span>
+        <div class="agent-name">Analytics</div>
+        <div class="agent-role">Reportes semanales y métricas</div>
+        <div class="agent-status"><div class="dot dot-offline"></div><span class="txt-offline">telegram only</span></div>
+        <div class="agent-tags"><span class="tag">Reportes</span><span class="tag">Métricas</span></div>
       </div>
     </div>
-    <div id="inbox-list"><div class="empty"><div class="empty-icon">◌</div><div>Cargando...</div></div></div>
   </div>
 
-  <!-- PROYECTOS -->
-  <div class="panel content" id="panel-proyectos">
-    <div class="section-header">
-      <span class="section-title">Proyectos</span>
-      <span class="section-count" id="proyectos-count">cargando...</span>
-    </div>
-    <div id="proyectos-list"><div class="empty"><div class="empty-icon">◌</div><div>Cargando...</div></div></div>
-  </div>
-
-  <!-- CLIENTES -->
-  <div class="panel content" id="panel-clientes">
+  <!-- ── CLIENTS ── -->
+  <div class="panel content" id="panel-clients">
     <div class="section-header">
       <span class="section-title">Clientes</span>
-      <div class="section-actions">
-        <button class="topbar-btn" onclick="showAddClient()">+ Agregar</button>
-      </div>
+      <div class="section-actions"><button class="topbar-btn topbar-btn-primary">+ Agregar cliente</button></div>
     </div>
-    <div id="clientes-list"><div class="empty"><div class="empty-icon">◌</div><div>Cargando...</div></div></div>
-  </div>
-
-  <!-- LOGS -->
-  <div class="panel content" id="panel-logs">
-    <div class="section-header">
-      <span class="section-title">Logs de comunicación</span>
-    </div>
-    <div class="card">
-      <div id="logs-list"><div class="empty"><div class="empty-icon">◌</div><div>Cargando...</div></div></div>
-    </div>
-  </div>
-
-  <!-- CONFIG -->
-  <div class="panel content" id="panel-config">
-    <div class="section-header">
-      <span class="section-title">Configuración</span>
-    </div>
-    <div class="card">
-      <div class="card-title">URLs de los bots (Railway)</div>
-      <div class="config-box">
-        <div class="config-label">Bot 1 — Director</div>
-        <input class="config-input" id="cfg-bot1" placeholder="https://..." value="">
+    <div class="clients-grid">
+      <div class="client-card">
+        <div class="client-header">
+          <div class="client-av" style="background:#EDE9FE">💰</div>
+          <div><div class="client-name">Arranca Financial</div><div class="client-industry">Educación financiera hispana</div></div>
+          <span class="metric-badge badge-green" style="margin-left:auto">activo</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);font-weight:500;line-height:1.6">"La comunidad donde los hispanos aprenden a crear ingresos extra" · Primer producto: Turo</div>
+        <div class="client-stats">
+          <div class="client-stat"><div class="client-stat-val">70%</div><div class="client-stat-label">Educación</div></div>
+          <div class="client-stat"><div class="client-stat-val">20%</div><div class="client-stat-label">Turo</div></div>
+          <div class="client-stat"><div class="client-stat-val">10%</div><div class="client-stat-label">Social proof</div></div>
+        </div>
       </div>
-      <div class="config-box">
-        <div class="config-label">Bot 2 — Crew</div>
-        <input class="config-input" id="cfg-bot2" placeholder="https://..." value="">
+      <div class="client-card">
+        <div class="client-header">
+          <div class="client-av" style="background:#D1FAE5">💊</div>
+          <div><div class="client-name">Sofía</div><div class="client-industry">Clínica de pérdida de peso GLP-1</div></div>
+          <span class="metric-badge badge-green" style="margin-left:auto">activo</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);font-weight:500;line-height:1.6">Leads calificados por llamada · Agente de voz Sofía en Twilio · A2P 10DLC en proceso</div>
+        <div class="client-stats">
+          <div class="client-stat"><div class="client-stat-val">GLP-1</div><div class="client-stat-label">Producto</div></div>
+          <div class="client-stat"><div class="client-stat-val">Voz</div><div class="client-stat-label">Canal</div></div>
+          <div class="client-stat"><div class="client-stat-val">SMS</div><div class="client-stat-label">Follow-up</div></div>
+        </div>
       </div>
-      <div class="config-box">
-        <div class="config-label">Bot 3 — Estrategia</div>
-        <input class="config-input" id="cfg-bot3" placeholder="https://..." value="">
-      </div>
-      <div class="config-box">
-        <div class="config-label">Organizador</div>
-        <input class="config-input" id="cfg-org" placeholder="https://..." value="">
-      </div>
-      <div class="config-box">
-        <div class="config-label">Supabase URL</div>
-        <input class="config-input" id="cfg-supa-url" placeholder="https://xxx.supabase.co" value="">
-      </div>
-      <div class="config-box">
-        <div class="config-label">Supabase Anon Key</div>
-        <input class="config-input" id="cfg-supa-key" placeholder="eyJ..." value="" type="password">
-      </div>
-      <button class="config-save" onclick="saveConfig()">Guardar configuración</button>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <div class="card-title">Información del sistema</div>
-      <table class="data-table">
-        <tr><td style="color:var(--muted)">Versión dashboard</td><td>1.0 — Agencia AI</td></tr>
-        <tr><td style="color:var(--muted)">Arquitectura</td><td>Railway + Claude API + Supabase</td></tr>
-        <tr><td style="color:var(--muted)">Bots activos</td><td>Bot 1, Bot 3, Organizador, María, Sofía</td></tr>
-      </table>
     </div>
   </div>
 
-  <!-- INTEGRACIONES -->
-  <div class="panel content" id="panel-integraciones">
+  <!-- ── INTEGRATIONS ── -->
+  <div class="panel content" id="panel-integrations">
     <div class="section-header">
       <span class="section-title">Integraciones</span>
+      <span class="section-count">Conecta tus herramientas</span>
     </div>
-    <div class="card">
-      <div class="card-title">Redes sociales</div>
-      <div class="int-card" id="fb-card">
-        <div class="int-icon" style="background:#E7F3FF">📘</div>
-        <div style="flex:1">
-          <div class="int-name">Facebook + Instagram</div>
-          <div class="int-status" id="fb-status">○ No conectado</div>
-        </div>
-        <button class="int-connect" onclick="connectFacebook()">Conectar</button>
-      </div>
+    <div class="integrations-grid">
+      <div class="int-card"><div class="int-icon" style="background:#E7F3FF">📘</div><div style="flex:1"><div class="int-name">Facebook + Instagram</div><div class="int-status connected">● Conectado</div></div></div>
+      <div class="int-card"><div class="int-icon" style="background:#FEF3C7">⚡</div><div style="flex:1"><div class="int-name">kie.ai (Video + Música)</div><div class="int-status connected">● Conectado</div></div></div>
+      <div class="int-card"><div class="int-icon" style="background:#EDE9FE">📞</div><div style="flex:1"><div class="int-name">Twilio (Sofía)</div><div class="int-status connected">● Conectado</div></div></div>
+      <div class="int-card"><div class="int-icon" style="background:#D1FAE5">💾</div><div style="flex:1"><div class="int-name">Supabase</div><div class="int-status connected">● Conectado</div></div></div>
+      <div class="int-card"><div class="int-icon" style="background:#FEE2E2">🚂</div><div style="flex:1"><div class="int-name">Railway</div><div class="int-status connected">● Conectado</div></div></div>
+      <div class="int-card"><div class="int-icon" style="background:#F3F4F6">📱</div><div style="flex:1"><div class="int-name">Telegram</div><div class="int-status connected">● Conectado</div></div></div>
+      <div class="int-card"><div class="int-icon" style="background:#FEF3C7">🎵</div><div style="flex:1"><div class="int-name">Suno AI</div><div class="int-status pending">◐ En configuración</div></div><button class="int-connect">Conectar</button></div>
+      <div class="int-card"><div class="int-icon" style="background:#EDE9FE">🎬</div><div style="flex:1"><div class="int-name">HyperFrames</div><div class="int-status offline">○ Pendiente</div></div><button class="int-connect">Instalar</button></div>
+      <div class="int-card"><div class="int-icon" style="background:#D1FAE5">📊</div><div style="flex:1"><div class="int-name">Apollo.io</div><div class="int-status pending">◐ Configurando</div></div><button class="int-connect">Conectar</button></div>
     </div>
   </div>
+
 </main>
 
 <script>
-
+const ORG_URL = 'https://web-production-77871.up.railway.app';
 const USER_ID = '8534665260';
-const BOT1_URL = 'https://worker-production-0c858.up.railway.app';
-const BOT2_URL = 'https://worker-production-34f9.up.railway.app';
-const BOT3_URL = 'https://worker-production-035f.up.railway.app';
-const ORG_URL  = 'https://web-production-77871.up.railway.app';
-const SUPA_URL = 'https://ydggwvpndcazmyvsdbec.supabase.co';
-const SUPA_KEY = localStorage.getItem('supa_key') || '';
-
 let chatHistory = JSON.parse(localStorage.getItem('agencia_chat_history') || '[]');
-let orgUrl = ORG_URL;
-let orgSecret = 'agencia-org-2025';
 
-function initSupabase() {
-  const key = localStorage.getItem('supa_key') || SUPA_KEY;
-  if (!key) return null;
-  return { url: SUPA_URL, key };
-}
-
-async function supaFetch(table, params = '') {
-  const cfg = initSupabase();
-  if (!cfg) return [];
-  try {
-    const r = await fetch(`${cfg.url}/rest/v1/${table}${params}`, {
-      headers: {
-        'apikey': cfg.key,
-        'Authorization': `Bearer ${cfg.key}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    if (!r.ok) return [];
-    return await r.json();
-  } catch { return []; }
-}
-
-async function supaUpdate(table, id, data) {
-  const cfg = initSupabase();
-  if (!cfg) return;
-  await fetch(`${cfg.url}/rest/v1/${table}?id=eq.${id}`, {
-    method: 'PATCH',
-    headers: {
-      'apikey': cfg.key,
-      'Authorization': `Bearer ${cfg.key}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify(data)
-  });
-}
+const TITLES = {home:'Dashboard',chat:'Organizador',agents:'Agentes',clients:'Clientes',integrations:'Integraciones'};
 
 function showPanel(id, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('panel-' + id).classList.add('active');
-  if (btn) btn.classList.add('active');
-  const titles = {dashboard:'Dashboard',chat:'Organizador',inbox:'Inbox',proyectos:'Proyectos',clientes:'Clientes',logs:'Logs',config:'Configuración'};
-  document.getElementById('topbar-title').textContent = titles[id] || id;
-  closeSidebar();
-  if (id === 'inbox') loadInbox();
-  if (id === 'proyectos') loadProyectos();
-  if (id === 'clientes') loadClientes();
-  if (id === 'logs') loadLogs();
-  if (id === 'dashboard') loadDashboard();
-  if (id === 'config') loadConfig();
+  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  document.getElementById('page-title').textContent = TITLES[id] || id;
 }
 
-function toggleSidebar() {
-  const s = document.getElementById('sidebar');
-  const o = document.getElementById('overlay');
-  s.classList.toggle('open');
-  o.classList.toggle('open');
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('overlay').classList.remove('open');
+function selectAgent(el, emoji, name, role) {
+  document.querySelectorAll('.chat-agent-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('chat-emoji').textContent = emoji;
+  document.getElementById('chat-name').textContent = name;
 }
 
-async function loadDashboard() {
-  const logs = await supaFetch('log_bots', '?order=ts.desc&limit=6');
-  const proyectos = await supaFetch('proyectos_agencia', `?user_id=eq.${USER_ID}&estado=in.(planificando,ejecutando)`);
-  const inbox = await supaFetch('inbox_organizador', `?user_id=eq.${USER_ID}&tipo=not.in.(completado,descartar)&select=id`);
-
-  document.getElementById('m-proyectos').textContent = proyectos.length || '0';
-  document.getElementById('m-inbox').textContent = inbox.length || '0';
-  document.getElementById('m-logs').textContent = logs.length || '0';
-
-  const clientes = await supaFetch('clientes', `?user_id=eq.${USER_ID}&select=user_id`);
-  document.getElementById('m-clientes').textContent = clientes.length || '0';
-
-  const container = document.getElementById('logs-preview');
-  if (!logs.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div>Sin actividad registrada</div></div>';
-    return;
+function addMsg(role, text) {
+  const c = document.getElementById('chat-msgs');
+  const emoji = document.getElementById('chat-emoji').textContent;
+  const d = document.createElement('div');
+  d.className = 'msg '+role;
+  const now = new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+  if(role==='user') {
+    d.innerHTML = `<div class="msg-av msg-av-user">R</div><div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-time">${now}</div></div>`;
+  } else {
+    d.innerHTML = `<div class="msg-av">${emoji}</div><div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-time">${now}</div></div>`;
   }
-  container.innerHTML = logs.map(l => {
-    const tipo = l.tipo || '?';
-    const colors = {delegacion:'dot-green',error:'dot-red',callback:'dot-green',retry:'dot-amber'};
-    const ts = (l.ts||'').slice(11,19);
-    const origen = l.bot_origen || '?';
-    const destino = l.bot_destino || '?';
-    return `<div class="log-row">
-      <div class="log-dot ${colors[tipo]||'dot-gray'}"></div>
-      <span class="log-time">${ts}</span>
-      <span class="log-text">${origen} → ${destino}</span>
-      <span class="log-badge" style="color:var(--muted);border-color:var(--border2)">${tipo}</span>
-    </div>`;
-  }).join('');
-}
-
-async function loadInbox() {
-  const filter = document.getElementById('inbox-filter').value;
-  let params = `?user_id=eq.${USER_ID}&tipo=not.in.(completado,descartar)&order=ts_creado.desc&limit=50`;
-  if (filter !== 'all') params += `&tipo=eq.${filter}`;
-  const items = await supaFetch('inbox_organizador', params);
-  document.getElementById('inbox-count').textContent = `${items.length} ítems`;
-
-  const container = document.getElementById('inbox-list');
-  if (!items.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">✓</div><div>Inbox vacío</div></div>';
-    return;
-  }
-  const typeColors = {sin_procesar:'inbox-icon-blue',tarea:'inbox-icon-green',proyecto:'inbox-icon-amber',idea:'inbox-icon-blue'};
-  const typeEmoji = {sin_procesar:'·',tarea:'✓',proyecto:'▲',idea:'◆'};
-  const typeLabels = {sin_procesar:'Sin procesar',tarea:'Tarea',proyecto:'Proyecto',idea:'Idea'};
-  const botNames = {bot1:'Director',bot2:'Crew',bot3:'Estrategia',yo:'Manual'};
-  const priBadge = {alta:'pill-red',normal:'pill-amber',baja:'pill-gray'};
-
-  container.innerHTML = items.map(item => {
-    const tipo = item.tipo || 'sin_procesar';
-    const pri = item.prioridad || 'normal';
-    const bot = item.bot_destino || '—';
-    const ts = (item.ts_creado||'').slice(0,10);
-    const content = (item.contenido||'').slice(0,120);
-    return `<div class="inbox-item">
-      <div class="inbox-icon ${typeColors[tipo]||'inbox-icon-blue'}">${typeEmoji[tipo]||'·'}</div>
-      <div class="inbox-body">
-        <div class="inbox-title">${content}</div>
-        <div class="inbox-meta">
-          <span class="pill ${priBadge[pri]}">${pri}</span>
-          &nbsp;<span class="pill pill-gray">${typeLabels[tipo]||tipo}</span>
-          ${bot!=='—'?`&nbsp;<span class="pill pill-blue">→ ${botNames[bot]||bot}</span>`:''}
-          &nbsp;<span style="color:var(--muted)">${ts}</span>
-        </div>
-      </div>
-      <div class="inbox-actions">
-        <button class="btn-sm" onclick="delegarInbox(${item.id},'${bot}')">Delegar</button>
-        <button class="btn-sm danger" onclick="descartarInbox(${item.id})">✕</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function delegarInbox(id, bot) {
-  await supaUpdate('inbox_organizador', id, {tipo:'delegado'});
-  loadInbox();
-}
-async function descartarInbox(id) {
-  await supaUpdate('inbox_organizador', id, {tipo:'descartar'});
-  loadInbox();
-}
-
-async function loadProyectos() {
-  const items = await supaFetch('proyectos_agencia', `?user_id=eq.${USER_ID}&order=ts_creado.desc&limit=30`);
-  document.getElementById('proyectos-count').textContent = `${items.length} proyectos`;
-  const container = document.getElementById('proyectos-list');
-  if (!items.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div>Sin proyectos registrados</div></div>';
-    return;
-  }
-  const stateColors = {completado:'pill-green',ejecutando:'pill-amber',planificando:'pill-blue',fallido:'pill-red'};
-  container.innerHTML = items.map(p => {
-    const pasos = p.pasos || [];
-    const done = pasos.filter(s=>s.estado==='completado').length;
-    const active = pasos.filter(s=>s.estado==='en_progreso').length;
-    const failed = pasos.filter(s=>s.estado==='fallido').length;
-    const steps = pasos.map((s,i)=>{
-      let cls = 'step-dot';
-      if(s.estado==='completado') cls+=' done';
-      else if(s.estado==='en_progreso') cls+=' active';
-      else if(s.estado==='fallido') cls+=' fail';
-      return `<div class="${cls}" title="${s.descripcion||''}"></div>`;
-    }).join('');
-    const ts = (p.ts_creado||'').slice(0,10);
-    const estado = p.estado || '?';
-    return `<div class="project-card">
-      <div class="project-header">
-        <div class="project-client">${p.cliente||'Sin cliente'}</div>
-        <span class="pill ${stateColors[estado]||'pill-gray'}">${estado}</span>
-        <span style="font-size:11px;color:var(--muted)">${ts}</span>
-      </div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:8px">${(p.objetivo||'').slice(0,80)}</div>
-      ${pasos.length?`<div class="project-steps">${steps}</div><div style="font-size:11px;color:var(--muted);margin-top:6px">${done}/${pasos.length} pasos completados</div>`:''}
-    </div>`;
-  }).join('');
-}
-
-async function loadClientes() {
-  const rows = await supaFetch('clientes', `?user_id=eq.${USER_ID}`);
-  const container = document.getElementById('clientes-list');
-  if (!rows.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div>Sin clientes registrados</div></div>';
-    return;
-  }
-  const data = rows[0]?.data || {};
-  const clientes = data.clientes || {};
-  const activo = data.cliente_activo;
-  const names = Object.keys(clientes);
-  if (!names.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div>Sin clientes registrados</div></div>';
-    return;
-  }
-  container.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">` +
-    names.map(n => {
-      const c = clientes[n];
-      const isActive = n === activo;
-      return `<div class="card" style="${isActive?'border-color:var(--accent)':''}">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div style="width:38px;height:38px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:16px;color:var(--accent)">${n.charAt(0).toUpperCase()}</div>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:500">${n}</div>
-            <div style="font-size:11px;color:var(--muted)">${c.industria||'—'}</div>
-          </div>
-          ${isActive?'<span class="pill pill-green">activo</span>':''}
-        </div>
-        <div style="font-size:12px;color:var(--muted);display:flex;gap:12px">
-          <span>📍 ${c.ciudad||'—'}</span>
-          <span>🗣 ${c.idioma||'—'}</span>
-        </div>
-      </div>`;
-    }).join('') + '</div>';
-}
-
-async function loadLogs() {
-  const items = await supaFetch('log_bots', '?order=ts.desc&limit=50');
-  const container = document.getElementById('logs-list');
-  if (!items.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">◌</div><div>Sin logs registrados</div></div>';
-    return;
-  }
-  const typeColors = {delegacion:'dot-green',error:'dot-red',callback:'dot-green',retry:'dot-amber'};
-  container.innerHTML = items.map(l => {
-    const tipo = l.tipo || '?';
-    const ts = (l.ts||'').slice(11,19);
-    const origen = l.bot_origen || '?';
-    const destino = l.bot_destino || '?';
-    const payload = l.payload || {};
-    const cliente = typeof payload === 'object' ? (payload.cliente||'') : '';
-    return `<div class="log-row">
-      <div class="log-dot ${typeColors[tipo]||'dot-gray'}"></div>
-      <span class="log-time">${ts}</span>
-      <span class="log-text"><strong>${origen}</strong> → <strong>${destino}</strong>${cliente?` · ${cliente}`:''}</span>
-      <span class="log-badge" style="color:var(--muted);border-color:var(--border2)">${tipo}</span>
-    </div>`;
-  }).join('');
-}
-
-function saveConfig() {
-  localStorage.setItem('supa_key', document.getElementById('cfg-supa-key').value.trim());
-  const btn = document.querySelector('.config-save');
-  btn.textContent = '✓ Guardado';
-  setTimeout(() => btn.textContent = 'Guardar configuración', 2000);
-}
-
-function refreshData() {
-  const btn = document.getElementById('refresh-btn');
-  btn.textContent = '↻ ...';
-  loadDashboard().then(() => {
-    btn.textContent = '↻ Actualizar';
-  });
-}
-
-// ── CHAT ──
-function addMessage(role, text) {
-  const container = document.getElementById('chat-messages');
-  const now = new Date().toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit'});
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  div.innerHTML = `<div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><span class="msg-time">${now}</span>`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
   chatHistory.push({role: role==='user'?'user':'assistant', content: text});
   localStorage.setItem('agencia_chat_history', JSON.stringify(chatHistory.slice(-50)));
 }
 
 function showTyping() {
-  const container = document.getElementById('chat-messages');
-  const div = document.createElement('div');
-  div.className = 'msg agent';
-  div.id = 'typing-indicator';
-  div.innerHTML = `<div class="msg-bubble typing"><span></span><span></span><span></span></div>`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
+  const c = document.getElementById('chat-msgs');
+  const emoji = document.getElementById('chat-emoji').textContent;
+  const d = document.createElement('div');
+  d.className = 'msg agent'; d.id = 'typing';
+  d.innerHTML = `<div class="msg-av">${emoji}</div><div><div class="msg-bubble" style="display:flex;gap:5px;align-items:center;padding:12px 15px"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div></div>`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
 }
 
-function removeTyping() {
-  const t = document.getElementById('typing-indicator');
-  if (t) t.remove();
-}
+function removeTyping() { const t = document.getElementById('typing'); if(t) t.remove(); }
 
-async function sendMessage() {
+async function sendMsg() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
-  if (!text) return;
+  if(!text) return;
   input.value = '';
-  autoResize(input);
-
-  addMessage('user', text);
+  addMsg('user', text);
   document.getElementById('send-btn').disabled = true;
   showTyping();
-
   try {
-    const resp = await fetch(`${ORG_URL}/organizador/chat`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+    const r = await fetch(`${ORG_URL}/organizador/chat`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({mensaje: text, user_id: USER_ID, telegram_chat_id: USER_ID})
     });
-    const data = await resp.json();
+    const d = await r.json();
     removeTyping();
-    addMessage('agent', data.respuesta || 'Sin respuesta del Organizador.');
-  } catch (e) {
+    addMsg('agent', d.respuesta || 'Sin respuesta del Organizador.');
+  } catch(e) {
     removeTyping();
-    addMessage('agent', `Error de conexión. Verifica que el Organizador esté online en Railway.\n\n_${e.message}_`);
+    addMsg('agent', 'Error de conexión. Verifica que el Organizador esté online en Railway.');
   }
-
   document.getElementById('send-btn').disabled = false;
 }
 
-function quickChat(text) {
-  document.getElementById('chat-input').value = text;
-  sendMessage();
-}
+function sendQ(q) { document.getElementById('chat-input').value = q; sendMsg(); }
 
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-}
-
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
-}
-
-const BOT_HEALTH = [
-  {id:'b1', url: BOT1_URL+'/health', name:'Director'},
-  {id:'b2', url: BOT2_URL+'/crew/health', name:'Crew'},
-  {id:'b3', url: BOT3_URL+'/strategy/health', name:'Estrategia'},
-  {id:'org', url: ORG_URL+'/health', name:'Organizador'},
-  {id:'b5', url: 'https://worker-production-aa53.up.railway.app/scheduler/health', name:'Scheduler'},
-];
-
-async function checkBotHealth() {
+async function refreshAll() {
+  const btn = document.querySelector('.topbar-btn-primary');
+  btn.textContent = '↻ ...';
   try {
-    const r = await fetch('/api/health');
-    if (!r.ok) return;
-    const results = await r.json();
-    for (const [id, data] of Object.entries(results)) {
-      const ok = data.ok;
-      const dot = document.getElementById('dot-'+id);
-      const status = document.getElementById('status-'+id);
-      if (!dot || !status) continue;
-      dot.className = 'bot-dot '+(ok?'dot-green':'dot-red');
-      status.textContent = ok?'online':'offline';
-      status.style.color = ok?'var(--success)':'var(--danger)';
+    const supa = localStorage.getItem('supa_url');
+    const key = localStorage.getItem('supa_key');
+    if(supa && key) {
+      const h = {'apikey':key,'Authorization':'Bearer '+key};
+      const [p,i] = await Promise.all([
+        fetch(`${supa}/rest/v1/proyectos_agencia?user_id=eq.${USER_ID}&estado=in.(planificando,ejecutando)&select=proyecto_id`,{headers:h}).then(r=>r.json()),
+        fetch(`${supa}/rest/v1/inbox_organizador?user_id=eq.${USER_ID}&tipo=not.in.(completado,descartar)&select=id`,{headers:h}).then(r=>r.json()),
+      ]);
+      const pc = p.length||0, ic = i.length||0;
+      document.getElementById('m-proyectos').textContent = pc;
+      document.getElementById('m-inbox').textContent = ic;
+      document.getElementById('h-projects').textContent = pc;
+      document.getElementById('h-inbox').textContent = ic;
     }
-  } catch {
-    // silently fail if not on Railway
-  }
+  } catch {}
+  btn.textContent = '↻ Actualizar';
 }
 
-function loadConfig() {
-  document.getElementById('cfg-bot1').value = BOT1_URL;
-  document.getElementById('cfg-bot2').value = BOT2_URL;
-  document.getElementById('cfg-bot3').value = BOT3_URL;
-  document.getElementById('cfg-org').value = ORG_URL;
-  document.getElementById('cfg-supa-url').value = SUPA_URL;
-  document.getElementById('cfg-supa-key').value = localStorage.getItem('supa_key')||'';
-}
-
-loadDashboard();
-loadConfig();
-checkBotHealth();
-setInterval(checkBotHealth, 60000);
-
-function connectFacebook() {
-  const cliente = prompt("¿Para qué cliente? (ej: Arranca Financial)") || "default";
-  const orgUrl = 'https://web-production-77871.up.railway.app';
-  window.open(`${orgUrl}/oauth/facebook?client_name=${encodeURIComponent(cliente)}`,
-    'facebook_oauth', 'width=600,height=700,scrollbars=yes');
-  setTimeout(() => {
-    document.getElementById('fb-status').textContent = '● Conectando...';
-    document.getElementById('fb-status').style.color = '#D97706';
-  }, 500);
-}
+refreshAll();
 </script>
 </body>
 </html>
- 
- 
- 
