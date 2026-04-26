@@ -458,7 +458,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
       <div class="int-card"><div class="int-icon" style="background:#FEE2E2">🚂</div><div style="flex:1"><div class="int-name">Railway</div><div class="int-status connected">● Conectado</div></div></div>
       <div class="int-card"><div class="int-icon" style="background:#F3F4F6">📱</div><div style="flex:1"><div class="int-name">Telegram</div><div class="int-status connected">● Conectado</div></div></div>
       <div class="int-card"><div class="int-icon" style="background:#FEF3C7">🎵</div><div style="flex:1"><div class="int-name">Suno AI</div><div class="int-status pending">◐ En configuración</div></div><button class="int-connect">Conectar</button></div>
-      <div class="int-card"><div class="int-icon" style="background:#EDE9FE">🎬</div><div style="flex:1"><div class="int-name">HyperFrames</div><div class="int-status offline">○ Pendiente</div></div><button class="int-connect">Instalar</button></div>
+      <div class="int-card"><div class="int-icon" style="background:#EDE9FE">🎬</div><div style="flex:1"><div class="int-name">HyperFrames</div><div class="int-status offline">○ Pendiente</div></div><button class="int-connect" onclick="instalarHyperFrames(this)">Instalar</button></div>
       <div class="int-card"><div class="int-icon" style="background:#D1FAE5">📊</div><div style="flex:1"><div class="int-name">Apollo.io</div><div class="int-status pending">◐ Configurando</div></div><button class="int-connect">Conectar</button></div>
       <div class="int-card">
         <div class="int-icon" style="background:#FFF0E6">🤖</div>
@@ -810,6 +810,26 @@ async function rechazarPost(postId) {
     alert(d.mensaje || '❌ Post rechazado');
     loadAprobacion();
   } catch(e) { alert('Error rechazando: ' + e.message); }
+}
+
+async function instalarHyperFrames(btn) {
+  btn.textContent = '⏳ Instalando...';
+  btn.disabled = true;
+  try {
+    const CREW_URL = 'https://worker-production-34f9.up.railway.app';
+    const r = await fetch(`${CREW_URL}/hyperframes/instalar`, {method: 'POST'});
+    const data = await r.json();
+    if (data.ok) {
+      btn.textContent = '✅ Instalado';
+      btn.style.background = 'var(--green)';
+    } else {
+      btn.textContent = '❌ Error';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.textContent = '❌ Error: ' + e.message;
+    btn.disabled = false;
+  }
 }
 
 // ─── GOOGLE DRIVE ────────────────────────────────────────────────────────────
