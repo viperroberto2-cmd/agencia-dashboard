@@ -591,7 +591,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 <script>
 const ORG_URL = 'https://web-production-77871.up.railway.app';
 const USER_ID = '8534665260';
-let chatHistory = JSON.parse(localStorage.getItem('agencia_chat_history') || '[]');
+const _CHAT_KEY = 'chat_history_' + USER_ID;
+let chatHistory = JSON.parse(localStorage.getItem(_CHAT_KEY) || '[]');
 
 // ─── Auto-reload on Railway deploy ───────────────────────────────────────────
 (function() {
@@ -635,21 +636,25 @@ function selectAgent(el, emoji, name, role) {
   document.getElementById('chat-name').textContent = name;
 }
 
-function addMsg(role, text) {
+function _renderMsg(role, text) {
   const c = document.getElementById('chat-msgs');
   const emoji = document.getElementById('chat-emoji').textContent;
   const d = document.createElement('div');
-  d.className = 'msg '+role;
-  const now = new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
-  if(role==='user') {
+  d.className = 'msg ' + role;
+  const now = new Date().toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'});
+  if (role === 'user') {
     d.innerHTML = `<div class="msg-av msg-av-user">R</div><div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-time">${now}</div></div>`;
   } else {
     d.innerHTML = `<div class="msg-av">${emoji}</div><div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-time">${now}</div></div>`;
   }
   c.appendChild(d);
   c.scrollTop = c.scrollHeight;
-  chatHistory.push({role: role==='user'?'user':'assistant', content: text});
-  localStorage.setItem('agencia_chat_history', JSON.stringify(chatHistory.slice(-50)));
+}
+
+function addMsg(role, text) {
+  _renderMsg(role, text);
+  chatHistory.push({role: role === 'user' ? 'user' : 'assistant', content: text});
+  localStorage.setItem(_CHAT_KEY, JSON.stringify(chatHistory.slice(-100)));
 }
 
 function showTyping() {
@@ -706,6 +711,15 @@ document.addEventListener('paste', e => {
 
 // Drag-drop listener on the chat messages area
 document.addEventListener('DOMContentLoaded', () => {
+  // Restore chat history from localStorage
+  if (chatHistory.length > 0) {
+    const msgs = document.getElementById('chat-msgs');
+    if (msgs) {
+      msgs.innerHTML = '';
+      chatHistory.forEach(m => _renderMsg(m.role === 'user' ? 'user' : 'agent', m.content));
+    }
+  }
+
   const dropZone = document.getElementById('chat-msgs');
   if (!dropZone) return;
   dropZone.addEventListener('dragover', e => {
