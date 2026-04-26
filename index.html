@@ -1542,6 +1542,126 @@ function cerrarDetalleLead() {
   _modalLeadId = null;
 }
 
+// ── Google Sheets ─────────────────────────────────────────────────────────────
+
+const _SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms/edit';
+
+async function exportarSheets() {
+  const h = {'apikey': window.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY};
+  const leads = await fetch(
+    `${window.SUPABASE_URL}/rest/v1/leads?order=ts_creado.desc&limit=5000`, {headers: h}
+  ).then(r => r.json()).catch(() => []);
+  if (!leads.length) { alert('No hay leads para exportar'); return; }
+  const cols = ['nombre','email','telefono','estado','agente','canal_preferido','notas','cliente','ts_creado'];
+  const csvRows = [cols.join(',')];
+  leads.forEach(l => {
+    csvRows.push(cols.map(c => {
+      const v = (l[c] == null ? '' : String(l[c])).replace(/"/g,'""');
+      return v.includes(',') || v.includes('\n') || v.includes('"') ? `"${v}"` : v;
+    }).join(','));
+  });
+  const blob = new Blob([csvRows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `leads_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  window.open(_SHEETS_URL, '_blank');
+}
+
+function abrirImportarSheets() {
+  document.getElementById('sheets-import-modal').style.display = 'flex';
+  document.getElementById('sheets-url-input').value = '';
+  document.getElementById('sheets-preview').innerHTML = '';
+  document.getElementById('sheets-confirm-btn').style.display = 'none';
+  window._importRows = [];
+}
+
+function cerrarImportarSheets() {
+  document.getElementById('sheets-import-modal').style.display = 'none';
+}
+
+function _parseCSV(text) {
+  const rows = [];
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  lines.forEach(line => {
+    const cols = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+      else if (ch === ',' && !inQ) { cols.push(cur); cur = ''; }
+      else cur += ch;
+    }
+    cols.push(cur);
+    rows.push(cols);
+  });
+  return rows;
+}
+
+async function previewImportacion() {
+  const url = document.getElementById('sheets-url-input').value.trim();
+  if (!url) return;
+  // Convertir URL de edición a URL de export CSV
+  const match = url.match(/\/spreadsheets\/d\/([^/]+)/);
+  if (!match) { alert('URL de Google Sheets no reconocida'); return; }
+  const id = match[1];
+  const csvUrl = `https://docs.google.com/spreadsheets/d/${id}/export?format=csv`;
+  document.getElementById('sheets-preview').innerHTML = '<div style="color:var(--muted);font-size:13px">Cargando preview...</div>';
+  try {
+    const text = await fetch(csvUrl).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); });
+    const rows = _parseCSV(text);
+    if (rows.length < 2) { alert('El sheet está vacío o no es público'); return; }
+    const headers = rows[0];
+    const dataRows = rows.slice(1);
+    window._importRows = dataRows.map(r => {
+      const obj = {};
+      headers.forEach((h, i) => { if (r[i] !== undefined) obj[h.trim()] = r[i].trim(); });
+      return obj;
+    });
+    const preview = dataRows.slice(0, 5);
+    const thCells = headers.map(h => `<th style="padding:6px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;white-space:nowrap">${_esc(h)}</th>`).join('');
+    const tdRows = preview.map(row =>
+      `<tr>${headers.map((_,i) => `<td style="padding:6px 10px;font-size:12px;border-top:1px solid var(--border)">${_esc(row[i]||'')}</td>`).join('')}</tr>`
+    ).join('');
+    document.getElementById('sheets-preview').innerHTML = `
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Preview — ${dataRows.length} filas encontradas (mostrando 5)</div>
+      <div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--bg)">${thCells}</tr></thead>
+          <tbody>${tdRows}</tbody>
+        </table>
+      </div>`;
+    document.getElementById('sheets-confirm-btn').style.display = 'block';
+  } catch(e) {
+    document.getElementById('sheets-preview').innerHTML = `<div style="color:var(--red);font-size:13px">Error al cargar. Verifica que el sheet sea público (Compartir → Cualquier persona con el enlace).</div>`;
+  }
+}
+
+async function confirmarImportacion() {
+  const rows = window._importRows || [];
+  if (!rows.length) return;
+  const btn = document.getElementById('sheets-confirm-btn');
+  btn.textContent = 'Importando...'; btn.disabled = true;
+  const h = {
+    'apikey': window.SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': 'resolution=merge-duplicates'
+  };
+  const payload = rows.map(r => ({
+    nombre: r.nombre || r.Nombre || '',
+    email: r.email || r.Email || '',
+    telefono: r.telefono || r.Teléfono || r.Telefono || '',
+    estado: r.estado || r.Estado || 'nuevo',
+    agente: r.agente || r.Agente || '',
+    canal_preferido: r.canal_preferido || r.Canal || '',
+    notas: r.notas || r.Notas || '',
+    cliente: r.cliente || r.Cliente || 'arranca',
+  })).filter(r => r.nombre);
+  await fetch(`${window.SUPABASE_URL}/rest/v1/leads`, {method:'POST', headers: h, body: JSON.stringify(payload)});
+  btn.textContent = `✅ ${payload.length} leads importados`;
+  setTimeout(() => { cerrarImportarSheets(); loadCRM(); }, 1500);
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 </script>
 
@@ -1656,6 +1776,12 @@ function cerrarDetalleLead() {
       ✅ Agregar Lead
     </button>
   </div>
+
+  <!-- Sheets -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button onclick="exportarSheets()" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text)">📤 Exportar a Sheets</button>
+    <button onclick="abrirImportarSheets()" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text)">📥 Importar desde Sheets</button>
+  </div>
 </div>
 <!-- Lead detail side panel -->
 <div id="detalle-overlay" onclick="cerrarDetalleLead()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1000"></div>
@@ -1665,6 +1791,30 @@ function cerrarDetalleLead() {
     <button onclick="cerrarDetalleLead()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1">✕</button>
   </div>
   <div id="detalle-body"></div>
+</div>
+<!-- Sheets import modal -->
+<div id="sheets-import-modal" onclick="if(event.target===this)cerrarImportarSheets()"
+  style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:14px;padding:28px;width:100%;max-width:680px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <span style="font-size:16px;font-weight:700">📥 Importar desde Google Sheets</span>
+      <button onclick="cerrarImportarSheets()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1">✕</button>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Pega la URL del Google Sheet público (debe tener permiso "Cualquier persona con el enlace puede ver").</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <input id="sheets-url-input" type="text" placeholder="https://docs.google.com/spreadsheets/d/..."
+        style="flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">
+      <button onclick="previewImportacion()"
+        style="padding:9px 16px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+        Ver preview
+      </button>
+    </div>
+    <div id="sheets-preview"></div>
+    <button id="sheets-confirm-btn" onclick="confirmarImportacion()"
+      style="display:none;width:100%;margin-top:16px;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
+      Confirmar importación
+    </button>
+  </div>
 </div>
 </body>
 </html>
