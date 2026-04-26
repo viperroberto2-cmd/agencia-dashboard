@@ -1173,15 +1173,22 @@ async function loadGoogleDrive() {
   const grid = document.getElementById('gdrive-grid');
   const count = document.getElementById('gdrive-count');
   if (!grid) return;
+  grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;grid-column:1/-1">Cargando archivos...</div>';
+  if (count) count.textContent = '...';
   try {
     const r = await fetch(`${CREW_URL}/gdrive/listar`);
-    if (!r.ok) throw new Error('Sin conexion');
+    if (!r.ok) throw new Error(`Error ${r.status}`);
     const data = await r.json();
     driveArchivos = data.archivos || [];
     count.textContent = `${driveArchivos.length} archivos`;
     renderDriveGrid(driveArchivos);
   } catch(e) {
-    if (grid) grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:40px;grid-column:1/-1">📁 Conecta Google Drive para ver tus archivos</div>';
+    grid.innerHTML = `<div style="text-align:center;color:var(--muted);padding:40px;grid-column:1/-1">
+      <div style="font-size:32px;margin-bottom:8px">📁</div>
+      <div style="font-weight:600;margin-bottom:4px">No se pudo cargar Google Drive</div>
+      <div style="font-size:12px">${_esc(e.message)} — verifica que el servicio esté activo</div>
+      <button onclick="loadGoogleDrive()" style="margin-top:12px;padding:8px 16px;background:var(--purple-light);color:var(--purple);border:none;border-radius:8px;font-size:13px;cursor:pointer">↺ Reintentar</button>
+    </div>`;
     if (count) count.textContent = '0 archivos';
   }
 }
@@ -1461,11 +1468,19 @@ async function abrirDetalleLead(id) {
     'Content-Type': 'application/json'
   };
 
-  const leads = await fetch(
-    `${window.SUPABASE_URL}/rest/v1/leads?id=eq.${id}`, {headers: h}
-  ).then(r => r.json());
-  const lead = leads[0];
-  if (!lead) return;
+  let lead;
+  try {
+    const r = await fetch(`${window.SUPABASE_URL}/rest/v1/leads?id=eq.${id}`, {headers: h});
+    const data = await r.json();
+    lead = Array.isArray(data) ? data[0] : null;
+  } catch(_) { lead = null; }
+
+  if (!lead) {
+    document.getElementById('detalle-nombre').textContent = 'Error';
+    document.getElementById('detalle-body').innerHTML =
+      '<div style="color:var(--red);font-size:13px;padding:20px 0">No se pudo cargar el lead. Verifica la conexión a Supabase.</div>';
+    return;
+  }
 
   _modalLeadId = lead.id;
   if (!window._crmLeads) window._crmLeads = {};
@@ -1476,11 +1491,12 @@ async function abrirDetalleLead(id) {
   if (lead.telefono) {
     try {
       const r = await fetch(
-        `${window.SUPABASE_URL}/rest/v1/grabaciones?telefono=eq.${encodeURIComponent(lead.telefono)}&order=ts_llamada.desc`,
+        `${window.SUPABASE_URL}/rest/v1/grabaciones?telefono=eq.${encodeURIComponent(lead.telefono)}`,
         {headers: h}
       );
-      const data = await r.json();
+      const data = r.ok ? await r.json() : [];
       grabaciones = Array.isArray(data) ? data : [];
+      grabaciones.sort((a, b) => (b.ts_llamada || b.ts_grabacion || 0) - (a.ts_llamada || a.ts_grabacion || 0));
     } catch(_) { grabaciones = []; }
   }
 
