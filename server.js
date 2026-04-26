@@ -28,6 +28,7 @@ function serveIndex(res) {
   const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8')
     .replace(/__SUPABASE_URL__/g, process.env.SUPABASE_URL || '')
     .replace(/__SUPABASE_ANON_KEY__/g, process.env.SUPABASE_ANON_KEY || '');
+  console.log('Serving index with SUPABASE_URL:', html.includes('__SUPABASE_URL__') ? 'PLACEHOLDER NOT REPLACED!' : 'REPLACED OK');
   res.setHeader('Content-Type', 'text/html');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.send(html);
