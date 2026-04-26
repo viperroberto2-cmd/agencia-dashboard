@@ -214,6 +214,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="5" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><circle cx="13" cy="4" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><circle cx="13" cy="14" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><path d="M7.5 9h3M7.5 8l3-3M7.5 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".6"/></svg>
   </button>
 
+  <button class="nav-btn" onclick="showPanel('aprobacion',this)" title="Aprobar Posts">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+  </button>
+
   <button class="nav-btn" onclick="showPanel('crear-bot',this)" title="Crear Bot" style="position:relative">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
     <span style="position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--purple);border-radius:50%"></span>
@@ -477,6 +481,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
     </div>
   </div>
 
+  <!-- APROBACION DE POSTS -->
+  <div class="panel content" id="panel-aprobacion">
+    <div class="section-header">
+      <span class="section-title">✅ Aprobar Posts</span>
+      <span class="section-count" id="aprobacion-count"></span>
+      <div class="section-actions">
+        <button class="topbar-btn" onclick="loadAprobacion()">↻ Actualizar</button>
+      </div>
+    </div>
+    <div id="aprobacion-list"><div style="text-align:center;padding:48px;color:var(--muted)">Cargando posts pendientes...</div></div>
+  </div>
+
   <!-- CREAR BOT -->
   <div class="panel content" id="panel-crear-bot" style="flex-direction:column;gap:24px;overflow-y:auto">
     <div class="section-header">
@@ -550,7 +566,7 @@ const ORG_URL = 'https://web-production-77871.up.railway.app';
 const USER_ID = '8534665260';
 let chatHistory = JSON.parse(localStorage.getItem('agencia_chat_history') || '[]');
 
-const TITLES = {home:'Dashboard',chat:'Organizador',agents:'Agentes',clients:'Clientes',integrations:'Integraciones','crear-bot':'🤖 Crear Bot'};
+const TITLES = {home:'Dashboard',chat:'Organizador',agents:'Agentes',clients:'Clientes',integrations:'Integraciones',aprobacion:'✅ Aprobar Posts','crear-bot':'🤖 Crear Bot'};
 
 function showPanel(id, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -558,6 +574,7 @@ function showPanel(id, btn) {
   document.getElementById('panel-'+id).classList.add('active');
   if(btn) btn.classList.add('active');
   document.getElementById('page-title').textContent = TITLES[id] || id;
+  if(id === 'aprobacion') loadAprobacion();
 }
 
 function selectAgent(el, emoji, name, role) {
@@ -711,6 +728,76 @@ Genera un archivo bot_${nombre.toLowerCase().replace(/\s+/g,'_')}.py completo y 
 function copiarCodigo() {
   navigator.clipboard.writeText(document.getElementById('bot-codigo').textContent);
   alert('✅ Código copiado al clipboard');
+}
+
+// ── Aprobación de Posts ───────────────────────────────────────────────────────
+async function loadAprobacion() {
+  const SUPA_URL = localStorage.getItem('cfg_supa_url') || '';
+  const SUPA_KEY = localStorage.getItem('supa_key') || '';
+  const el = document.getElementById('aprobacion-list');
+  if (!SUPA_URL || !SUPA_KEY) {
+    el.innerHTML = '<div style="text-align:center;padding:48px;color:var(--muted)">⚙️ Configura Supabase primero</div>';
+    return;
+  }
+  try {
+    const res = await fetch(`${SUPA_URL}/rest/v1/posts_pendientes?select=*&order=fecha_publicacion.asc&limit=50`, {
+      headers: {'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY}
+    });
+    const posts = await res.json();
+    document.getElementById('aprobacion-count').textContent = `${posts.length} pendientes`;
+    if (!posts.length) {
+      el.innerHTML = '<div style="text-align:center;padding:48px;color:var(--muted)">📭 Sin posts pendientes de aprobación</div>';
+      return;
+    }
+    el.innerHTML = posts.map(p => {
+      const fecha = p.fecha_publicacion ? p.fecha_publicacion.substring(0,10) : '—';
+      const hora  = p.hora_publicacion  || '—';
+      const plat  = (p.plataforma || 'facebook').charAt(0).toUpperCase() + (p.plataforma||'').slice(1);
+      const img   = p.imagen_url ? `<img src="${p.imagen_url}" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-bottom:12px">` : '';
+      return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px">
+        ${img}
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-size:12px;font-weight:700;padding:3px 10px;background:var(--purple-light);color:var(--purple);border-radius:20px">${plat}</span>
+          <span style="font-size:12px;font-weight:600;color:var(--muted)">${p.cliente || '—'}</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--muted)">📅 ${fecha} ${hora}</span>
+        </div>
+        <p style="font-size:13px;line-height:1.6;color:var(--text);margin-bottom:14px">${(p.contenido||'').substring(0,300)}</p>
+        <div style="display:flex;gap:10px">
+          <button onclick="aprobarPost('${p.id}')" style="flex:1;padding:9px;background:#059669;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">✅ Aprobar</button>
+          <button onclick="rechazarPost('${p.id}')" style="flex:1;padding:9px;background:#DC2626;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">❌ Rechazar</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = `<div style="text-align:center;padding:48px;color:var(--muted)">⚠️ Error: ${e.message}</div>`;
+  }
+}
+
+async function aprobarPost(postId) {
+  try {
+    const r = await fetch(`${ORG_URL}/scheduler/aprobar`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({post_id: postId})
+    });
+    const d = await r.json();
+    alert(d.mensaje || '✅ Post aprobado');
+    loadAprobacion();
+  } catch(e) { alert('Error aprobando: ' + e.message); }
+}
+
+async function rechazarPost(postId) {
+  const motivo = prompt('Motivo del rechazo:') || 'Sin motivo';
+  try {
+    const r = await fetch(`${ORG_URL}/scheduler/rechazar`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({post_id: postId, motivo})
+    });
+    const d = await r.json();
+    alert(d.mensaje || '❌ Post rechazado');
+    loadAprobacion();
+  } catch(e) { alert('Error rechazando: ' + e.message); }
 }
 </script>
 </body>
