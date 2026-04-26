@@ -1402,17 +1402,10 @@ async function abrirDetalleLead(id) {
 
   let grabaciones = [];
   if (lead.telefono) {
-    const vLeads = await fetch(
-      `${window.SUPABASE_URL}/rest/v1/voice_leads?phone=eq.${encodeURIComponent(lead.telefono)}&select=call_sid`,
+    grabaciones = await fetch(
+      `${window.SUPABASE_URL}/rest/v1/grabaciones?telefono=eq.${encodeURIComponent(lead.telefono)}&order=ts_grabacion.desc`,
       {headers: h}
     ).then(r => r.json()).catch(() => []);
-    if (Array.isArray(vLeads) && vLeads.length) {
-      const sids = vLeads.map(v => v.call_sid).join(',');
-      grabaciones = await fetch(
-        `${window.SUPABASE_URL}/rest/v1/grabaciones?call_sid=in.(${sids})&order=ts_grabacion.desc`,
-        {headers: h}
-      ).then(r => r.json()).catch(() => []);
-    }
   }
 
   const _el = {nuevo:'🆕 Nuevo', contactado:'📞 Contactado', interesado:'🔥 Interesado', cerrado:'✅ Cerrado'};
