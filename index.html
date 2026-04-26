@@ -475,10 +475,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
         <div class="int-icon" style="background:#FFF0E6">🤖</div>
         <div style="flex:1"><div class="int-name">María (Arranca)</div><div class="int-status connected">● Agente de voz activo</div></div>
       </div>
-      <div class="int-card" id="gmail-card">
+      <div class="int-card" id="gmail-card" style="flex-wrap:wrap;gap:8px">
         <div class="int-icon" style="background:#FEE2E2">📧</div>
         <div style="flex:1"><div class="int-name">Gmail</div><div class="int-status offline" id="gmail-status">○ No conectado</div></div>
-        <button class="int-connect" onclick="connectGoogle('gmail')">Conectar</button>
+        <input id="gmail-cuenta" placeholder="gmail_roberto" value="gmail"
+          style="padding:5px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;width:120px">
+        <button class="int-connect" onclick="connectGoogle(document.getElementById('gmail-cuenta').value||'gmail')">Conectar</button>
       </div>
       <div class="int-card" id="gcal-card">
         <div class="int-icon" style="background:#E0F2FE">📅</div>
