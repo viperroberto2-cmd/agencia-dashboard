@@ -824,6 +824,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const file = e.dataTransfer?.files?.[0];
     if (file) await _setPendingImage(file);
   });
+
+  // Refresh Gmail status on every page load
+  loadGmailStatus();
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -937,11 +940,69 @@ function connectGoogle(service) {
     youtube: 'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube',
     ads: 'https://www.googleapis.com/auth/adwords'
   };
-  window.open(`${orgUrl}/oauth/google?service=${service}&scope=${encodeURIComponent(scopes[service])}`,
+  const popup = window.open(`${orgUrl}/oauth/google?service=${service}&scope=${encodeURIComponent(scopes[service])}`,
     '_blank', 'width=500,height=600');
   const statusEl = document.getElementById(`${service === 'calendar' ? 'gcal' : service === 'ads' ? 'gads' : service}-status`);
   if(statusEl) { statusEl.textContent = '● Conectando...'; statusEl.style.color = '#D97706'; }
+  // After popup closes, refresh Gmail status UI
+  const _poll = setInterval(() => {
+    if (!popup || popup.closed) {
+      clearInterval(_poll);
+      loadGmailStatus();
+    }
+  }, 600);
 }
+
+// ─── Gmail status UI ──────────────────────────────────────────────────────────
+async function loadGmailStatus() {
+  try {
+    const r = await fetch(`${ORG_URL}/oauth/google/status`, {cache: 'no-store'});
+    if (!r.ok) return;
+    const data = await r.json();
+    const card = document.getElementById('gmail-card');
+    if (!card) return;
+
+    if (data.connected && data.cuentas && data.cuentas.length > 0) {
+      const cuentasHtml = data.cuentas.map(c => `
+        <div style="display:flex;align-items:center;gap:6px;width:100%;margin-top:2px">
+          <span style="font-size:11px;color:var(--green);font-weight:600">✅ ${c}</span>
+          <button onclick="disconnectGoogle('${c}')"
+            style="margin-left:auto;padding:2px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;color:var(--red);font-family:var(--font)">
+            Desconectar
+          </button>
+        </div>`).join('');
+
+      card.innerHTML = `
+        <div class="int-icon" style="background:#FEE2E2">📧</div>
+        <div style="flex:1">
+          <div class="int-name">Gmail</div>
+          <div class="int-status connected" id="gmail-status">● Conectado</div>
+          ${cuentasHtml}
+        </div>
+        <input id="gmail-cuenta" placeholder="nueva_cuenta"
+          style="padding:5px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;width:130px">
+        <button class="int-connect" onclick="connectGoogle(document.getElementById('gmail-cuenta').value||'gmail')">+ Agregar</button>`;
+    } else {
+      card.innerHTML = `
+        <div class="int-icon" style="background:#FEE2E2">📧</div>
+        <div style="flex:1"><div class="int-name">Gmail</div><div class="int-status offline" id="gmail-status">○ No conectado</div></div>
+        <input id="gmail-cuenta" placeholder="gmail_roberto" value="gmail"
+          style="padding:5px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;width:120px">
+        <button class="int-connect" onclick="connectGoogle(document.getElementById('gmail-cuenta').value||'gmail')">Conectar</button>`;
+    }
+  } catch(_) {}
+}
+
+async function disconnectGoogle(service) {
+  if (!confirm(`¿Desconectar ${service}?`)) return;
+  try {
+    await fetch(`${ORG_URL}/oauth/google/disconnect?service=${encodeURIComponent(service)}`, {method: 'DELETE'});
+    loadGmailStatus();
+  } catch(e) {
+    alert('Error desconectando: ' + e.message);
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 async function generarBot(event) {
   const nombre = document.getElementById('bot-nombre').value;
