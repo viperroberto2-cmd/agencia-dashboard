@@ -244,6 +244,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
     </svg>
   </button>
 
+  <button class="nav-btn" onclick="showPanel('grabaciones',this)" title="Grabaciones">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="9" y="2" width="6" height="13" rx="3"/>
+      <path d="M5 10a7 7 0 0 0 14 0"/>
+      <line x1="12" y1="19" x2="12" y2="22"/>
+      <line x1="8" y1="22" x2="16" y2="22"/>
+    </svg>
+  </button>
+
   <div class="sidebar-bottom">
     <button class="nav-btn" onclick="showPanel('home',this)" title="Configuración">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".6"/></svg>
@@ -626,7 +635,7 @@ let chatHistory = JSON.parse(localStorage.getItem(_CHAT_KEY) || '[]');
 })();
 // ─────────────────────────────────────────────────────────────────────────────
 
-const TITLES = {home:'Dashboard',chat:'Organizador',agents:'Agentes',clients:'Clientes',integrations:'Integraciones',aprobacion:'✅ Aprobar Posts','crear-bot':'🤖 Crear Bot',gdrive:'📁 Google Drive',crm:'👥 CRM — Leads'};
+const TITLES = {home:'Dashboard',chat:'Organizador',agents:'Agentes',clients:'Clientes',integrations:'Integraciones',aprobacion:'✅ Aprobar Posts','crear-bot':'🤖 Crear Bot',gdrive:'📁 Google Drive',crm:'👥 CRM — Leads',grabaciones:'🎙️ Grabaciones'};
 
 let _aprobacionTimer = null;
 function showPanel(id, btn) {
@@ -642,6 +651,7 @@ function showPanel(id, btn) {
   }
   if(id === 'gdrive') loadGoogleDrive();
   if(id === 'crm') loadCRM();
+  if(id === 'grabaciones') loadGrabaciones();
 }
 
 function selectAgent(el, emoji, name, role) {
@@ -1372,6 +1382,66 @@ async function contactarLead(id, canal) {
   alert(data.mensaje || '✅ Contacto enviado');
   loadCRM();
 }
+// ── Grabaciones ───────────────────────────────────────────────────────────────
+
+let _grabacionesCache = [];
+
+async function loadGrabaciones() {
+  const h = {
+    'apikey': window.SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY
+  };
+  document.getElementById('grab-tbody').innerHTML =
+    '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>';
+  try {
+    const data = await fetch(
+      `${window.SUPABASE_URL}/rest/v1/grabaciones?order=ts_llamada.desc&limit=200`,
+      {headers: h}
+    ).then(r => r.json());
+    _grabacionesCache = Array.isArray(data) ? data : [];
+  } catch(e) {
+    _grabacionesCache = [];
+  }
+  renderGrabaciones();
+}
+
+function renderGrabaciones() {
+  const agente  = document.getElementById('grab-filtro-agente').value;
+  const busqueda = document.getElementById('grab-busqueda').value.trim().toLowerCase();
+  const filas = _grabacionesCache.filter(g => {
+    if (agente && agente !== 'todos' && (g.agente || '').toLowerCase() !== agente) return false;
+    if (busqueda && !(g.telefono || '').includes(busqueda)) return false;
+    return true;
+  });
+  if (!filas.length) {
+    document.getElementById('grab-tbody').innerHTML =
+      '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Sin resultados</td></tr>';
+    return;
+  }
+  document.getElementById('grab-tbody').innerHTML = filas.map(g => {
+    const fecha = g.ts_llamada
+      ? new Date(g.ts_llamada * 1000).toLocaleString('es-MX') : '—';
+    const m = g.duration_sec ? Math.floor(g.duration_sec / 60) : 0;
+    const s = g.duration_sec ? String(g.duration_sec % 60).padStart(2,'0') : '00';
+    const audio = g.recording_url
+      ? `<audio controls src="${_esc(g.recording_url)}" style="height:32px;min-width:180px"></audio>`
+      : '—';
+    const trans = g.transcripcion
+      ? `<details><summary style="cursor:pointer;color:var(--purple);font-size:12px">Ver</summary>
+           <div style="max-width:340px;white-space:pre-wrap;font-size:12px;margin-top:4px">${_esc(g.transcripcion)}</div>
+         </details>`
+      : '<span style="color:var(--muted);font-size:12px">Pendiente</span>';
+    return `<tr>
+      <td style="font-size:12px;white-space:nowrap">${_esc(fecha)}</td>
+      <td style="font-size:12px">${_esc(g.agente || '—')}</td>
+      <td style="font-size:12px">${_esc(g.telefono || '—')}</td>
+      <td style="font-size:12px;text-align:center">${m}:${s}</td>
+      <td>${audio}</td>
+      <td>${trans}</td>
+    </tr>`;
+  }).join('');
+}
+
 // ── Lead detail modal ─────────────────────────────────────────────────────────
 
 function _esc(s) {
@@ -1488,6 +1558,47 @@ function cerrarDetalleLead() {
   </div>
   <div id="gdrive-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px">
     <div style="text-align:center;color:var(--muted);padding:40px;grid-column:1/-1">Cargando...</div>
+  </div>
+</div>
+
+<div class="panel content" id="panel-grabaciones" style="flex-direction:column;gap:16px;overflow-y:auto">
+  <div class="section-header">
+    <span class="section-title">🎙️ Grabaciones</span>
+    <span class="section-count" id="grab-count"></span>
+  </div>
+  <!-- Filtros -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <select id="grab-filtro-agente" onchange="renderGrabaciones()"
+      style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px">
+      <option value="todos">Todos los agentes</option>
+      <option value="maría">María</option>
+      <option value="sofía">Sofía</option>
+    </select>
+    <input id="grab-busqueda" type="text" placeholder="Buscar por teléfono..."
+      oninput="renderGrabaciones()"
+      style="padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;min-width:200px">
+    <button onclick="loadGrabaciones()"
+      style="padding:8px 14px;background:var(--purple-light);color:var(--purple);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
+      ↺ Recargar
+    </button>
+  </div>
+  <!-- Tabla -->
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border)">
+          <th style="text-align:left;padding:8px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;white-space:nowrap">Fecha</th>
+          <th style="text-align:left;padding:8px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Agente</th>
+          <th style="text-align:left;padding:8px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Teléfono</th>
+          <th style="text-align:center;padding:8px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Duración</th>
+          <th style="text-align:left;padding:8px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Audio</th>
+          <th style="text-align:left;padding:8px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Transcripción</th>
+        </tr>
+      </thead>
+      <tbody id="grab-tbody">
+        <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Selecciona el tab para cargar</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
