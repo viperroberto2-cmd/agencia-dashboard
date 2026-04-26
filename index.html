@@ -1474,10 +1474,14 @@ async function abrirDetalleLead(id) {
 
   let grabaciones = [];
   if (lead.telefono) {
-    grabaciones = await fetch(
-      `${window.SUPABASE_URL}/rest/v1/grabaciones?telefono=eq.${encodeURIComponent(lead.telefono)}&order=ts_grabacion.desc`,
-      {headers: h}
-    ).then(r => r.json()).catch(() => []);
+    try {
+      const r = await fetch(
+        `${window.SUPABASE_URL}/rest/v1/grabaciones?telefono=eq.${encodeURIComponent(lead.telefono)}&order=ts_llamada.desc`,
+        {headers: h}
+      );
+      const data = await r.json();
+      grabaciones = Array.isArray(data) ? data : [];
+    } catch(_) { grabaciones = []; }
   }
 
   const _el = {nuevo:'🆕 Nuevo', contactado:'📞 Contactado', interesado:'🔥 Interesado', cerrado:'✅ Cerrado'};
@@ -1485,8 +1489,8 @@ async function abrirDetalleLead(id) {
   const llamadasHtml = grabaciones.length === 0
     ? '<div style="color:var(--muted);font-size:13px;padding:4px 0">Sin grabaciones registradas</div>'
     : grabaciones.map(g => {
-        const fecha = g.ts_grabacion
-          ? new Date(g.ts_grabacion * 1000).toLocaleString('es-MX') : '—';
+        const fecha = g.ts_llamada
+          ? new Date(g.ts_llamada * 1000).toLocaleString('es-MX') : '—';
         const m = g.duration_sec ? Math.floor(g.duration_sec / 60) : 0;
         const s = g.duration_sec ? String(g.duration_sec % 60).padStart(2,'0') : '00';
         const transcHtml = g.transcripcion
