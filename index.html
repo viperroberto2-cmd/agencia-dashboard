@@ -445,6 +445,30 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
       <div class="int-card"><div class="int-icon" style="background:#FEF3C7">🎵</div><div style="flex:1"><div class="int-name">Suno AI</div><div class="int-status pending">◐ En configuración</div></div><button class="int-connect">Conectar</button></div>
       <div class="int-card"><div class="int-icon" style="background:#EDE9FE">🎬</div><div style="flex:1"><div class="int-name">HyperFrames</div><div class="int-status offline">○ Pendiente</div></div><button class="int-connect">Instalar</button></div>
       <div class="int-card"><div class="int-icon" style="background:#D1FAE5">📊</div><div style="flex:1"><div class="int-name">Apollo.io</div><div class="int-status pending">◐ Configurando</div></div><button class="int-connect">Conectar</button></div>
+      <div class="int-card">
+        <div class="int-icon" style="background:#FFF0E6">🤖</div>
+        <div style="flex:1"><div class="int-name">María (Arranca)</div><div class="int-status connected">● Agente de voz activo</div></div>
+      </div>
+      <div class="int-card" id="gmail-card">
+        <div class="int-icon" style="background:#FEE2E2">📧</div>
+        <div style="flex:1"><div class="int-name">Gmail</div><div class="int-status offline" id="gmail-status">○ No conectado</div></div>
+        <button class="int-connect" onclick="connectGoogle('gmail')">Conectar</button>
+      </div>
+      <div class="int-card" id="gcal-card">
+        <div class="int-icon" style="background:#E0F2FE">📅</div>
+        <div style="flex:1"><div class="int-name">Google Calendar</div><div class="int-status offline" id="gcal-status">○ No conectado</div></div>
+        <button class="int-connect" onclick="connectGoogle('calendar')">Conectar</button>
+      </div>
+      <div class="int-card" id="youtube-card">
+        <div class="int-icon" style="background:#FEE2E2">▶️</div>
+        <div style="flex:1"><div class="int-name">YouTube</div><div class="int-status offline" id="youtube-status">○ No conectado</div></div>
+        <button class="int-connect" onclick="connectGoogle('youtube')">Conectar</button>
+      </div>
+      <div class="int-card" id="gads-card">
+        <div class="int-icon" style="background:#FEF9C3">📊</div>
+        <div style="flex:1"><div class="int-name">Google Ads</div><div class="int-status offline" id="gads-status">○ No conectado</div></div>
+        <button class="int-connect" onclick="connectGoogle('ads')">Conectar</button>
+      </div>
     </div>
   </div>
 
@@ -549,6 +573,21 @@ async function refreshAll() {
 }
 
 refreshAll();
+
+function connectGoogle(service) {
+  const orgUrl = 'https://web-production-77871.up.railway.app';
+  const scopes = {
+    gmail: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send',
+    calendar: 'https://www.googleapis.com/auth/calendar',
+    youtube: 'https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube',
+    ads: 'https://www.googleapis.com/auth/adwords'
+  };
+  window.open(`${orgUrl}/oauth/google?service=${service}&scope=${encodeURIComponent(scopes[service])}`,
+    'google_oauth', 'width=600,height=700,scrollbars=yes');
+  const statusEl = document.getElementById(`${service === 'calendar' ? 'gcal' : service === 'ads' ? 'gads' : service}-status`);
+  if(statusEl) { statusEl.textContent = '● Conectando...'; statusEl.style.color = '#D97706'; }
+}
 </script>
 </body>
 </html>
+ 
