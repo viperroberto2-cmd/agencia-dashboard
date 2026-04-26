@@ -1243,7 +1243,7 @@ async function loadCRM() {
       card.style.cssText = 'background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:12px;cursor:pointer;transition:box-shadow .15s';
       card.onmouseenter = () => card.style.boxShadow = '0 2px 8px rgba(124,58,237,.15)';
       card.onmouseleave = () => card.style.boxShadow = '';
-      card.onclick = () => openLeadModal(lead.id);
+      card.onclick = () => abrirDetalleLead(lead.id);
       card.innerHTML = `
         <div style="font-weight:600;margin-bottom:4px">${lead.nombre}</div>
         <div style="color:var(--muted);margin-bottom:6px">${lead.email || lead.telefono || ''}</div>
@@ -1370,6 +1370,113 @@ async function contactarLead(id, canal) {
   alert(data.mensaje || '✅ Contacto enviado');
   loadCRM();
 }
+// ── Lead detail modal ─────────────────────────────────────────────────────────
+
+function _esc(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function abrirDetalleLead(id) {
+  document.getElementById('detalle-overlay').style.display = 'block';
+  document.getElementById('detalle-modal').style.display = 'flex';
+  document.getElementById('detalle-nombre').textContent = 'Cargando...';
+  document.getElementById('detalle-body').innerHTML =
+    '<div style="text-align:center;padding:40px;color:var(--muted)">Cargando...</div>';
+
+  const h = {
+    'apikey': window.SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + window.SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json'
+  };
+
+  const leads = await fetch(
+    `${window.SUPABASE_URL}/rest/v1/leads?id=eq.${id}`, {headers: h}
+  ).then(r => r.json());
+  const lead = leads[0];
+  if (!lead) return;
+
+  _modalLeadId = lead.id;
+  if (!window._crmLeads) window._crmLeads = {};
+  window._crmLeads[lead.id] = lead;
+  document.getElementById('detalle-nombre').textContent = lead.nombre || '';
+
+  let grabaciones = [];
+  if (lead.telefono) {
+    const vLeads = await fetch(
+      `${window.SUPABASE_URL}/rest/v1/voice_leads?phone=eq.${encodeURIComponent(lead.telefono)}&select=call_sid`,
+      {headers: h}
+    ).then(r => r.json()).catch(() => []);
+    if (Array.isArray(vLeads) && vLeads.length) {
+      const sids = vLeads.map(v => v.call_sid).join(',');
+      grabaciones = await fetch(
+        `${window.SUPABASE_URL}/rest/v1/grabaciones?call_sid=in.(${sids})&order=ts_grabacion.desc`,
+        {headers: h}
+      ).then(r => r.json()).catch(() => []);
+    }
+  }
+
+  const _el = {nuevo:'🆕 Nuevo', contactado:'📞 Contactado', interesado:'🔥 Interesado', cerrado:'✅ Cerrado'};
+
+  const llamadasHtml = grabaciones.length === 0
+    ? '<div style="color:var(--muted);font-size:13px;padding:4px 0">Sin grabaciones registradas</div>'
+    : grabaciones.map(g => {
+        const fecha = g.ts_grabacion
+          ? new Date(g.ts_grabacion * 1000).toLocaleString('es-MX') : '—';
+        const m = g.duration_sec ? Math.floor(g.duration_sec / 60) : 0;
+        const s = g.duration_sec ? String(g.duration_sec % 60).padStart(2,'0') : '00';
+        const transcHtml = g.transcripcion
+          ? `<details style="margin-top:8px"><summary style="font-size:12px;color:var(--purple);cursor:pointer;user-select:none">Ver transcripción</summary>
+              <div style="margin-top:6px;font-size:12px;background:var(--bg);border-radius:6px;padding:10px;white-space:pre-wrap;max-height:180px;overflow-y:auto">${_esc(g.transcripcion)}</div>
+             </details>`
+          : '<div style="font-size:11px;color:var(--muted);margin-top:6px">Transcripción pendiente...</div>';
+        return `
+          <div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:12px;font-weight:600">${_esc(fecha)}</span>
+              <span style="font-size:12px;color:var(--muted)">${m}:${s} min</span>
+            </div>
+            <audio controls src="${_esc(g.recording_url || '')}" style="width:100%;height:36px"></audio>
+            ${transcHtml}
+          </div>`;
+      }).join('');
+
+  document.getElementById('detalle-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px">Estado</div>
+           <div style="font-size:13px">${_esc(_el[lead.estado] || lead.estado || '—')}</div></div>
+      <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px">Agente</div>
+           <div style="font-size:13px">${_esc(lead.agente || '—')}</div></div>
+      <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px">Teléfono</div>
+           <div style="font-size:13px">${_esc(lead.telefono || '—')}</div></div>
+      <div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px">Email</div>
+           <div style="font-size:13px">${_esc(lead.email || '—')}</div></div>
+    </div>
+    ${lead.notas ? `
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px">Notas</div>
+      <div id="lm-notas" style="font-size:13px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;white-space:pre-wrap">${_esc(lead.notas)}</div>
+    </div>` : '<div id="lm-notas" style="display:none"></div>'}
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px">📞 Historial de llamadas (${grabaciones.length})</div>
+      ${llamadasHtml}
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">+ Agregar seguimiento</div>
+      <textarea id="lm-seguimiento" rows="3" placeholder="Escribe un seguimiento..."
+        style="width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;resize:vertical;margin-bottom:8px"></textarea>
+      <button onclick="guardarSeguimiento()"
+        style="width:100%;padding:10px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
+        Guardar seguimiento
+      </button>
+    </div>`;
+}
+
+function cerrarDetalleLead() {
+  document.getElementById('detalle-overlay').style.display = 'none';
+  document.getElementById('detalle-modal').style.display = 'none';
+  _modalLeadId = null;
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 </script>
 
@@ -1445,39 +1552,13 @@ async function contactarLead(id, canal) {
   </div>
 </div>
 <!-- Lead detail side panel -->
-<div id="lead-modal-overlay" onclick="closeLeadModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1000"></div>
-<div id="lead-modal" style="display:none;position:fixed;top:0;right:0;width:360px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:1001;overflow-y:auto;padding:24px;box-shadow:-4px 0 24px rgba(0,0,0,0.12);flex-direction:column;gap:16px">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <span id="lm-nombre" style="font-size:16px;font-weight:700"></span>
-    <button onclick="closeLeadModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1">✕</button>
+<div id="detalle-overlay" onclick="cerrarDetalleLead()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:1000"></div>
+<div id="detalle-modal" style="display:none;position:fixed;top:0;right:0;width:440px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:1001;overflow-y:auto;padding:24px;box-shadow:-4px 0 24px rgba(0,0,0,0.12);flex-direction:column;gap:0">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;position:sticky;top:0;background:var(--surface);padding-bottom:12px;border-bottom:1px solid var(--border)">
+    <span id="detalle-nombre" style="font-size:16px;font-weight:700"></span>
+    <button onclick="cerrarDetalleLead()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1">✕</button>
   </div>
-  <div style="display:flex;flex-direction:column;gap:12px">
-    <div>
-      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px">Estado</div>
-      <div id="lm-estado" style="font-size:13px"></div>
-    </div>
-    <div>
-      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px">Teléfono</div>
-      <div id="lm-telefono" style="font-size:13px"></div>
-    </div>
-    <div>
-      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px">Email</div>
-      <div id="lm-email" style="font-size:13px"></div>
-    </div>
-    <div>
-      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px">Agente</div>
-      <div id="lm-agente" style="font-size:13px"></div>
-    </div>
-    <div>
-      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:3px">Notas / Seguimientos</div>
-      <div id="lm-notas" style="font-size:13px;white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;min-height:60px"></div>
-    </div>
-  </div>
-  <div style="border-top:1px solid var(--border);padding-top:16px">
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">+ Agregar seguimiento</div>
-    <textarea id="lm-seguimiento" rows="3" placeholder="Escribe un seguimiento..." style="width:100%;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;resize:vertical;margin-bottom:8px"></textarea>
-    <button onclick="guardarSeguimiento()" style="width:100%;padding:10px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Guardar seguimiento</button>
-  </div>
+  <div id="detalle-body"></div>
 </div>
 </body>
 </html>
