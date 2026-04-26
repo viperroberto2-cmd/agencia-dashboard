@@ -358,6 +358,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
           <button class="chip" onclick="sendQ('¿Qué sabes sobre Arranca Financial?')">Ver cliente</button>
         </div>
         <div class="chat-input-row">
+          <input type="file" id="img-input" accept="image/*" style="display:none" onchange="sendImage(this)">
+          <button onclick="document.getElementById('img-input').click()" title="Enviar imagen" style="background:none;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;color:var(--muted);font-size:16px;line-height:1">📎</button>
           <input class="chat-input" id="chat-input" placeholder="Escríbele al Organizador..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}">
           <button class="send-btn" id="send-btn" onclick="sendMsg()">Enviar</button>
         </div>
@@ -659,6 +661,37 @@ async function sendMsg() {
 }
 
 function sendQ(q) { document.getElementById('chat-input').value = q; sendMsg(); }
+
+async function sendImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  const caption = document.getElementById('chat-input').value.trim() || 'Analiza esta imagen.';
+  document.getElementById('chat-input').value = '';
+  addMsg('user', `📎 ${file.name}${caption !== 'Analiza esta imagen.' ? ' — ' + caption : ''}`);
+  document.getElementById('send-btn').disabled = true;
+  showTyping();
+  try {
+    const b64 = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = e => res(e.target.result.split(',')[1]);
+      reader.onerror = rej;
+      reader.readAsDataURL(file);
+    });
+    const r = await fetch(`${ORG_URL}/organizador/vision`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({imagen_b64: b64, caption, user_id: USER_ID, media_type: file.type || 'image/jpeg'})
+    });
+    const d = await r.json();
+    removeTyping();
+    addMsg('agent', d.respuesta || 'Sin respuesta.');
+  } catch(e) {
+    removeTyping();
+    addMsg('agent', 'Error enviando imagen: ' + e.message);
+  }
+  document.getElementById('send-btn').disabled = false;
+}
 
 async function refreshAll() {
   const btn = document.querySelector('.topbar-btn-primary');
