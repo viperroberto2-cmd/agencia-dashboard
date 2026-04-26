@@ -683,7 +683,7 @@ function connectGoogle(service) {
     ads: 'https://www.googleapis.com/auth/adwords'
   };
   window.open(`${orgUrl}/oauth/google?service=${service}&scope=${encodeURIComponent(scopes[service])}`,
-    'google_oauth', 'width=600,height=700,scrollbars=yes');
+    '_blank', 'width=500,height=600');
   const statusEl = document.getElementById(`${service === 'calendar' ? 'gcal' : service === 'ads' ? 'gads' : service}-status`);
   if(statusEl) { statusEl.textContent = '● Conectando...'; statusEl.style.color = '#D97706'; }
 }
