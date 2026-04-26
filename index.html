@@ -568,13 +568,18 @@ let chatHistory = JSON.parse(localStorage.getItem('agencia_chat_history') || '[]
 
 const TITLES = {home:'Dashboard',chat:'Organizador',agents:'Agentes',clients:'Clientes',integrations:'Integraciones',aprobacion:'✅ Aprobar Posts','crear-bot':'🤖 Crear Bot'};
 
+let _aprobacionTimer = null;
 function showPanel(id, btn) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   if(btn) btn.classList.add('active');
   document.getElementById('page-title').textContent = TITLES[id] || id;
-  if(id === 'aprobacion') loadAprobacion();
+  if(_aprobacionTimer) { clearInterval(_aprobacionTimer); _aprobacionTimer = null; }
+  if(id === 'aprobacion') {
+    loadAprobacion();
+    _aprobacionTimer = setInterval(loadAprobacion, 30000);
+  }
 }
 
 function selectAgent(el, emoji, name, role) {
@@ -740,13 +745,13 @@ async function loadAprobacion() {
     return;
   }
   try {
-    const res = await fetch(`${SUPA_URL}/rest/v1/posts_pendientes?select=*&order=fecha_publicacion.asc&limit=50`, {
+    const res = await fetch(`${SUPA_URL}/rest/v1/posts_pendientes?select=*&status=eq.pendiente&order=fecha_publicacion.asc&limit=50`, {
       headers: {'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY}
     });
     const posts = await res.json();
     document.getElementById('aprobacion-count').textContent = `${posts.length} pendientes`;
     if (!posts.length) {
-      el.innerHTML = '<div style="text-align:center;padding:48px;color:var(--muted)">📭 Sin posts pendientes de aprobación</div>';
+      el.innerHTML = '<div style="text-align:center;padding:48px;color:var(--muted)">✅ Todo aprobado</div>';
       return;
     }
     el.innerHTML = posts.map(p => {
