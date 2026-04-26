@@ -1271,10 +1271,11 @@ async function agregarLead() {
       nombre,
       email: document.getElementById('lead-email').value,
       telefono: document.getElementById('lead-telefono').value,
-      fuente: document.getElementById('lead-fuente').value,
+      agente: document.getElementById('lead-fuente').value,
       canal_preferido: document.getElementById('lead-canal').value,
       notas: document.getElementById('lead-notas').value,
-      estado: 'nuevo'
+      estado: 'nuevo',
+      cliente: 'arranca'
     })
   });
   ['lead-nombre','lead-email','lead-telefono','lead-notas'].forEach(id => {
