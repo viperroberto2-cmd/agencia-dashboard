@@ -182,6 +182,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 .config-input{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:8px 12px;border-radius:var(--r);font-family:var(--mono);font-size:12px;outline:none}
 .config-input:focus{border-color:var(--accent)}
 .config-save{background:var(--accent);color:#0c0c0e;border:none;border-radius:var(--r);padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);margin-top:10px}
+
+/* ── INTEGRATIONS ── */
+.int-card{display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:12px}
+.int-icon{width:40px;height:40px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.int-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px}
+.int-status{font-size:11px;color:var(--muted)}
+.int-status.connected{color:var(--success)}
+.int-connect{background:var(--accent);color:#0c0c0e;border:none;border-radius:var(--r);padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:opacity .15s;margin-left:auto}
+.int-connect:hover{opacity:.85}
 </style>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#c8a96e">
@@ -233,6 +242,10 @@ if('serviceWorker' in navigator) {
       Logs
     </button>
     <div class="nav-section">Sistema</div>
+    <button class="nav-item" onclick="showPanel('integraciones',this)">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M6 8a2 2 0 104 0 2 2 0 00-4 0z" fill="currentColor" opacity=".7"/><path d="M2 8a6 6 0 1012 0A6 6 0 002 8z" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".4"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".5"/></svg>
+      Integraciones
+    </button>
     <button class="nav-item" onclick="showPanel('config',this)">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2" fill="none" opacity=".7"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.3 3.3l1.4 1.4M11.3 11.3l1.4 1.4M3.3 12.7l1.4-1.4M11.3 4.7l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".7"/></svg>
       Configuración
@@ -434,6 +447,24 @@ if('serviceWorker' in navigator) {
         <tr><td style="color:var(--muted)">Arquitectura</td><td>Railway + Claude API + Supabase</td></tr>
         <tr><td style="color:var(--muted)">Bots activos</td><td>Bot 1, Bot 3, Organizador, María, Sofía</td></tr>
       </table>
+    </div>
+  </div>
+
+  <!-- INTEGRACIONES -->
+  <div class="panel content" id="panel-integraciones">
+    <div class="section-header">
+      <span class="section-title">Integraciones</span>
+    </div>
+    <div class="card">
+      <div class="card-title">Redes sociales</div>
+      <div class="int-card" id="fb-card">
+        <div class="int-icon" style="background:#E7F3FF">📘</div>
+        <div style="flex:1">
+          <div class="int-name">Facebook + Instagram</div>
+          <div class="int-status" id="fb-status">○ No conectado</div>
+        </div>
+        <button class="int-connect" onclick="connectFacebook()">Conectar</button>
+      </div>
     </div>
   </div>
 </main>
@@ -823,8 +854,20 @@ loadDashboard();
 loadConfig();
 checkBotHealth();
 setInterval(checkBotHealth, 60000);
+
+function connectFacebook() {
+  const cliente = prompt("¿Para qué cliente? (ej: Arranca Financial)") || "default";
+  const orgUrl = 'https://web-production-77871.up.railway.app';
+  window.open(`${orgUrl}/oauth/facebook?client_name=${encodeURIComponent(cliente)}`,
+    'facebook_oauth', 'width=600,height=700,scrollbars=yes');
+  setTimeout(() => {
+    document.getElementById('fb-status').textContent = '● Conectando...';
+    document.getElementById('fb-status').style.color = '#D97706';
+  }, 500);
+}
 </script>
 </body>
 </html>
+ 
  
  
