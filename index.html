@@ -549,14 +549,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
       </div>
       <div>
         <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Rol principal</label>
-        <select id="bot-rol" style="width:100%;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px">
-          <option value="ventas">🎯 Ventas y cierre</option>
-          <option value="soporte">💬 Soporte al cliente</option>
-          <option value="contenido">📝 Creación de contenido</option>
-          <option value="prospecting">🔍 Prospecting y leads</option>
-          <option value="analytics">📊 Analytics y reportes</option>
-          <option value="custom">⚡ Custom (describir abajo)</option>
-        </select>
+        <input id="bot-rol" type="text" placeholder="Ej: Asesor financiero hispano" style="width:100%;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px">
       </div>
     </div>
 
@@ -584,6 +577,27 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
         <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="int-twilio"> Twilio</label>
       </div>
     </div>
+
+  <div>
+    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Skills iniciales</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-psicologia_venta"> Psicología de Venta</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-sleight_of_mouth"> Sleight of Mouth</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-video_hypnotic_selling"> Video Hipnótico</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-sales_closer_elite"> Sales Closer Elite</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-story_persuasion"> Story Persuasion</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-storytelling_master"> Storytelling Master</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-zettl_estetica"> Estética (Zettl)</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-cinematografia"> Cinematografía</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-director_cine"> Director de Cine</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-walter_murch_edicion"> Edición (Murch)</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-master_shots"> Master Shots</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-film_scoring"> Film Scoring</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-analytics_roas"> Analytics/ROAS</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-web_design_conversion"> Web Design/Conversión</label>
+      <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px"><input type="checkbox" id="skill-infographic_motion"> Motion/Infografía</label>
+    </div>
+  </div>
 
     <button onclick="generarBot(event)" style="padding:14px 24px;background:var(--purple);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center">
       ✨ Generar Bot con Claude
@@ -1026,6 +1040,7 @@ async function generarBot(event) {
   const descripcion = document.getElementById('bot-descripcion').value;
   const canales = ['telegram','whatsapp','web','email'].filter(c => document.getElementById('canal-'+c)?.checked).join(', ');
   const integraciones = ['supabase','claude','google','twilio'].filter(i => document.getElementById('int-'+i)?.checked).join(', ');
+  const skills = ['psicologia_venta','sleight_of_mouth','video_hypnotic_selling','sales_closer_elite','story_persuasion','storytelling_master','zettl_estetica','cinematografia','director_cine','walter_murch_edicion','master_shots','film_scoring','analytics_roas','web_design_conversion','infographic_motion'].filter(s => document.getElementById('skill-'+s)?.checked).join(', ');
 
   if (!nombre || !descripcion) { alert('Por favor llena el nombre y la descripción del bot'); return; }
 
@@ -1034,29 +1049,47 @@ async function generarBot(event) {
   btn.disabled = true;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('/api/generar-bot', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
-        system: `Eres un experto en crear bots de Python con FastAPI para la Agencia AI de Roberto.
-El stack es: Python + FastAPI + Anthropic Claude API + Supabase + Railway.
-Genera código completo, listo para copiar y deployar. Incluye: imports, config de variables de entorno, endpoints FastAPI, lógica del bot, y comentarios claros.`,
+        model: 'claude-sonnet-4-6',
+        max_tokens: 8000,
+        system: `Eres un arquitecto de agentes Python especializado en sistemas multi-agente para la Agencia AI de Roberto.
+
+VISIÓN ARQUITECTÓNICA:
+- Agentes con autoridad y especialización en su área (no generalistas)
+- Pipeline secuencial/paralelo según complejidad
+- Memoria agéntica persistente en Supabase desde el primer mensaje
+- Jerarquía: Organizador CEO → Especialistas → Adaptadores de canal
+
+REGLA CRÍTICA: El bot generado DEBE ser un AGENTE real, no un bot reactivo. Debe tener memoria propia en Supabase, loop observe→act→evaluate, y respetar la jerarquía de la agencia. NUNCA generes un bot que solo responda al último mensaje sin consultar memoria ni context.
+
+PATRÓN DE CÓDIGO OBLIGATORIO:
+class AgentCore:
+    def observe(self):   # carga memoria Supabase + skills
+    def act(self):       # llama Claude con contexto completo
+    def evaluate(self):  # decide si satisface el objetivo o reitera
+    def run(self):       # while not done: observe → act → evaluate
+
+Stack: Python + FastAPI o python-telegram-bot + Anthropic Claude API (claude-sonnet-4-6) + Supabase + Railway.
+Genera código completo con imports, variables de entorno, lógica del agente y adaptador de canal.`,
         messages: [{
           role: 'user',
-          content: `Crea el código Python completo para este bot:
+          content: `Crea el código Python completo para este agente:
 Nombre: ${nombre}
-Rol: ${rol}
+Rol principal: ${rol}
 Canales: ${canales}
 Integraciones: ${integraciones}
+Skills asignadas: ${skills || 'ninguna'}
 Descripción: ${descripcion}
 
-Genera un archivo bot_${nombre.toLowerCase().replace(/\s+/g,'_')}.py completo y listo para Railway.`
+Genera un archivo bot_core.py completo con la clase AgentCore y su adaptador de canal, listo para Railway.`
         }]
       })
     });
     const data = await response.json();
+    if (data.error) throw new Error(data.error);
     const codigo = data.content?.[0]?.text || 'Error generando código';
     document.getElementById('bot-output').style.display = 'block';
     document.getElementById('bot-codigo').textContent = codigo;
