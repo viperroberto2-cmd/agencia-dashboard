@@ -253,6 +253,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
     </svg>
   </button>
 
+  <button class="nav-btn" onclick="showPanel('playwright',this)" title="Playwright Monitor">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="9" opacity=".4"/>
+      <circle cx="12" cy="12" r="5" opacity=".65"/>
+      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>
+      <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4" opacity=".4" stroke-width="1"/>
+    </svg>
+  </button>
+
   <div class="sidebar-bottom">
     <button class="nav-btn" onclick="showPanel('home',this)" title="Configuración">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.2 3.2l1.4 1.4M13.4 13.4l1.4 1.4M3.2 14.8l1.4-1.4M13.4 4.6l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".6"/></svg>
@@ -1800,6 +1809,131 @@ async function confirmarImportacion() {
     </table>
   </div>
 </div>
+
+<!-- ── PLAYWRIGHT MONITOR ── -->
+<div class="panel content" id="panel-playwright" style="flex-direction:column;gap:20px;overflow-y:auto">
+
+  <div class="section-header">
+    <span class="section-title">🕷️ Playwright Monitor</span>
+    <span class="section-count" id="playwright-section-status">Chequeando...</span>
+  </div>
+
+  <!-- Health card -->
+  <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;
+              padding:20px;display:flex;align-items:center;gap:16px">
+    <div style="width:44px;height:44px;background:var(--purple-light);border-radius:12px;
+                display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">
+      🕷️
+    </div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:15px;font-weight:700;color:var(--text)">Playwright Scraper</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px;
+                  white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        agencia-playwright-scraper-production.up.railway.app
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+      <div class="dot dot-offline" id="playwright-dot"></div>
+      <span class="txt-offline" id="playwright-status-txt"
+            style="font-size:12px;font-weight:600">chequeando…</span>
+    </div>
+  </div>
+
+  <!-- Endpoints disponibles -->
+  <div>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);
+                text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">
+      Endpoints disponibles
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px">
+        <div style="display:inline-block;background:var(--purple-light);color:var(--purple);
+                    font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;
+                    margin-bottom:10px;letter-spacing:.04em">POST</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);
+                    margin-bottom:6px;font-family:monospace">/scrape</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px">
+          Extrae texto completo de cualquier URL. Playwright first, BS4 fallback.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag">Organizador</span>
+          <span class="tag">Estratega</span>
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px">
+        <div style="display:inline-block;background:var(--purple-light);color:var(--purple);
+                    font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;
+                    margin-bottom:10px;letter-spacing:.04em">POST</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);
+                    margin-bottom:6px;font-family:monospace">/screenshot</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px">
+          Captura screenshot de una página. Devuelve imagen base64.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag" style="background:var(--amber-light);color:var(--amber)">Próximo: Director</span>
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px">
+        <div style="display:inline-block;background:var(--purple-light);color:var(--purple);
+                    font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;
+                    margin-bottom:10px;letter-spacing:.04em">POST</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);
+                    margin-bottom:6px;font-family:monospace">/search</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px">
+          Búsqueda web headless. Devuelve resultados estructurados con contexto.
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag" style="background:var(--amber-light);color:var(--amber)">Próximo: Analytics</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Logs placeholder -->
+  <div style="background:var(--surface);border:1.5px dashed var(--border);border-radius:14px;
+              padding:36px 24px;text-align:center">
+    <div style="font-size:26px;margin-bottom:10px;opacity:.5">📋</div>
+    <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px">
+      Logs de scraping — próximamente
+    </div>
+    <div style="font-size:12px;color:var(--muted);opacity:.7">
+      Aquí aparecerán los registros de cada request al microservicio
+    </div>
+  </div>
+
+</div>
+<script>
+(function(){
+  var dot   = document.getElementById('playwright-dot');
+  var txt   = document.getElementById('playwright-status-txt');
+  var label = document.getElementById('playwright-section-status');
+  if(!dot) return;
+  var ctrl = new AbortController();
+  setTimeout(function(){ ctrl.abort(); }, 5000);
+  fetch('https://agencia-playwright-scraper-production.up.railway.app/health', {signal: ctrl.signal})
+    .then(function(r){
+      if(r.ok){
+        dot.className     = 'dot dot-online';
+        txt.className     = 'txt-online';
+        txt.textContent   = 'online';
+        label.textContent = 'Microservicio activo';
+      } else {
+        dot.className     = 'dot dot-offline';
+        txt.textContent   = 'HTTP ' + r.status;
+        label.textContent = 'Error ' + r.status;
+      }
+    })
+    .catch(function(){
+      dot.className     = 'dot dot-offline';
+      txt.textContent   = 'offline';
+      label.textContent = 'Sin conexión';
+    });
+})();
+</script>
 
 <div class="panel content" id="panel-crm" style="flex-direction:column;gap:20px;overflow-y:auto">
   <div class="section-header">
