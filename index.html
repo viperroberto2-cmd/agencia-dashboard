@@ -354,6 +354,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
           <span class="chat-agent-emoji">📈</span>
           <div><div class="chat-agent-name">Analytics</div><div class="chat-agent-role">Reportes semanales</div></div>
         </div>
+        <div class="chat-agent-item" onclick="selectAgent(this,'🎵','CompositorBot','Audio · Scoring y bandas sonoras')" data-name="CompositorBot">
+          <span class="chat-agent-emoji">🎵</span>
+          <div><div class="chat-agent-name">CompositorBot</div><div class="chat-agent-role">Audio · Scoring</div></div>
+        </div>
       </div>
       <div class="chat-main">
         <div class="chat-header">
@@ -394,7 +398,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
   <div class="panel content" id="panel-agents">
     <div class="section-header">
       <span class="section-title">Tu equipo de agentes</span>
-      <span class="section-count">6 agentes activos</span>
+      <span class="section-count">7 agentes activos</span>
     </div>
     <div class="agents-grid">
       <div class="agent-card active" onclick="showPanel('chat',document.querySelectorAll('.nav-btn')[1])">
@@ -439,8 +443,30 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
         <div class="agent-status"><div class="dot dot-offline"></div><span class="txt-offline">telegram only</span></div>
         <div class="agent-tags"><span class="tag">Reportes</span><span class="tag">Métricas</span></div>
       </div>
+      <div class="agent-card" id="compositor-card">
+        <span class="agent-emoji">🎵</span>
+        <div class="agent-name">CompositorBot</div>
+        <div class="agent-role">Audio · Scoring cinematográfico y bandas sonoras</div>
+        <div class="agent-status"><div class="dot dot-offline" id="compositor-dot"></div><span class="txt-offline" id="compositor-status-txt">chequeando…</span></div>
+        <div class="agent-tags"><span class="tag">Scoring</span><span class="tag">Banda sonora</span><span class="tag">BPM</span><span class="tag">Mood</span></div>
+      </div>
     </div>
   </div>
+  <script>
+  (function(){
+    var dot=document.getElementById('compositor-dot');
+    var txt=document.getElementById('compositor-status-txt');
+    if(!dot)return;
+    var ctrl=new AbortController();
+    setTimeout(function(){ctrl.abort();},5000);
+    fetch('https://compositorbot-production.up.railway.app/compositor/health',{signal:ctrl.signal})
+      .then(function(r){
+        if(r.ok){dot.className='dot dot-online';txt.className='txt-online';txt.textContent='online';}
+        else{dot.className='dot dot-offline';txt.textContent='HTTP '+r.status;}
+      })
+      .catch(function(){dot.className='dot dot-offline';txt.textContent='offline';});
+  })();
+  </script>
 
   <!-- ── CLIENTS ── -->
   <div class="panel content" id="panel-clients">
