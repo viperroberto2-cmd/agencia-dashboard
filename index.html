@@ -184,7 +184,7 @@ body{
 
 /* ── PANELS ────────────────────────────────────────────────────────────────── */
 .panel{display:none}
-.panel.active{display:block}
+.panel.active{display:block;background:#5B6778}
 
 /* ── HERO CARD ─────────────────────────────────────────────────────────────── */
 .hero-card{
@@ -431,7 +431,7 @@ body{
   gap:16px;height:calc(100vh - 104px);
 }
 .chat-agents{
-  background:var(--surface);border:1px solid var(--border);
+  background:#5B6778;border:1px solid var(--border);
   border-radius:16px;overflow-y:auto;padding:16px;
 }
 .chat-agents-title{
@@ -459,7 +459,7 @@ body{
 .chat-agent-name{font-size:13px;font-weight:700;color:var(--text)}
 .chat-agent-role{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
 .chat-main{
-  background:var(--surface);border:1px solid var(--border);
+  background:#5B6778;border:1px solid var(--border);
   border-radius:16px;display:flex;flex-direction:column;overflow:hidden;
 }
 .chat-header{
@@ -1936,26 +1936,26 @@ loadPlaywrightLogs();
 
   <!-- ── Métricas ── -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-    <div style="background:#1E1E2E;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
+    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
       <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Total Leads</div>
       <div style="font-family:var(--font-display);font-size:28px;letter-spacing:.06em;line-height:1" id="m-total">—</div>
     </div>
-    <div style="background:#1E1E2E;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
+    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
       <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Valor Pipeline</div>
       <div style="font-family:var(--font-display);font-size:28px;letter-spacing:.06em;line-height:1;color:#7C3AED" id="m-valor">—</div>
     </div>
-    <div style="background:#1E1E2E;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
+    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
       <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Cerrados</div>
       <div style="font-family:var(--font-display);font-size:28px;letter-spacing:.06em;line-height:1;color:#00A060" id="m-cerrados">—</div>
     </div>
-    <div style="background:#1E1E2E;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
+    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
       <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Conversión</div>
       <div style="font-family:var(--font-display);font-size:28px;letter-spacing:.06em;line-height:1;color:#0098D4" id="m-conv">—</div>
     </div>
   </div>
 
   <!-- ── Form colapsable ── -->
-  <div id="lead-form-wrap" style="display:none;background:#1E1E2E;border:1px solid rgba(124,58,237,0.3);border-radius:10px;padding:16px">
+  <div id="lead-form-wrap" style="display:none;background:#5B6778;border:1px solid rgba(124,58,237,0.3);border-radius:10px;padding:16px">
     <div style="font-family:var(--font-display);font-size:15px;letter-spacing:.08em;margin-bottom:12px;color:var(--text)">NUEVO LEAD</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
       <input id="lead-nombre" placeholder="Nombre *" style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);outline:none">
@@ -1981,8 +1981,8 @@ loadPlaywrightLogs();
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;flex:1;min-height:0">
 
     <!-- Nuevo Lead -->
-    <div style="background:#1E1E2E;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
-      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#1E1E2E">
+    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
+      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#5B6778">
         <span style="width:7px;height:7px;border-radius:50%;background:#7C3AED;flex-shrink:0;box-shadow:0 0 7px rgba(124,58,237,0.7)"></span>
         <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;flex:1;color:var(--text)">Nuevo Lead</span>
         <span style="font-family:var(--font-mono);font-size:11px;background:rgba(124,58,237,0.18);color:#9D6FFF;padding:2px 8px;border-radius:10px;font-weight:600" id="count-nuevo">0</span>
@@ -1991,8 +1991,8 @@ loadPlaywrightLogs();
     </div>
 
     <!-- Contactado -->
-    <div style="background:#1E1E2E;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
-      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#1E1E2E">
+    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
+      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#5B6778">
         <span style="width:7px;height:7px;border-radius:50%;background:#FF8C00;flex-shrink:0;box-shadow:0 0 7px rgba(255,140,0,0.7)"></span>
         <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;flex:1;color:var(--text)">Contactado</span>
         <span style="font-family:var(--font-mono);font-size:11px;background:rgba(255,140,0,0.18);color:#FFB347;padding:2px 8px;border-radius:10px;font-weight:600" id="count-contactado">0</span>
@@ -2001,8 +2001,8 @@ loadPlaywrightLogs();
     </div>
 
     <!-- Interesado -->
-    <div style="background:#1E1E2E;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
-      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#1E1E2E">
+    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
+      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#5B6778">
         <span style="width:7px;height:7px;border-radius:50%;background:#0098D4;flex-shrink:0;box-shadow:0 0 7px rgba(0,152,212,0.7)"></span>
         <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;flex:1;color:var(--text)">Interesado</span>
         <span style="font-family:var(--font-mono);font-size:11px;background:rgba(0,152,212,0.18);color:#33BBEE;padding:2px 8px;border-radius:10px;font-weight:600" id="count-interesado">0</span>
@@ -2011,8 +2011,8 @@ loadPlaywrightLogs();
     </div>
 
     <!-- Cerrado -->
-    <div style="background:#1E1E2E;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
-      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#1E1E2E">
+    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
+      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#5B6778">
         <span style="width:7px;height:7px;border-radius:50%;background:#00A060;flex-shrink:0;box-shadow:0 0 7px rgba(0,160,96,0.7)"></span>
         <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;flex:1;color:var(--text)">Cerrado</span>
         <span style="font-family:var(--font-mono);font-size:11px;background:rgba(0,160,96,0.18);color:#33CC88;padding:2px 8px;border-radius:10px;font-weight:600" id="count-cerrado">0</span>
