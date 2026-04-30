@@ -1893,15 +1893,33 @@ async function confirmarImportacion() {
     </div>
   </div>
 
-  <!-- Logs placeholder -->
-  <div style="background:var(--surface);border:1.5px dashed var(--border);border-radius:14px;
-              padding:36px 24px;text-align:center">
-    <div style="font-size:26px;margin-bottom:10px;opacity:.5">📋</div>
-    <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px">
-      Logs de scraping — próximamente
+  <!-- Logs tabla -->
+  <div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);
+                  text-transform:uppercase;letter-spacing:.08em">Últimos requests</div>
+      <button onclick="loadPlaywrightLogs()"
+        style="padding:6px 12px;background:var(--purple-light);color:var(--purple);
+               border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">
+        ↺ Recargar
+      </button>
     </div>
-    <div style="font-size:12px;color:var(--muted);opacity:.7">
-      Aquí aparecerán los registros de cada request al microservicio
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border)">
+            <th style="text-align:left;padding:7px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;white-space:nowrap">Hora</th>
+            <th style="text-align:left;padding:7px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Endpoint</th>
+            <th style="text-align:left;padding:7px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">URL / Query</th>
+            <th style="text-align:center;padding:7px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Status</th>
+            <th style="text-align:right;padding:7px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">ms</th>
+            <th style="text-align:left;padding:7px 10px;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Bot</th>
+          </tr>
+        </thead>
+        <tbody id="playwright-logs-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Cargando...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -1933,6 +1951,46 @@ async function confirmarImportacion() {
       label.textContent = 'Sin conexión';
     });
 })();
+
+function loadPlaywrightLogs() {
+  var tbody = document.getElementById('playwright-logs-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">Cargando…</td></tr>';
+  var base = (window.SUPABASE_URL || '');
+  var key  = window.SUPABASE_ANON_KEY || '';
+  var url  = base + '/rest/v1/playwright_logs'
+    + '?select=timestamp,endpoint,url_query,status_code,duracion_ms,bot_origen'
+    + '&order=timestamp.desc&limit=10';
+  fetch(url, { headers: { 'apikey': key, 'Authorization': 'Bearer ' + key } })
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      if (!Array.isArray(rows) || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">Sin registros aún</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(function(r) {
+        var hora = r.timestamp
+          ? new Date(r.timestamp).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
+          : '—';
+        var epBg  = r.endpoint==='/scrape' ? 'var(--purple-light)' : r.endpoint==='/screenshot' ? 'var(--amber-light)' : 'var(--green-light)';
+        var epClr = r.endpoint==='/scrape' ? 'var(--purple)'       : r.endpoint==='/screenshot' ? 'var(--amber)'       : 'var(--green)';
+        var ok    = r.status_code && r.status_code < 400;
+        var urlT  = (r.url_query||'—').length > 42 ? (r.url_query||'').slice(0,42)+'…' : (r.url_query||'—');
+        return '<tr style="border-bottom:1px solid var(--border)">'
+          +'<td style="padding:7px 10px;color:var(--muted);white-space:nowrap;font-family:monospace;font-size:11px">'+hora+'</td>'
+          +'<td style="padding:7px 10px"><span style="display:inline-block;background:'+epBg+';color:'+epClr+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;font-family:monospace">'+(r.endpoint||'—')+'</span></td>'
+          +'<td style="padding:7px 10px;color:var(--text);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(r.url_query||'')+'">'+urlT+'</td>'
+          +'<td style="padding:7px 10px;text-align:center"><span style="display:inline-block;background:'+(ok?'var(--green-light)':'rgba(239,68,68,.12)')+';color:'+(ok?'var(--green)':'#ef4444')+';font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px">'+(r.status_code||'—')+'</span></td>'
+          +'<td style="padding:7px 10px;text-align:right;color:var(--muted);font-family:monospace;font-size:12px">'+(r.duracion_ms!=null?r.duracion_ms:'—')+'</td>'
+          +'<td style="padding:7px 10px;color:var(--muted);font-size:12px">'+(r.bot_origen||'—')+'</td>'
+          +'</tr>';
+      }).join('');
+    })
+    .catch(function(e) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#ef4444">Error: '+e.message+'</td></tr>';
+    });
+}
+loadPlaywrightLogs();
 </script>
 
 <div class="panel content" id="panel-crm" style="flex-direction:column;gap:20px;overflow-y:auto">
