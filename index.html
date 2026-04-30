@@ -26,9 +26,9 @@ window.SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
 /* ── VARIABLES ─────────────────────────────────────────────────────────────── */
 :root{
   /* Core */
-  --bg:#0A0A0F;
-  --surface:#12121A;
-  --surface2:#1C1C2A;
+  --bg:#1A1A28;
+  --surface:#22223A;
+  --surface2:#2A2A42;
   --border:rgba(255,255,255,0.07);
   --border-hover:rgba(255,255,255,0.16);
 
@@ -1215,6 +1215,9 @@ function selectAgent(el,emoji,name,role){
   const badge=document.getElementById('current-agent-badge');
   const isRouted=!!AGENT_MAP[name]&&AGENT_MAP[name].url!==ORG_URL;
   if(badge)badge.textContent=isRouted?'→ '+name:'→ Organizador';
+  const msgs=document.getElementById('chat-msgs');
+  msgs.innerHTML='';
+  _renderMsg('agent','Hola Roberto. Soy '+name+' — '+role+'. ¿En qué te ayudo?');
 }
 
 function _renderMsg(role,text){
