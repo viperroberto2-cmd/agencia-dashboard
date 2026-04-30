@@ -26,28 +26,28 @@ window.SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
 /* ── VARIABLES ─────────────────────────────────────────────────────────────── */
 :root{
   /* Core */
-  --bg:#0A0A0F;
-  --surface:#12121A;
-  --surface2:#1C1C2A;
-  --border:rgba(255,255,255,0.07);
-  --border-hover:rgba(255,255,255,0.16);
+  --bg:#F0F0F8;
+  --surface:#FFFFFF;
+  --surface2:#F4F4F8;
+  --border:rgba(0,0,0,0.08);
+  --border-hover:rgba(0,0,0,0.15);
 
   /* Brand */
-  --primary:#FF2D55;
-  --primary-dim:rgba(255,45,85,0.12);
-  --primary-glow:rgba(255,45,85,0.35);
+  --primary:#7C3AED;
+  --primary-dim:rgba(124,58,237,0.10);
+  --primary-glow:rgba(124,58,237,0.30);
   --purple:#7C3AED;
-  --purple-dim:rgba(124,58,237,0.14);
+  --purple-dim:rgba(124,58,237,0.10);
   --gold:#FFB800;
   --gold-dim:rgba(255,184,0,0.14);
-  --green:#00D084;
-  --green-dim:rgba(0,208,132,0.14);
+  --green:#00A060;
+  --green-dim:rgba(0,160,96,0.12);
   --red:#FF3B30;
 
   /* Text */
-  --text:#FFFFFF;
-  --text-dim:rgba(255,255,255,0.72);
-  --muted:#94A3B8;
+  --text:#1A1A1A;
+  --text-dim:rgba(0,0,0,0.72);
+  --muted:#8A8A9A;
 
   /* Compat aliases (inline styles in HTML) */
   --purple-light:rgba(124,58,237,0.14);
@@ -82,8 +82,8 @@ body{
 .sidebar{
   width:64px;
   min-width:64px;
-  background:var(--surface);
-  border-right:1px solid var(--border);
+  background:#FFFFFF;
+  border-right:1px solid rgba(0,0,0,0.08);
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -119,15 +119,15 @@ body{
   border-radius:10px;border:none;background:none;
   cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  color:var(--muted);
+  color:rgba(0,0,0,0.45);
   transition:all .18s cubic-bezier(.4,0,.2,1);
   position:relative;
 }
-.nav-btn:hover{background:var(--primary-dim);color:var(--primary)}
+.nav-btn:hover{background:rgba(124,58,237,0.08);color:#7C3AED}
 .nav-btn.active{
-  background:var(--primary-dim);
-  color:var(--primary);
-  box-shadow:inset 2px 0 0 var(--primary);
+  background:rgba(124,58,237,0.12);
+  color:#7C3AED;
+  box-shadow:inset 2px 0 0 #7C3AED;
 }
 .nav-btn .badge{
   position:absolute;top:4px;right:4px;
