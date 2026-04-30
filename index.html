@@ -26,16 +26,16 @@ window.SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
 /* ── VARIABLES ─────────────────────────────────────────────────────────────── */
 :root{
   /* Core */
-  --bg:#F4F4F8;
-  --surface:#FFFFFF;
-  --surface2:#F0F0F5;
-  --border:rgba(0,0,0,0.08);
-  --border-hover:rgba(0,0,0,0.15);
+  --bg:#0A0A0F;
+  --surface:#12121A;
+  --surface2:#1C1C2A;
+  --border:rgba(255,255,255,0.07);
+  --border-hover:rgba(255,255,255,0.16);
 
   /* Brand */
-  --primary:#7C3AED;
-  --primary-dim:rgba(124,58,237,0.12);
-  --primary-glow:rgba(124,58,237,0.35);
+  --primary:#FF2D55;
+  --primary-dim:rgba(255,45,85,0.12);
+  --primary-glow:rgba(255,45,85,0.35);
   --purple:#7C3AED;
   --purple-dim:rgba(124,58,237,0.14);
   --gold:#FFB800;
@@ -45,9 +45,9 @@ window.SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
   --red:#FF3B30;
 
   /* Text */
-  --text:#1A1A1A;
-  --text-dim:rgba(0,0,0,0.72);
-  --muted:#8A8A9A;
+  --text:#FFFFFF;
+  --text-dim:rgba(255,255,255,0.72);
+  --muted:#94A3B8;
 
   /* Compat aliases (inline styles in HTML) */
   --purple-light:rgba(124,58,237,0.14);
@@ -80,10 +80,10 @@ body{
 
 /* ── SIDEBAR ───────────────────────────────────────────────────────────────── */
 .sidebar{
-  width:72px;
-  min-width:72px;
-  background:#FFFFFF;
-  border-right:1px solid rgba(0,0,0,0.08);
+  width:64px;
+  min-width:64px;
+  background:var(--surface);
+  border-right:1px solid var(--border);
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -115,18 +115,17 @@ body{
 }
 .logo-icon:hover{box-shadow:0 6px 28px var(--primary-glow)}
 .nav-btn{
-  width:52px;height:auto;
-  padding:6px 4px 5px;
+  width:40px;height:40px;
   border-radius:10px;border:none;background:none;
   cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  color:rgba(255,255,255,0.50);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);
   transition:all .18s cubic-bezier(.4,0,.2,1);
   position:relative;
 }
-.nav-btn:hover{background:var(--primary-dim);color:rgba(255,255,255,0.90)}
+.nav-btn:hover{background:var(--primary-dim);color:var(--primary)}
 .nav-btn.active{
-  background:rgba(255,45,85,0.18);
+  background:var(--primary-dim);
   color:var(--primary);
   box-shadow:inset 2px 0 0 var(--primary);
 }
@@ -181,13 +180,10 @@ body{
 
 /* ── CONTENT ───────────────────────────────────────────────────────────────── */
 .content{flex:1;overflow-y:auto;padding:24px}
-body{background:#0A0A0F !important}
-.main{background:#0A0A0F !important}
-.content{background:#0A0A0F !important}
 
 /* ── PANELS ────────────────────────────────────────────────────────────────── */
 .panel{display:none}
-.panel.active{display:block;background:#5B6778}
+.panel.active{display:block}
 
 /* ── HERO CARD ─────────────────────────────────────────────────────────────── */
 .hero-card{
@@ -257,7 +253,7 @@ body{background:#0A0A0F !important}
   gap:12px;margin-bottom:24px;
 }
 .metric{
-  background:#5B6778;border:1px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:14px;padding:18px 20px;
   transition:border-color .2s,transform .2s;
 }
@@ -301,9 +297,9 @@ body{background:#0A0A0F !important}
   gap:14px;margin-bottom:28px;
 }
 .agent-card{
-  background:#5B6778;
+  background:rgba(255,255,255,0.025);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,0.12);
+  border:1px solid var(--border);
   border-radius:16px;padding:22px;
   cursor:pointer;
   transition:all .25s cubic-bezier(.4,0,.2,1);
@@ -361,8 +357,8 @@ body{background:#0A0A0F !important}
   font-family:var(--font-mono);
   font-size:10px;font-weight:500;
   padding:3px 8px;border-radius:4px;
-  background:rgba(0,0,0,0.2);color:#fff;
-  border:1px solid rgba(255,255,255,0.15);
+  background:var(--purple-dim);color:var(--purple);
+  border:1px solid rgba(124,58,237,0.18);
 }
 
 /* ── INTEGRATIONS ──────────────────────────────────────────────────────────── */
@@ -372,7 +368,7 @@ body{background:#0A0A0F !important}
   gap:12px;margin-bottom:28px;
 }
 .int-card{
-  background:#5B6778;border:1px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:14px;padding:16px;
   display:flex;align-items:center;gap:12px;
   transition:all .15s;cursor:pointer;
@@ -403,7 +399,7 @@ body{background:#0A0A0F !important}
   gap:14px;margin-bottom:28px;
 }
 .client-card{
-  background:#5B6778;border:1px solid var(--border);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:16px;padding:20px;
 }
 .client-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
@@ -434,7 +430,7 @@ body{background:#0A0A0F !important}
   gap:16px;height:calc(100vh - 104px);
 }
 .chat-agents{
-  background:#5B6778;border:1px solid rgba(255,255,255,0.1);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:16px;overflow-y:auto;padding:16px;
 }
 .chat-agents-title{
@@ -448,14 +444,13 @@ body{background:#0A0A0F !important}
   transition:all .15s;margin-bottom:2px;
   border:1px solid transparent;
   border-left:2px solid transparent;
-  background:transparent;
 }
 .chat-agent-item:hover{
-  background:rgba(0,0,0,0.15);
+  background:var(--primary-dim);
   border-left-color:rgba(255,45,85,0.35);
 }
 .chat-agent-item.active{
-  background:rgba(0,0,0,0.2);
+  background:var(--primary-dim);
   border-color:rgba(255,45,85,0.18);
   border-left-color:var(--primary);
 }
@@ -463,7 +458,7 @@ body{background:#0A0A0F !important}
 .chat-agent-name{font-size:13px;font-weight:700;color:var(--text)}
 .chat-agent-role{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
 .chat-main{
-  background:#5B6778;border:1px solid rgba(255,255,255,0.1);
+  background:var(--surface);border:1px solid var(--border);
   border-radius:16px;display:flex;flex-direction:column;overflow:hidden;
 }
 .chat-header{
@@ -501,7 +496,7 @@ body{background:#0A0A0F !important}
   font-size:13px;line-height:1.65;
 }
 .msg.agent .msg-bubble{
-  background:#4A5666;border:1px solid rgba(255,255,255,0.1);
+  background:var(--surface2);border:1px solid var(--border);
   color:var(--text);border-radius:4px 14px 14px 14px;
 }
 .msg.user .msg-bubble{
@@ -582,7 +577,6 @@ body{background:#0A0A0F !important}
       <rect x="1" y="10" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/>
       <rect x="10" y="10" width="7" height="7" rx="2" fill="currentColor" opacity=".8"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">HOME</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('chat',this)" title="Chat">
@@ -590,7 +584,6 @@ body{background:#0A0A0F !important}
       <path d="M2 3a1 1 0 011-1h12a1 1 0 011 1v10a1 1 0 01-1 1H5l-3 2V3z" fill="currentColor" opacity=".8"/>
     </svg>
     <span class="badge">9</span>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CHAT</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('agents',this)" title="Agentes">
@@ -598,7 +591,6 @@ body{background:#0A0A0F !important}
       <circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/>
       <path d="M2 16c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">AGENTES</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('clients',this)" title="Clientes">
@@ -607,7 +599,6 @@ body{background:#0A0A0F !important}
       <path d="M2 7h14" stroke="currentColor" stroke-width="1.5" opacity=".8"/>
       <path d="M6 11h2M10 11h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CLIENTES</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('integrations',this)" title="Integraciones">
@@ -617,14 +608,12 @@ body{background:#0A0A0F !important}
       <circle cx="13" cy="14" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/>
       <path d="M7.5 9h3M7.5 8l3-3M7.5 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">INTEGR</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('aprobacion',this)" title="Aprobar Posts">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <polyline points="20 6 9 17 4 12"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">APROBAR</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('crear-bot',this)" title="Crear Bot" style="position:relative">
@@ -633,7 +622,6 @@ body{background:#0A0A0F !important}
       <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
     </svg>
     <span style="position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--primary);border-radius:50%"></span>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CREAR</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('gdrive',this)" title="Google Drive">
@@ -642,7 +630,6 @@ body{background:#0A0A0F !important}
       <path d="M7 19L12 10l5 9"/>
       <path d="M2 19l5-9"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">DRIVE</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('crm',this)" title="CRM">
@@ -652,7 +639,6 @@ body{background:#0A0A0F !important}
       <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
       <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CRM</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('grabaciones',this)" title="Grabaciones">
@@ -662,7 +648,6 @@ body{background:#0A0A0F !important}
       <line x1="12" y1="19" x2="12" y2="22"/>
       <line x1="8" y1="22" x2="16" y2="22"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">GRABAC</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('playwright',this)" title="Playwright Monitor">
@@ -672,7 +657,6 @@ body{background:#0A0A0F !important}
       <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>
       <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4" opacity=".4" stroke-width="1"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">PLAY</span>
   </button>
 
   <div class="sidebar-bottom">
@@ -1150,8 +1134,8 @@ const STRATEGY_URL = 'https://worker-production-035f.up.railway.app';
 const SCRAPER_URL  = 'https://agencia-ai-scraper-production.up.railway.app';
 const SEO_URL      = 'https://agencia-ai-seo-production.up.railway.app';
 const USER_ID      = '8534665260';
-const chatHistories = {};
-let currentAgentName = 'Organizador';
+const _CHAT_KEY    = 'chat_history_' + USER_ID;
+let chatHistory    = JSON.parse(localStorage.getItem(_CHAT_KEY) || '[]');
 
 /* ── Agent routing map ── */
 const AGENT_MAP = {
@@ -1208,38 +1192,17 @@ function showPanel(id,btn){
   if(id==='grabaciones')loadGrabaciones();
 }
 
-const _WELCOME={
-  'Organizador':   'Hola Roberto. Soy el Organizador — CEO de tu agencia.',
-  'Director':      'Hola Roberto. Soy el Director — copy, guiones y dirección creativa.',
-  'Crew':          'Hola Roberto. Soy Crew — producción de video e imágenes.',
-  'Estrategia':    'Hola Roberto. Soy Estrategia — campañas, SEO y funnels.',
-  'Scheduler':     'Hola Roberto. Soy Scheduler — publicación automática de contenido.',
-  'Analytics':     'Hola Roberto. Soy Analytics — reportes y métricas semanales.',
-  'CompositorBot': 'Hola Roberto. Soy CompositorBot — scoring y bandas sonoras.',
-  'Scraper':       'Hola Roberto. Soy el Scraper — inteligencia competitiva.',
-  'SEO':           'Hola Roberto. Soy el SEO Strategist — keywords y contenido.',
-};
-
 function selectAgent(el,emoji,name,role){
   document.querySelectorAll('.chat-agent-item').forEach(i=>i.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('chat-emoji').textContent=emoji;
   document.getElementById('chat-name').textContent=name;
-  currentAgentName=name;
   currentAgent=AGENT_MAP[name]||AGENT_MAP['Organizador'];
   const input=document.getElementById('chat-input');
   if(input)input.placeholder='Escríbele al '+name+'...';
   const badge=document.getElementById('current-agent-badge');
   const isRouted=!!AGENT_MAP[name]&&AGENT_MAP[name].url!==ORG_URL;
   if(badge)badge.textContent=isRouted?'→ '+name:'→ Organizador';
-  const msgs=document.getElementById('chat-msgs');
-  msgs.innerHTML='';
-  const hist=chatHistories[name]||[];
-  if(hist.length>0){
-    hist.forEach(m=>_renderMsg(m.role==='user'?'user':'agent',m.content));
-  }else{
-    _renderMsg('agent',_WELCOME[name]||'Hola Roberto. Soy '+name+'. ¿En qué te ayudo?');
-  }
 }
 
 function _renderMsg(role,text){
@@ -1259,9 +1222,8 @@ function _renderMsg(role,text){
 
 function addMsg(role,text){
   _renderMsg(role,text);
-  if(!chatHistories[currentAgentName])chatHistories[currentAgentName]=[];
-  chatHistories[currentAgentName].push({role:role==='user'?'user':'assistant',content:text});
-  localStorage.setItem('chat_'+currentAgentName,JSON.stringify(chatHistories[currentAgentName].slice(-200)));
+  chatHistory.push({role:role==='user'?'user':'assistant',content:text});
+  localStorage.setItem(_CHAT_KEY,JSON.stringify(chatHistory.slice(-200)));
   _saveSessionToSupabase();
 }
 
@@ -1278,7 +1240,7 @@ async function _saveSessionToSupabase(){
     await fetch(`${url}/rest/v1/sesiones_dashboard`,{
       method:'POST',
       headers:{'apikey':key,'Authorization':'Bearer '+key,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
-      body:JSON.stringify({user_id:USER_ID,messages:(chatHistories[currentAgentName]||[]).slice(-200).map(m=>({role:m.role,content:m.content})),updated_at:new Date().toISOString()})
+      body:JSON.stringify({user_id:USER_ID,messages:chatHistory.slice(-200).map(m=>({role:m.role,content:m.content})),updated_at:new Date().toISOString()})
     });
   }catch(_){}
 }
@@ -1310,9 +1272,8 @@ function addImageMsg(b64,mediaType,caption){
   const capHtml=caption?`<div style="font-size:12px;margin-top:5px;opacity:.9">${caption.replace(/</g,'&lt;')}</div>`:'';
   d.innerHTML=`<div class="msg-av msg-av-user">R</div><div><div class="msg-bubble" style="padding:8px 10px"><img src="data:${mediaType};base64,${b64}" style="max-width:200px;max-height:150px;border-radius:6px;display:block">${capHtml}</div><div class="msg-time">${now}</div></div>`;
   c.appendChild(d);c.scrollTop=c.scrollHeight;
-  if(!chatHistories[currentAgentName])chatHistories[currentAgentName]=[];
-  chatHistories[currentAgentName].push({role:'user',content:caption?'🖼️ '+caption:'🖼️ Imagen'});
-  localStorage.setItem('chat_'+currentAgentName,JSON.stringify(chatHistories[currentAgentName].slice(-200)));
+  chatHistory.push({role:'user',content:caption?'🖼️ '+caption:'🖼️ Imagen'});
+  localStorage.setItem(_CHAT_KEY,JSON.stringify(chatHistory.slice(-200)));
   _saveSessionToSupabase();
 }
 
@@ -1354,26 +1315,18 @@ document.addEventListener('paste',e=>{
 });
 
 document.addEventListener('DOMContentLoaded',async()=>{
-  // Carga todos los historiales de localStorage
-  Object.keys(AGENT_MAP).forEach(agentName=>{
-    const stored=localStorage.getItem('chat_'+agentName);
-    if(stored)try{chatHistories[agentName]=JSON.parse(stored);}catch(_){}
-  });
   const msgs=document.getElementById('chat-msgs');
-  const initHist=chatHistories[currentAgentName]||[];
-  if(initHist.length>0&&msgs){
+  if(chatHistory.length>0&&msgs){
     msgs.innerHTML='';
-    initHist.forEach(m=>_renderMsg(m.role==='user'?'user':'agent',m.content));
-    _showHistorialIndicator('Historial cargado — '+initHist.length+' mensajes');
-  }else if(msgs){
-    _renderMsg('agent',_WELCOME[currentAgentName]||'Hola Roberto. Soy el Organizador — CEO de tu agencia.');
+    chatHistory.forEach(m=>_renderMsg(m.role==='user'?'user':'agent',m.content));
+    _showHistorialIndicator('Historial cargado — '+chatHistory.length+' mensajes');
   }
   const sbMsgs=await _loadSessionFromSupabase();
-  if(sbMsgs&&sbMsgs.length>(chatHistories[currentAgentName]||[]).length){
-    chatHistories[currentAgentName]=sbMsgs.slice(-200);
-    localStorage.setItem('chat_'+currentAgentName,JSON.stringify(chatHistories[currentAgentName]));
-    if(msgs){msgs.innerHTML='';chatHistories[currentAgentName].forEach(m=>_renderMsg(m.role==='user'?'user':'agent',m.content));}
-    _showHistorialIndicator('Historial cargado — '+chatHistories[currentAgentName].length+' mensajes');
+  if(sbMsgs&&sbMsgs.length>chatHistory.length){
+    chatHistory=sbMsgs.slice(-200);
+    localStorage.setItem(_CHAT_KEY,JSON.stringify(chatHistory));
+    if(msgs){msgs.innerHTML='';chatHistory.forEach(m=>_renderMsg(m.role==='user'?'user':'agent',m.content));}
+    _showHistorialIndicator('Historial cargado — '+chatHistory.length+' mensajes');
   }
   const dropZone=document.getElementById('chat-msgs');
   if(!dropZone)return;
@@ -1580,57 +1533,26 @@ function filtrarDrive(tipo){
   renderDriveGrid(driveArchivos);
 }
 
-/* ── CRM / PIPELINE ── */
+/* ── CRM ── */
 async function loadCRM(){
-  const SB=window.SUPABASE_URL||'';
-  const H={'apikey':window.SUPABASE_ANON_KEY,'Authorization':'Bearer '+window.SUPABASE_ANON_KEY,'Content-Type':'application/json'};
+  const SUPABASE_URL=window.SUPABASE_URL||'';const SUPABASE_KEY=window.SUPABASE_ANON_KEY||'';
   try{
-    const r=await fetch(`${SB}/rest/v1/leads?order=ts_creado.desc&limit=100`,{headers:H});
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/leads?order=ts_creado.desc&limit=100`,{headers:{'apikey':window.SUPABASE_ANON_KEY,'Authorization':'Bearer '+window.SUPABASE_ANON_KEY,'Content-Type':'application/json'}});
     const leads=await r.json();
-    if(!Array.isArray(leads)){console.error('CRM: respuesta inesperada',leads);return;}
-
-    const total=leads.length;
-    const cerrados=leads.filter(l=>l.estado==='cerrado').length;
-    const valorTotal=leads.reduce((a,l)=>a+(Number(l.valor)||197),0);
-    const conv=total?Math.round(cerrados/total*100):0;
-
-    document.getElementById('crm-count').textContent=total+' leads';
-    document.getElementById('m-total').textContent=total;
-    document.getElementById('m-valor').textContent='$'+valorTotal.toLocaleString();
-    document.getElementById('m-cerrados').textContent=cerrados;
-    document.getElementById('m-conv').textContent=conv+'%';
-
-    const stageColor={nuevo:'#7C3AED',contactado:'#FF8C00',interesado:'#0098D4',cerrado:'#00A060'};
-    const counts={nuevo:0,contactado:0,interesado:0,cerrado:0};
-
-    ['nuevo','contactado','interesado','cerrado'].forEach(s=>{
-      const col=document.getElementById('leads-'+s);if(col)col.innerHTML='';
-    });
+    document.getElementById('crm-count').textContent=leads.length+' leads';
+    ['nuevo','contactado','interesado','cerrado'].forEach(estado=>{const col=document.getElementById('leads-'+estado);if(col)col.innerHTML='';});
     if(!window._crmLeads)window._crmLeads={};
-
     leads.forEach(lead=>{
-      const estado=lead.estado||'nuevo';
-      const col=document.getElementById('leads-'+estado);if(!col)return;
+      const col=document.getElementById('leads-'+lead.estado);if(!col)return;
       window._crmLeads[lead.id]=lead;
-      counts[estado]=(counts[estado]||0)+1;
-
-      const color=stageColor[estado]||'#7C3AED';
-      const valor=lead.valor||197;
-      const fuente=lead.agente||lead.fuente||'Manual';
-
       const card=document.createElement('div');
-      card.style.cssText='background:#252535;border:1px solid rgba(255,255,255,0.06);border-radius:8px;overflow:hidden;cursor:pointer;transition:transform .12s,box-shadow .12s;display:flex';
-      card.onmouseenter=()=>{card.style.transform='translateY(-1px)';card.style.boxShadow='0 4px 18px rgba(0,0,0,0.45)';};
-      card.onmouseleave=()=>{card.style.transform='';card.style.boxShadow='';};
-      card.onclick=(e)=>{if(!e.target.closest('button'))abrirDetalleLead(lead.id);};
-      card.innerHTML=`<div style="width:3px;background:${color};flex-shrink:0"></div><div style="padding:10px;flex:1;min-width:0"><div style="font-weight:600;font-size:13px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_esc(lead.nombre)}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px"><span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px">${_esc(fuente)}</span><span style="font-family:var(--font-mono);font-size:12px;color:${color};font-weight:700">$${valor}</span></div><div style="display:flex;gap:4px" onclick="event.stopPropagation()"><button onclick="contactarLead('${lead.id}','llamada')" title="Llamar" style="flex:1;padding:4px 2px;background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08);border-radius:5px;font-size:11px;cursor:pointer" onmouseenter="this.style.background='rgba(255,255,255,0.12)'" onmouseleave="this.style.background='rgba(255,255,255,0.05)'">📞</button><button onclick="contactarLead('${lead.id}','sms')" title="SMS" style="flex:1;padding:4px 2px;background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08);border-radius:5px;font-size:11px;cursor:pointer" onmouseenter="this.style.background='rgba(255,255,255,0.12)'" onmouseleave="this.style.background='rgba(255,255,255,0.05)'">💬</button><button onclick="contactarLead('${lead.id}','email')" title="Email" style="flex:1;padding:4px 2px;background:rgba(255,255,255,0.05);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08);border-radius:5px;font-size:11px;cursor:pointer" onmouseenter="this.style.background='rgba(255,255,255,0.12)'" onmouseleave="this.style.background='rgba(255,255,255,0.05)'">📧</button><button onclick="moverLead('${lead.id}')" title="Mover a siguiente etapa" style="flex:1;padding:4px 2px;background:${color}22;color:${color};border:1px solid ${color}55;border-radius:5px;font-size:11px;cursor:pointer;font-weight:700" onmouseenter="this.style.background='${color}44'" onmouseleave="this.style.background='${color}22'">→</button></div></div>`;
+      card.style.cssText='background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:12px;cursor:pointer;transition:box-shadow .15s';
+      card.onmouseenter=()=>card.style.boxShadow='0 2px 12px rgba(255,45,85,.15)';
+      card.onmouseleave=()=>card.style.boxShadow='';
+      card.onclick=()=>abrirDetalleLead(lead.id);
+      card.innerHTML=`<div style="font-weight:600;margin-bottom:4px">${lead.nombre}</div><div style="color:var(--muted);margin-bottom:6px;font-family:var(--font-mono);font-size:11px">${lead.email||lead.telefono||''}</div><div style="display:flex;gap:4px;flex-wrap:wrap" onclick="event.stopPropagation()"><button onclick="contactarLead('${lead.id}','email')" style="padding:3px 8px;background:var(--purple-dim);color:var(--purple);border:none;border-radius:4px;font-size:11px;cursor:pointer">📧 Email</button><button onclick="contactarLead('${lead.id}','sms')" style="padding:3px 8px;background:var(--purple-dim);color:var(--purple);border:none;border-radius:4px;font-size:11px;cursor:pointer">💬 SMS</button><button onclick="moverLead('${lead.id}')" style="padding:3px 8px;background:var(--surface);border:1px solid var(--border);border-radius:4px;font-size:11px;cursor:pointer;color:var(--text)">→</button></div>`;
       col.appendChild(card);
     });
-
-    Object.entries(counts).forEach(([estado,n])=>{
-      const c=document.getElementById('count-'+estado);if(c)c.textContent=n;
-    });
-
   }catch(e){console.error('CRM error:',e);}
 }
 
@@ -1926,41 +1848,32 @@ function loadPlaywrightLogs(){
 loadPlaywrightLogs();
 </script>
 
-<!-- ═══════════════════════════════════════ PANEL: CRM / PIPELINE ════════════ -->
-<div class="panel content" id="panel-crm" style="flex-direction:column;gap:16px;overflow-y:auto;padding:20px">
-
-  <!-- ── Top bar ── -->
-  <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
-    <div>
-      <div style="font-family:var(--font-display);font-size:30px;letter-spacing:.1em;line-height:1">PIPELINE</div>
-      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:3px" id="crm-count">Cargando...</div>
-    </div>
-    <button onclick="(function(){var f=document.getElementById('lead-form-wrap');f.style.display=f.style.display==='none'?'block':'none';})()" style="padding:9px 20px;background:#7C3AED;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(124,58,237,0.4);letter-spacing:.04em;transition:opacity .15s" onmouseenter="this.style.opacity='.8'" onmouseleave="this.style.opacity='1'">+ Agregar lead</button>
+<!-- ═══════════════════════════════════════ PANEL: CRM ═══════════════════════ -->
+<div class="panel content" id="panel-crm" style="flex-direction:column;gap:20px;overflow-y:auto">
+  <div class="section-header">
+    <span class="section-title">👥 CRM — Leads</span>
+    <span class="section-count" id="crm-count">Cargando...</span>
   </div>
-
-  <!-- ── Métricas ── -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Total Leads</div>
-      <div style="font-family:var(--font-display);font-size:28px;letter-spacing:.06em;line-height:1" id="m-total">—</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">🆕 Nuevo</div>
+      <div id="leads-nuevo" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
-    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Valor Pipeline</div>
-      <div style="font-family:var(--font-display);font-size:28px;letter-spacing:.06em;line-height:1;color:#7C3AED" id="m-valor">—</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">📞 Contactado</div>
+      <div id="leads-contactado" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
-    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Cerrados</div>
-      <div style="font-family:var(--font-display);font-size:28px;letter-spacing:.06em;line-height:1;color:#00A060" id="m-cerrados">—</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">🔥 Interesado</div>
+      <div id="leads-interesado" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
-    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px">
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Conversión</div>
-      <div style="font-family:var(--font-display);font-size:28px;letter-spacing:.06em;line-height:1;color:#0098D4" id="m-conv">—</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">✅ Cerrado</div>
+      <div id="leads-cerrado" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
   </div>
-
-  <!-- ── Form colapsable ── -->
-  <div id="lead-form-wrap" style="display:none;background:#5B6778;border:1px solid rgba(124,58,237,0.3);border-radius:10px;padding:16px">
-    <div style="font-family:var(--font-display);font-size:15px;letter-spacing:.08em;margin-bottom:12px;color:var(--text)">NUEVO LEAD</div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px">
+    <div style="font-family:var(--font-display);font-size:16px;letter-spacing:.06em;margin-bottom:12px">+ Agregar Lead</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
       <input id="lead-nombre" placeholder="Nombre *" style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);outline:none">
       <input id="lead-email" placeholder="Email" style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);outline:none">
@@ -1975,63 +1888,12 @@ loadPlaywrightLogs();
       </select>
     </div>
     <textarea id="lead-notas" placeholder="Notas..." rows="2" style="width:100%;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;resize:vertical;margin-bottom:10px;font-family:var(--font);outline:none"></textarea>
-    <div style="display:flex;gap:10px">
-      <button onclick="agregarLead().then(()=>{document.getElementById('lead-form-wrap').style.display='none';})" style="padding:10px 20px;background:#7C3AED;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(124,58,237,0.35)">✅ Agregar Lead</button>
-      <button onclick="document.getElementById('lead-form-wrap').style.display='none'" style="padding:10px 16px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">Cancelar</button>
-    </div>
+    <button onclick="agregarLead()" style="padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px var(--primary-glow)">✅ Agregar Lead</button>
   </div>
-
-  <!-- ── Kanban board ── -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;flex:1;min-height:0">
-
-    <!-- Nuevo Lead -->
-    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
-      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#5B6778">
-        <span style="width:7px;height:7px;border-radius:50%;background:#7C3AED;flex-shrink:0;box-shadow:0 0 7px rgba(124,58,237,0.7)"></span>
-        <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;flex:1;color:var(--text)">Nuevo Lead</span>
-        <span style="font-family:var(--font-mono);font-size:11px;background:rgba(124,58,237,0.18);color:#9D6FFF;padding:2px 8px;border-radius:10px;font-weight:600" id="count-nuevo">0</span>
-      </div>
-      <div id="leads-nuevo" style="padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1"></div>
-    </div>
-
-    <!-- Contactado -->
-    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
-      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#5B6778">
-        <span style="width:7px;height:7px;border-radius:50%;background:#FF8C00;flex-shrink:0;box-shadow:0 0 7px rgba(255,140,0,0.7)"></span>
-        <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;flex:1;color:var(--text)">Contactado</span>
-        <span style="font-family:var(--font-mono);font-size:11px;background:rgba(255,140,0,0.18);color:#FFB347;padding:2px 8px;border-radius:10px;font-weight:600" id="count-contactado">0</span>
-      </div>
-      <div id="leads-contactado" style="padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1"></div>
-    </div>
-
-    <!-- Interesado -->
-    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
-      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#5B6778">
-        <span style="width:7px;height:7px;border-radius:50%;background:#0098D4;flex-shrink:0;box-shadow:0 0 7px rgba(0,152,212,0.7)"></span>
-        <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;flex:1;color:var(--text)">Interesado</span>
-        <span style="font-family:var(--font-mono);font-size:11px;background:rgba(0,152,212,0.18);color:#33BBEE;padding:2px 8px;border-radius:10px;font-weight:600" id="count-interesado">0</span>
-      </div>
-      <div id="leads-interesado" style="padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1"></div>
-    </div>
-
-    <!-- Cerrado -->
-    <div style="background:#5B6778;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:200px">
-      <div style="padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;background:#5B6778">
-        <span style="width:7px;height:7px;border-radius:50%;background:#00A060;flex-shrink:0;box-shadow:0 0 7px rgba(0,160,96,0.7)"></span>
-        <span style="font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;flex:1;color:var(--text)">Cerrado</span>
-        <span style="font-family:var(--font-mono);font-size:11px;background:rgba(0,160,96,0.18);color:#33CC88;padding:2px 8px;border-radius:10px;font-weight:600" id="count-cerrado">0</span>
-      </div>
-      <div id="leads-cerrado" style="padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1"></div>
-    </div>
-
-  </div>
-
-  <!-- ── Exports ── -->
   <div style="display:flex;gap:10px;flex-wrap:wrap">
     <button onclick="exportarSheets()" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);font-family:var(--font)">📤 Exportar a Sheets</button>
     <button onclick="abrirImportarSheets()" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);font-family:var(--font)">📥 Importar desde Sheets</button>
   </div>
-
 </div>
 
 <!-- ═══════════════════════════════════════ MODALES ══════════════════════════ -->
