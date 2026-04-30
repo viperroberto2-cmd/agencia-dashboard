@@ -570,6 +570,15 @@ body{background:#EBEBF0 !important}
 }
 .activity-text{flex:1;font-size:13px;color:var(--text-dim)}
 .activity-time{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+.wiz-dot{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;transition:all .2s;cursor:default;user-select:none}
+.wiz-dot.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.wiz-dot.done{background:var(--green);border-color:var(--green);color:#fff}
+.wiz-line{flex:1;height:2px;background:var(--border);transition:background .3s}
+.wiz-line.done{background:var(--green)}
+.wiz-field{margin-bottom:0}
+.wiz-field label{font-family:var(--font-mono);font-size:10px;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em}
+.wiz-field input,.wiz-field select,.wiz-field textarea{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:var(--font);outline:none;box-sizing:border-box}
+.wiz-field textarea{resize:vertical}
 </style>
 </head>
 <body>
@@ -1060,11 +1069,48 @@ body{background:#EBEBF0 !important}
   </div>
 
   <!-- ══════════════════════════════════════ PANEL: CREAR BOT ═════════════ -->
-  <div class="panel content" id="panel-crear-bot" style="flex-direction:column;gap:24px;overflow-y:auto">
-    <div class="section-header">
-      <span class="section-title">🤖 Crear Bot con IA</span>
-      <span class="section-count">Powered by Claude</span>
+  <!-- ══════════════════════════════════════ PANEL: ONBOARDING WIZARD ══════ -->
+  <div class="panel content" id="panel-crear-bot" style="flex-direction:column;gap:0;overflow-y:hidden;padding:0">
+
+    <!-- Progress header -->
+    <div style="padding:20px 28px 14px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <span style="font-size:16px;font-weight:700;color:var(--text)">🚀 Onboarding de Cliente</span>
+        <span id="wiz-step-label" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);background:var(--surface2);padding:4px 12px;border-radius:20px;border:1px solid var(--border)">Paso 1 de 6</span>
+      </div>
+      <div style="display:flex;align-items:center">
+        <div id="wiz-dot-1" class="wiz-dot active">1</div>
+        <div class="wiz-line" id="wiz-line-1"></div>
+        <div id="wiz-dot-2" class="wiz-dot">2</div>
+        <div class="wiz-line" id="wiz-line-2"></div>
+        <div id="wiz-dot-3" class="wiz-dot">3</div>
+        <div class="wiz-line" id="wiz-line-3"></div>
+        <div id="wiz-dot-4" class="wiz-dot">4</div>
+        <div class="wiz-line" id="wiz-line-4"></div>
+        <div id="wiz-dot-5" class="wiz-dot">5</div>
+        <div class="wiz-line" id="wiz-line-5"></div>
+        <div id="wiz-dot-6" class="wiz-dot">6</div>
+      </div>
+      <div style="display:grid;grid-template-columns:28px 1fr 28px 1fr 28px 1fr 28px 1fr 28px 1fr 28px;margin-top:4px;text-align:center">
+        <div></div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">Info</div>
+        <div></div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">Canales</div>
+        <div></div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">Campaña</div>
+        <div></div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">Agentes</div>
+        <div></div><div style="font-family:var(--font-mono);font-size:9px;color:var(--muted)">Conexiones</div>
+        <div></div>
+      </div>
     </div>
+
+    <!-- Step body (rendered by JS) -->
+    <div id="wiz-body" style="padding:22px 28px;flex:1;overflow-y:auto;min-height:0"></div>
+
+    <!-- Footer nav -->
+    <div style="padding:12px 28px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--surface);flex-shrink:0">
+      <button id="wiz-prev" onclick="wizPrev()" style="padding:9px 20px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;visibility:hidden">← Anterior</button>
+      <span id="wiz-err" style="font-size:11px;color:#C44;font-family:var(--font-mono);text-align:center;flex:1;padding:0 12px"></span>
+      <button id="wiz-next" onclick="wizNext()" style="padding:9px 22px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px var(--primary-glow)">Siguiente →</button>
+    </div>
+    <div style="display:none">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
       <div>
         <label style="font-family:var(--font-mono);font-size:11px;color:var(--muted);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em">Nombre del bot</label>
@@ -1131,6 +1177,7 @@ body{background:#EBEBF0 !important}
       </div>
     </div>
   </div>
+  </div>
 
 </main>
 
@@ -1186,7 +1233,7 @@ let currentAgent = AGENT_MAP['Organizador'];
   setInterval(_checkDeploy,60000);
 })();
 
-const TITLES={home:'DASHBOARD',chat:'CHAT',agents:'AGENTES',clients:'CLIENTES',integrations:'INTEGRACIONES',aprobacion:'APROBAR POSTS','crear-bot':'CREAR BOT',gdrive:'GOOGLE DRIVE',crm:'CRM — LEADS',grabaciones:'GRABACIONES',playwright:'PLAYWRIGHT'};
+const TITLES={home:'DASHBOARD',chat:'CHAT',agents:'AGENTES',clients:'CLIENTES',integrations:'INTEGRACIONES',aprobacion:'APROBAR POSTS','crear-bot':'ONBOARDING',gdrive:'GOOGLE DRIVE',crm:'CRM — LEADS',grabaciones:'GRABACIONES',playwright:'PLAYWRIGHT'};
 
 let _aprobacionTimer=null;
 function showPanel(id,btn){
@@ -1200,6 +1247,7 @@ function showPanel(id,btn){
   if(id==='gdrive')loadGoogleDrive();
   if(id==='crm')loadCRM();
   if(id==='grabaciones')loadGrabaciones();
+  if(id==='crear-bot')wizRender();
 }
 
 const _WELCOME={
@@ -1467,27 +1515,267 @@ async function disconnectGoogle(service){
   catch(e){alert('Error desconectando: '+e.message);}
 }
 
-async function generarBot(event){
-  const nombre=document.getElementById('bot-nombre').value;
-  const rol=document.getElementById('bot-rol').value;
-  const descripcion=document.getElementById('bot-descripcion').value;
-  const canales=['telegram','whatsapp','web','email'].filter(c=>document.getElementById('canal-'+c)?.checked).join(', ');
-  const integraciones=['supabase','claude','google','twilio'].filter(i=>document.getElementById('int-'+i)?.checked).join(', ');
-  const skills=['psicologia_venta','sleight_of_mouth','video_hypnotic_selling','sales_closer_elite','story_persuasion','storytelling_master','zettl_estetica','cinematografia','director_cine','walter_murch_edicion','master_shots','film_scoring','analytics_roas','web_design_conversion','infographic_motion'].filter(s=>document.getElementById('skill-'+s)?.checked).join(', ');
-  if(!nombre||!descripcion){alert('Por favor llena el nombre y la descripción del bot');return;}
-  const btn=event.target;btn.textContent='⏳ Generando con Claude...';btn.disabled=true;
-  try{
-    const response=await fetch('/api/generar-bot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:8000,system:`Eres un arquitecto de agentes Python especializado en sistemas multi-agente para la Agencia AI de Roberto.\n\nVISIÓN ARQUITECTÓNICA:\n- Agentes con autoridad y especialización en su área (no generalistas)\n- Pipeline secuencial/paralelo según complejidad\n- Memoria agéntica persistente en Supabase desde el primer mensaje\n- Jerarquía: Organizador CEO → Especialistas → Adaptadores de canal\n\nREGLA CRÍTICA: El bot generado DEBE ser un AGENTE real, no un bot reactivo. Debe tener memoria propia en Supabase, loop observe→act→evaluate, y respetar la jerarquía de la agencia. NUNCA generes un bot que solo responda al último mensaje sin consultar memoria ni context.\n\nPATRÓN DE CÓDIGO OBLIGATORIO:\nclass AgentCore:\n    def observe(self):   # carga memoria Supabase + skills\n    def act(self):       # llama Claude con contexto completo\n    def evaluate(self):  # decide si satisface el objetivo o reitera\n    def run(self):       # while not done: observe → act → evaluate\n\nStack: Python + FastAPI o python-telegram-bot + Anthropic Claude API (claude-sonnet-4-6) + Supabase + Railway.\nGenera código completo con imports, variables de entorno, lógica del agente y adaptador de canal.`,messages:[{role:'user',content:`Crea el código Python completo para este agente:\nNombre: ${nombre}\nRol principal: ${rol}\nCanales: ${canales}\nIntegraciones: ${integraciones}\nSkills asignadas: ${skills||'ninguna'}\nDescripción: ${descripcion}\n\nGenera un archivo bot_core.py completo con la clase AgentCore y su adaptador de canal, listo para Railway.`}]})});
-    const data=await response.json();if(data.error)throw new Error(data.error);
-    const codigo=data.content?.[0]?.text||'Error generando código';
-    document.getElementById('bot-output').style.display='block';
-    document.getElementById('bot-codigo').textContent=codigo;
-    btn.textContent='✅ ¡Bot generado!';
-    setTimeout(()=>{btn.textContent='✨ Generar Bot con Claude';btn.disabled=false;},3000);
-  }catch(e){btn.textContent='✨ Generar Bot con Claude';btn.disabled=false;alert('Error: '+e.message);}
+/* ── Wizard: Onboarding de cliente ── */
+const wizData={nombre:'',industria:'',email:'',telefono:'',plan:'',canales:[],campana:{producto:'',avatar:'',dolor_deseo:'',objeciones:['','','','','',''],prueba_social:'',competencia:'',funnel_actual:'',oferta:'',tono:''},agentes:[],conexiones:{twilio_sid:'',twilio_token:'',twilio_phone:'',facebook_page_id:'',stripe_key:'',calendario_url:'',whatsapp_business_id:''},_clienteId:''};
+let wizStep=1;
+const WIZ_CANALES=[{id:'llamadas',emoji:'📞',label:'Llamadas',desc:'Outbound / Inbound calls'},{id:'sms',emoji:'💬',label:'SMS',desc:'Text messaging masivo'},{id:'whatsapp',emoji:'🟢',label:'WhatsApp',desc:'WhatsApp Business API'},{id:'email',emoji:'📧',label:'Email',desc:'Campañas email marketing'},{id:'facebook',emoji:'📘',label:'Facebook / Instagram',desc:'DMs y comentarios sociales'}];
+const WIZ_AGENTES=[{id:'maria',emoji:'👩‍💼',label:'María',desc:'Ventas & seguimiento'},{id:'director',emoji:'🎬',label:'Director',desc:'Copy & creatividad'},{id:'estrategia',emoji:'♟️',label:'Estrategia',desc:'Plan de marketing'},{id:'scraper',emoji:'🔍',label:'Scraper',desc:'Research & competencia'},{id:'seo',emoji:'📈',label:'SEO',desc:'Posicionamiento web'},{id:'scheduler',emoji:'📅',label:'Scheduler',desc:'Publicación automática'},{id:'analytics',emoji:'📊',label:'Analytics',desc:'Métricas & ROAS'},{id:'compositor',emoji:'🎵',label:'CompositorBot',desc:'Audio & música'},{id:'crew',emoji:'🎥',label:'Crew',desc:'Producción de video'}];
+const WIZ_CAMPANA=[{key:'producto',label:'A · Producto / Servicio',ph:'Características, precio, proceso de entrega...'},{key:'avatar',label:'B · Avatar del Cliente',ph:'Demografía, psicografía, sueños y miedos del cliente ideal...'},{key:'dolor_deseo',label:'C · Dolor y Deseo',ph:'Problema urgente que resuelves y qué quiere lograr el cliente...'},{key:'prueba_social',label:'E · Prueba Social',ph:'Testimonios, casos de éxito, resultados con números concretos...'},{key:'competencia',label:'F · Competencia',ph:'Quiénes son y cómo te diferencias de ellos...'},{key:'funnel_actual',label:'G · Funnel Actual',ph:'Cómo llegan clientes ahora y qué convierte mejor...'},{key:'oferta',label:'H · Oferta Irresistible',ph:'Qué incluye exactamente: precio, bonos, garantías...'},{key:'tono',label:'I · Tono de Comunicación',ph:'Formal o casual, palabras clave a usar y evitar...'}];
+
+function wizSaveStep(){
+  if(wizStep===1){
+    wizData.nombre=(document.getElementById('wf-nombre')?.value||'').trim()||wizData.nombre;
+    wizData.industria=document.getElementById('wf-industria')?.value||wizData.industria;
+    wizData.email=(document.getElementById('wf-email')?.value||'').trim()||wizData.email;
+    wizData.telefono=(document.getElementById('wf-telefono')?.value||'').trim()||wizData.telefono;
+  }
+  if(wizStep===3){
+    WIZ_CAMPANA.forEach(function(s){var el=document.getElementById('wf-camp-'+s.key);if(el)wizData.campana[s.key]=el.value.trim();});
+    wizData.campana.objeciones.forEach(function(_,i){var el=document.getElementById('wf-obj-'+i);if(el)wizData.campana.objeciones[i]=el.value.trim();});
+  }
+  if(wizStep===5){Object.keys(wizData.conexiones).forEach(function(k){var el=document.getElementById('wf-con-'+k);if(el)wizData.conexiones[k]=el.value.trim();});}
 }
 
-function copiarCodigo(){navigator.clipboard.writeText(document.getElementById('bot-codigo').textContent);alert('✅ Código copiado al clipboard');}
+function wizValidate(){
+  if(wizStep===1){
+    if(!wizData.nombre)return'Nombre del cliente requerido';
+    if(!wizData.industria)return'Selecciona una industria';
+    if(!wizData.email||!wizData.email.includes('@'))return'Email válido requerido';
+    if(!wizData.plan)return'Selecciona un plan de servicio';
+  }
+  if(wizStep===2&&!wizData.canales.length)return'Selecciona al menos un canal';
+  return'';
+}
+
+function wizNext(){
+  wizSaveStep();
+  var err=wizValidate();
+  document.getElementById('wiz-err').textContent=err;
+  if(err)return;
+  if(wizStep<6){wizStep++;wizRender();}else wizCrearCliente();
+}
+
+function wizPrev(){
+  wizSaveStep();
+  document.getElementById('wiz-err').textContent='';
+  if(wizStep>1){wizStep--;wizRender();}
+}
+
+function wizSelectPlan(val){
+  wizData.plan=val;
+  ['500','1000','2000'].forEach(function(v){
+    var el=document.getElementById('plan-lbl-'+v);if(!el)return;
+    el.style.background=v===val?'var(--primary-dim)':'var(--surface2)';
+    el.style.borderColor=v===val?'var(--primary)':'var(--border)';
+  });
+}
+
+function wizToggleCanal(id){
+  var i=wizData.canales.indexOf(id);
+  if(i>=0)wizData.canales.splice(i,1);else wizData.canales.push(id);
+  var on=wizData.canales.includes(id);
+  var el=document.getElementById('canal-lbl-'+id);
+  if(el){el.style.background=on?'var(--primary-dim)':'var(--surface2)';el.style.borderColor=on?'var(--primary)':'var(--border)';}
+  var chk=document.getElementById('canal-chk-'+id);
+  if(chk){chk.style.background=on?'var(--primary)':'transparent';chk.style.borderColor=on?'var(--primary)':'var(--border)';chk.innerHTML=on?'<span style="color:#fff;font-size:11px;font-weight:700">✓<\/span>':'';}
+}
+
+function wizToggleAgente(id){
+  var i=wizData.agentes.indexOf(id);
+  if(i>=0)wizData.agentes.splice(i,1);else wizData.agentes.push(id);
+  var on=wizData.agentes.includes(id);
+  var el=document.getElementById('agente-lbl-'+id);
+  if(el){el.style.background=on?'var(--primary-dim)':'var(--surface2)';el.style.borderColor=on?'var(--primary)':'var(--border)';}
+  var chk=document.getElementById('agente-chk-'+id);
+  if(chk){chk.style.background=on?'var(--primary)':'transparent';chk.style.borderColor=on?'var(--primary)':'var(--border)';chk.innerHTML=on?'<span style="color:#fff;font-size:10px;font-weight:700">✓<\/span>':'';}
+}
+
+function wizToggleAcc(key){
+  var body=document.getElementById('acc-'+key);if(!body)return;
+  var icon=document.getElementById('acc-icon-'+key);
+  var open=body.style.display==='none';
+  body.style.display=open?'block':'none';
+  if(icon)icon.textContent=open?'▼':'▶';
+}
+
+function wizRender(){
+  document.getElementById('wiz-step-label').textContent='Paso '+wizStep+' de 6';
+  for(var i=1;i<=6;i++){
+    var dot=document.getElementById('wiz-dot-'+i);
+    var line=document.getElementById('wiz-line-'+i);
+    if(!dot)continue;
+    dot.className=i<wizStep?'wiz-dot done':i===wizStep?'wiz-dot active':'wiz-dot';
+    dot.innerHTML=i<wizStep?'✓':String(i);
+    if(line)line.className='wiz-line'+(i<wizStep?' done':'');
+  }
+  var stepFns=[null,wizS1,wizS2,wizS3,wizS4,wizS5,wizS6];
+  document.getElementById('wiz-body').innerHTML=stepFns[wizStep]();
+  document.getElementById('wiz-prev').style.visibility=wizStep===1?'hidden':'visible';
+  var nb=document.getElementById('wiz-next');
+  nb.textContent=wizStep===6?'✅ Crear Cliente':'Siguiente →';
+  nb.style.background=wizStep===6?'var(--green)':'var(--primary)';
+  nb.disabled=false;
+}
+
+function _winp(id,type,placeholder,val){
+  return '<input id="'+id+'" type="'+type+'" placeholder="'+placeholder+'" value="'+(val||'').replace(/"/g,'&quot;')+'" style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:var(--font);outline:none;box-sizing:border-box">';
+}
+
+function wizS1(){
+  var industs=['Abogado','Médico/Clínica','Car Dealer','Educación Financiera','Real Estate','Restaurante','Salón de Belleza','Contabilidad/Taxes','Seguros','Otro'];
+  var opts='<option value="">Seleccionar...<\/option>';
+  industs.forEach(function(ind){opts+='<option value="'+ind+'"'+(wizData.industria===ind?' selected':'')+'>'+ind+'<\/option>';});
+  var planCards='';
+  [{v:'500',e:'🌱',l:'Starter'},{v:'1000',e:'🚀',l:'Pro'},{v:'2000',e:'🏆',l:'Agency'}].forEach(function(p){
+    var active=wizData.plan===p.v;
+    planCards+='<div id="plan-lbl-'+p.v+'" onclick="wizSelectPlan(\''+p.v+'\')" style="display:flex;flex-direction:column;align-items:center;padding:16px;background:'+(active?'var(--primary-dim)':'var(--surface2)')+';border:2px solid '+(active?'var(--primary)':'var(--border)')+';border-radius:12px;cursor:pointer;gap:6px;text-align:center;transition:all .15s"><span style="font-size:24px">'+p.e+'<\/span><span style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--primary)">$'+p.v+'/mes<\/span><span style="font-size:11px;color:var(--muted)">'+p.l+'<\/span><\/div>';
+  });
+  return '<h3 style="font-size:16px;font-weight:700;color:var(--text);margin:0 0 18px">Información Básica<\/h3>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">'
+    +'<div class="wiz-field"><label>Nombre del cliente *<\/label>'+_winp('wf-nombre','text','Ej: Arranca Financial',wizData.nombre)+'<\/div>'
+    +'<div class="wiz-field"><label>Industria *<\/label><select id="wf-industria" style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:var(--font);outline:none">'+opts+'<\/select><\/div>'
+    +'<div class="wiz-field"><label>Email *<\/label>'+_winp('wf-email','email','cliente@email.com',wizData.email)+'<\/div>'
+    +'<div class="wiz-field"><label>Teléfono<\/label>'+_winp('wf-telefono','tel','+1 (555) 000-0000',wizData.telefono)+'<\/div>'
+    +'<\/div>'
+    +'<div><label style="font-family:var(--font-mono);font-size:10px;color:var(--muted);display:block;margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em">Plan de servicio *<\/label>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">'+planCards+'<\/div><\/div>';
+}
+
+function wizS2(){
+  var cards='';
+  WIZ_CANALES.forEach(function(c){
+    var on=wizData.canales.includes(c.id);
+    cards+='<div id="canal-lbl-'+c.id+'" onclick="wizToggleCanal(\''+c.id+'\')" style="display:flex;align-items:center;gap:14px;padding:13px 16px;background:'+(on?'var(--primary-dim)':'var(--surface2)')+';border:2px solid '+(on?'var(--primary)':'var(--border)')+';border-radius:10px;cursor:pointer;transition:all .15s;user-select:none">'
+      +'<span style="font-size:22px">'+c.emoji+'<\/span>'
+      +'<div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--text)">'+c.label+'<\/div><div style="font-size:12px;color:var(--muted)">'+c.desc+'<\/div><\/div>'
+      +'<div id="canal-chk-'+c.id+'" style="width:20px;height:20px;border-radius:4px;border:2px solid '+(on?'var(--primary)':'var(--border)')+';background:'+(on?'var(--primary)':'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(on?'<span style="color:#fff;font-size:11px;font-weight:700">✓<\/span>':'')+'<\/div>'
+      +'<\/div>';
+  });
+  return '<h3 style="font-size:16px;font-weight:700;color:var(--text);margin:0 0 6px">Canales de Comunicación<\/h3>'
+    +'<p style="font-size:13px;color:var(--muted);margin:0 0 16px">Selecciona los canales que usará este cliente<\/p>'
+    +'<div style="display:flex;flex-direction:column;gap:10px">'+cards+'<\/div>';
+}
+
+function wizS3(){
+  function acc(key,label,ph,extra){
+    var open=extra?false:!!wizData.campana[key];
+    var inner=extra||('<textarea id="wf-camp-'+key+'" rows="3" placeholder="'+ph+'" style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);resize:vertical;outline:none;box-sizing:border-box">'+wizData.campana[key]+'<\/textarea>');
+    return '<div style="margin-bottom:8px">'
+      +'<button onclick="wizToggleAcc(\''+key+'\')" style="width:100%;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:'+(open?'8px 8px 0 0':'8px')+';cursor:pointer;display:flex;justify-content:space-between;align-items:center;text-align:left">'
+      +'<span style="font-size:13px;font-weight:600;color:var(--text);font-family:var(--font)">'+label+'<\/span>'
+      +'<span id="acc-icon-'+key+'" style="color:var(--primary);font-size:13px">'+(open?'▼':'▶')+'<\/span>'
+      +'<\/button>'
+      +'<div id="acc-'+key+'" style="display:'+(open?'block':'none')+';padding:12px;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px">'+inner+'<\/div>'
+      +'<\/div>';
+  }
+  var objFields='';
+  wizData.campana.objeciones.forEach(function(o,i){
+    objFields+='<div style="margin-bottom:10px"><label style="font-family:var(--font-mono);font-size:10px;color:var(--muted);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Objeción '+(i+1)+'<\/label>'
+      +'<input id="wf-obj-'+i+'" type="text" value="'+o.replace(/"/g,'&quot;')+'" placeholder="Ej: Es muy caro..." style="width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);outline:none;box-sizing:border-box"><\/div>';
+  });
+  var html='<h3 style="font-size:16px;font-weight:700;color:var(--text);margin:0 0 6px">Perfil de Campaña<\/h3>';
+  html+='<p style="font-size:13px;color:var(--muted);margin:0 0 14px">Información estratégica para entrenar a los agentes (abre cada sección)<\/p>';
+  WIZ_CAMPANA.forEach(function(s,i){
+    if(i===3){html+=acc('objeciones','D · Objeciones (hasta 6)','',objFields);}
+    html+=acc(s.key,s.label,s.ph);
+  });
+  return html;
+}
+
+function wizS4(){
+  var cards='';
+  WIZ_AGENTES.forEach(function(a){
+    var on=wizData.agentes.includes(a.id);
+    cards+='<div id="agente-lbl-'+a.id+'" onclick="wizToggleAgente(\''+a.id+'\')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:'+(on?'var(--primary-dim)':'var(--surface2)')+';border:2px solid '+(on?'var(--primary)':'var(--border)')+';border-radius:10px;cursor:pointer;transition:all .15s;user-select:none">'
+      +'<span style="font-size:20px">'+a.emoji+'<\/span>'
+      +'<div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">'+a.label+'<\/div><div style="font-size:11px;color:var(--muted)">'+a.desc+'<\/div><\/div>'
+      +'<div id="agente-chk-'+a.id+'" style="width:18px;height:18px;border-radius:4px;border:2px solid '+(on?'var(--primary)':'var(--border)')+';background:'+(on?'var(--primary)':'transparent')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(on?'<span style="color:#fff;font-size:10px;font-weight:700">✓<\/span>':'')+'<\/div>'
+      +'<\/div>';
+  });
+  return '<h3 style="font-size:16px;font-weight:700;color:var(--text);margin:0 0 6px">Agentes Asignados<\/h3>'
+    +'<p style="font-size:13px;color:var(--muted);margin:0 0 16px">Selecciona qué agentes trabajarán con este cliente<\/p>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+cards+'<\/div>';
+}
+
+function wizS5(){
+  function sec(title,fields){
+    return '<div style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px">'
+      +'<div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--primary);margin-bottom:12px;text-transform:uppercase;letter-spacing:.08em">'+title+'<\/div>'
+      +'<div style="display:flex;flex-direction:column;gap:10px">'+fields+'<\/div>'
+      +'<\/div>';
+  }
+  function f(k,lbl,type,ph){
+    return '<div class="wiz-field"><label>'+lbl+'<\/label>'+_winp('wf-con-'+k,type,ph,wizData.conexiones[k])+'<\/div>';
+  }
+  return '<h3 style="font-size:16px;font-weight:700;color:var(--text);margin:0 0 6px">Conexiones e Integraciones<\/h3>'
+    +'<p style="font-size:13px;color:var(--muted);margin:0 0 16px">Opcional — puedes completar esto después desde Configuración<\/p>'
+    +'<div style="display:flex;flex-direction:column;gap:10px">'
+    +sec('📞 Twilio',f('twilio_sid','Account SID','text','AC...')+f('twilio_token','Auth Token','text','auth_token...')+f('twilio_phone','Número Twilio','tel','+1 (555) 000-0000'))
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +sec('📘 Facebook',f('facebook_page_id','Page ID','text','123456789...'))+sec('💳 Stripe',f('stripe_key','Secret Key','text','sk_live_...'))
+    +'<\/div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +sec('📅 Calendario',f('calendario_url','URL / Link','url','https://calendly.com/...'))+sec('🟢 WhatsApp Business',f('whatsapp_business_id','Business ID','text','WABA ID...'))
+    +'<\/div>'
+    +'<\/div>';
+}
+
+function wizS6(){
+  var clienteId=(wizData.nombre.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''))+'_'+(wizData.industria.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''))+'_'+Date.now();
+  wizData._clienteId=clienteId;
+  var canalesStr=wizData.canales.join(', ')||'—';
+  var agentesStr=wizData.agentes.join(', ')||'—';
+  var campanaOk=Object.keys(wizData.campana).filter(function(k){return typeof wizData.campana[k]==='string'&&wizData.campana[k].length>0;}).length>0;
+  return '<h3 style="font-size:16px;font-weight:700;color:var(--text);margin:0 0 18px">Resumen del Cliente<\/h3>'
+    +'<div style="display:flex;flex-direction:column;gap:12px">'
+    +'<div style="padding:18px 20px;background:linear-gradient(135deg,#6D28D9 0%,#7C3AED 50%,#9D6FFF 100%);border-radius:12px;color:#fff">'
+    +'<div style="font-size:18px;font-weight:700">'+wizData.nombre+'<\/div>'
+    +'<div style="font-size:13px;opacity:.85;margin-top:3px">'+wizData.industria+' &middot; $'+wizData.plan+'/mes<\/div>'
+    +'<div style="font-family:var(--font-mono);font-size:10px;opacity:.65;margin-top:8px">'+clienteId+'<\/div>'
+    +'<\/div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +'<div style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Contacto<\/div><div style="font-size:13px;color:var(--text)">'+wizData.email+'<\/div><div style="font-size:12px;color:var(--muted);margin-top:3px">'+(wizData.telefono||'—')+'<\/div><\/div>'
+    +'<div style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Canales ('+wizData.canales.length+')<\/div><div style="font-size:13px;color:var(--text)">'+canalesStr+'<\/div><\/div>'
+    +'<div style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Agentes ('+wizData.agentes.length+')<\/div><div style="font-size:13px;color:var(--text)">'+agentesStr+'<\/div><\/div>'
+    +'<div style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px"><div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Campaña<\/div><div style="font-size:13px;color:var(--text)">'+(campanaOk?'✅ Con información':'⚠️ Sin información')+'<\/div><\/div>'
+    +'<\/div>'
+    +'<div style="padding:12px 16px;background:var(--primary-dim);border:1px solid rgba(124,58,237,.2);border-radius:10px;font-size:13px;color:var(--text)">💡 Al confirmar se guardará en Supabase y estará disponible para los agentes.<\/div>'
+    +'<\/div>';
+}
+
+async function wizCrearCliente(){
+  wizSaveStep();
+  var SUPA_URL=window.SUPABASE_URL||localStorage.getItem('cfg_supa_url')||'';
+  var SUPA_KEY=window.SUPABASE_ANON_KEY||localStorage.getItem('supa_key')||'';
+  if(!SUPA_URL||!SUPA_KEY||SUPA_URL.includes('__')){document.getElementById('wiz-err').textContent='Configura Supabase en ⚙️ primero';return;}
+  var nb=document.getElementById('wiz-next');
+  nb.textContent='⏳ Guardando...';nb.disabled=true;
+  var clienteId=wizData._clienteId;
+  var payload={cliente_id:clienteId,nombre:wizData.nombre,industria:wizData.industria,email:wizData.email,telefono:wizData.telefono,plan:parseInt(wizData.plan),canales:wizData.canales,campana:wizData.campana,agentes:wizData.agentes,conexiones:wizData.conexiones,activo:true,created_at:new Date().toISOString()};
+  try{
+    var res=await fetch(SUPA_URL+'/rest/v1/clientes',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)});
+    if(!res.ok){var t=await res.text();throw new Error(t);}
+    document.getElementById('wiz-body').innerHTML='<div style="text-align:center;padding:48px 20px">'
+      +'<div style="font-size:56px;margin-bottom:16px">🎉<\/div>'
+      +'<h2 style="font-size:20px;font-weight:700;color:var(--text);margin:0 0 8px">'+wizData.nombre+' activado<\/h2>'
+      +'<p style="font-size:14px;color:var(--muted);margin:0 0 20px">Cliente creado exitosamente en Supabase.<\/p>'
+      +'<div style="font-family:var(--font-mono);font-size:11px;color:var(--primary);background:var(--primary-dim);padding:10px 16px;border-radius:8px;display:inline-block;margin-bottom:24px">'+clienteId+'<\/div><br>'
+      +'<button onclick="wizReset()" style="padding:12px 28px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;box-shadow:0 2px 8px var(--primary-glow)">+ Agregar otro cliente<\/button>'
+      +'<\/div>';
+    var pb=document.getElementById('wiz-prev');var xb=document.getElementById('wiz-next');
+    if(pb)pb.style.visibility='hidden';if(xb)xb.style.display='none';
+  }catch(e){
+    nb.textContent='✅ Crear Cliente';nb.disabled=false;
+    document.getElementById('wiz-err').textContent='Error: '+e.message.substring(0,80);
+  }
+}
+
+function wizReset(){
+  Object.assign(wizData,{nombre:'',industria:'',email:'',telefono:'',plan:'',canales:[],campana:{producto:'',avatar:'',dolor_deseo:'',objeciones:['','','','','',''],prueba_social:'',competencia:'',funnel_actual:'',oferta:'',tono:''},agentes:[],conexiones:{twilio_sid:'',twilio_token:'',twilio_phone:'',facebook_page_id:'',stripe_key:'',calendario_url:'',whatsapp_business_id:''},_clienteId:''});
+  wizStep=1;
+  var xb=document.getElementById('wiz-next');if(xb){xb.style.display='';xb.disabled=false;}
+  wizRender();
+}
 
 /* ── Aprobación Posts ── */
 async function loadAprobacion(){
