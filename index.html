@@ -1144,6 +1144,8 @@ const SEO_URL      = 'https://agencia-ai-seo-production.up.railway.app';
 const USER_ID      = '8534665260';
 const _CHAT_KEY    = 'chat_history_' + USER_ID;
 let chatHistory    = JSON.parse(localStorage.getItem(_CHAT_KEY) || '[]');
+const chatHistories = {};
+let currentAgentName = 'Organizador';
 
 /* ── Agent routing map ── */
 const AGENT_MAP = {
@@ -1200,17 +1202,38 @@ function showPanel(id,btn){
   if(id==='grabaciones')loadGrabaciones();
 }
 
+const _WELCOME={
+  'Organizador':   'Hola Roberto. Soy el Organizador — CEO de tu agencia.',
+  'Director':      'Hola Roberto. Soy el Director — copy, guiones y dirección creativa.',
+  'Crew':          'Hola Roberto. Soy Crew — producción de video e imágenes.',
+  'Estrategia':    'Hola Roberto. Soy Estrategia — campañas, SEO y funnels.',
+  'Scheduler':     'Hola Roberto. Soy Scheduler — publicación automática de contenido.',
+  'Analytics':     'Hola Roberto. Soy Analytics — reportes y métricas semanales.',
+  'CompositorBot': 'Hola Roberto. Soy CompositorBot — scoring y bandas sonoras.',
+  'Scraper':       'Hola Roberto. Soy el Scraper — inteligencia competitiva.',
+  'SEO':           'Hola Roberto. Soy el SEO Strategist — keywords y contenido.',
+};
+
 function selectAgent(el,emoji,name,role){
   document.querySelectorAll('.chat-agent-item').forEach(i=>i.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('chat-emoji').textContent=emoji;
   document.getElementById('chat-name').textContent=name;
+  currentAgentName=name;
   currentAgent=AGENT_MAP[name]||AGENT_MAP['Organizador'];
   const input=document.getElementById('chat-input');
   if(input)input.placeholder='Escríbele al '+name+'...';
   const badge=document.getElementById('current-agent-badge');
   const isRouted=!!AGENT_MAP[name]&&AGENT_MAP[name].url!==ORG_URL;
   if(badge)badge.textContent=isRouted?'→ '+name:'→ Organizador';
+  const msgs=document.getElementById('chat-msgs');
+  msgs.innerHTML='';
+  const hist=chatHistories[name]||[];
+  if(hist.length>0){
+    hist.forEach(m=>_renderMsg(m.role==='user'?'user':'agent',m.content));
+  }else{
+    _renderMsg('agent',_WELCOME[name]||'Hola Roberto. Soy '+name+'. ¿En qué te ayudo?');
+  }
 }
 
 function _renderMsg(role,text){
@@ -1230,8 +1253,11 @@ function _renderMsg(role,text){
 
 function addMsg(role,text){
   _renderMsg(role,text);
-  chatHistory.push({role:role==='user'?'user':'assistant',content:text});
+  const entry={role:role==='user'?'user':'assistant',content:text};
+  chatHistory.push(entry);
   localStorage.setItem(_CHAT_KEY,JSON.stringify(chatHistory.slice(-200)));
+  if(!chatHistories[currentAgentName])chatHistories[currentAgentName]=[];
+  chatHistories[currentAgentName].push(entry);
   _saveSessionToSupabase();
 }
 
