@@ -82,7 +82,7 @@ body{
 .sidebar{
   width:72px;
   min-width:72px;
-  background:var(--surface);
+  background:#16161F;
   border-right:1px solid var(--border);
   display:flex;
   flex-direction:column;
@@ -120,11 +120,11 @@ body{
   border-radius:10px;border:none;background:none;
   cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  color:rgba(255,255,255,0.55);
+  color:rgba(255,255,255,0.75);
   transition:all .18s cubic-bezier(.4,0,.2,1);
   position:relative;
 }
-.nav-btn:hover{background:var(--primary-dim);color:var(--primary)}
+.nav-btn:hover{background:var(--primary-dim);color:#fff}
 .nav-btn.active{
   background:rgba(255,45,85,0.18);
   color:var(--primary);
@@ -578,7 +578,7 @@ body{
       <rect x="1" y="10" width="7" height="7" rx="2" fill="currentColor" opacity=".4"/>
       <rect x="10" y="10" width="7" height="7" rx="2" fill="currentColor" opacity=".8"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">HOME</span>
+    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">HOME</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('chat',this)" title="Chat">
@@ -586,7 +586,7 @@ body{
       <path d="M2 3a1 1 0 011-1h12a1 1 0 011 1v10a1 1 0 01-1 1H5l-3 2V3z" fill="currentColor" opacity=".8"/>
     </svg>
     <span class="badge">9</span>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CHAT</span>
+    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CHAT</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('agents',this)" title="Agentes">
@@ -594,7 +594,7 @@ body{
       <circle cx="9" cy="6" r="3" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/>
       <path d="M2 16c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">AGENTES</span>
+    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">AGENTES</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('clients',this)" title="Clientes">
@@ -603,7 +603,7 @@ body{
       <path d="M2 7h14" stroke="currentColor" stroke-width="1.5" opacity=".8"/>
       <path d="M6 11h2M10 11h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CLIENTES</span>
+    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CLIENTES</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('integrations',this)" title="Integraciones">
@@ -613,14 +613,14 @@ body{
       <circle cx="13" cy="14" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none" opacity=".8"/>
       <path d="M7.5 9h3M7.5 8l3-3M7.5 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".6"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">INTEGR</span>
+    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">INTEGR</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('aprobacion',this)" title="Aprobar Posts">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <polyline points="20 6 9 17 4 12"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">APROBAR</span>
+    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">APROBAR</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('crear-bot',this)" title="Crear Bot" style="position:relative">
@@ -629,7 +629,7 @@ body{
       <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
     </svg>
     <span style="position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--primary);border-radius:50%"></span>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CREAR</span>
+    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CREAR</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('gdrive',this)" title="Google Drive">
@@ -638,7 +638,7 @@ body{
       <path d="M7 19L12 10l5 9"/>
       <path d="M2 19l5-9"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">DRIVE</span>
+    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">DRIVE</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('crm',this)" title="CRM">
@@ -648,7 +648,7 @@ body{
       <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
       <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CRM</span>
+    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">CRM</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('grabaciones',this)" title="Grabaciones">
@@ -658,7 +658,7 @@ body{
       <line x1="12" y1="19" x2="12" y2="22"/>
       <line x1="8" y1="22" x2="16" y2="22"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">GRABAC</span>
+    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">GRABAC</span>
   </button>
 
   <button class="nav-btn" onclick="showPanel('playwright',this)" title="Playwright Monitor">
@@ -668,7 +668,7 @@ body{
       <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>
       <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4" opacity=".4" stroke-width="1"/>
     </svg>
-    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">PLAY</span>
+    <span style="font-family:var(--font-mono);font-size:8px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;line-height:1">PLAY</span>
   </button>
 
   <div class="sidebar-bottom">
