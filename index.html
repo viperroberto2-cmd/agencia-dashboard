@@ -1681,7 +1681,7 @@ async function disconnectGoogle(service){
 }
 
 /* ── Wizard: Onboarding de cliente ── */
-const wizData={nombre:'',industria:'',email:'',telefono:'',plan:'',canales:[],campana:{producto:'',avatar:'',dolor_deseo:'',objeciones:['','','','','',''],prueba_social:'',competencia:'',funnel_actual:'',oferta:'',tono:''},agentes:[],conexiones:{twilio_sid:'',twilio_token:'',twilio_phone:'',facebook_page_id:'',stripe_key:'',calendario_url:'',whatsapp_business_id:''},_clienteId:''};
+const wizData={nombre:'',industria:'',email:'',telefono:'',plan:'',canales:[],campana:{producto:'',avatar:'',dolor_deseo:'',objeciones:['','','','','',''],prueba_social:'',competencia:'',funnel_actual:'',oferta:'',tono:''},agentes:[],conexiones:{twilio_sid:'',twilio_token:'',twilio_phone:'',facebook_page_id:'',stripe_key:'',calendario_url:'',whatsapp_business_id:'',dominio:'',ftp_pass:''},_clienteId:''};
 let wizStep=1;
 const WIZ_CANALES=[{id:'llamadas',emoji:'📞',label:'Llamadas',desc:'Outbound / Inbound calls'},{id:'sms',emoji:'💬',label:'SMS',desc:'Text messaging masivo'},{id:'whatsapp',emoji:'🟢',label:'WhatsApp',desc:'WhatsApp Business API'},{id:'email',emoji:'📧',label:'Email',desc:'Campañas email marketing'},{id:'facebook',emoji:'📘',label:'Facebook / Instagram',desc:'DMs y comentarios sociales'}];
 const WIZ_AGENTES=[{id:'maria',emoji:'👩‍💼',label:'María',desc:'Ventas & seguimiento'},{id:'director',emoji:'🎬',label:'Director',desc:'Copy & creatividad'},{id:'estrategia',emoji:'♟️',label:'Estrategia',desc:'Plan de marketing'},{id:'scraper',emoji:'🔍',label:'Scraper',desc:'Research & competencia'},{id:'seo',emoji:'📈',label:'SEO',desc:'Posicionamiento web'},{id:'scheduler',emoji:'📅',label:'Scheduler',desc:'Publicación automática'},{id:'analytics',emoji:'📊',label:'Analytics',desc:'Métricas & ROAS'},{id:'compositor',emoji:'🎵',label:'CompositorBot',desc:'Audio & música'},{id:'crew',emoji:'🎥',label:'Crew',desc:'Producción de video'}];
@@ -1875,6 +1875,17 @@ function wizS5(){
   return '<h3 style="font-size:16px;font-weight:700;color:var(--text);margin:0 0 6px">Conexiones e Integraciones<\/h3>'
     +'<p style="font-size:13px;color:var(--muted);margin:0 0 16px">Opcional — puedes completar esto después desde Configuración<\/p>'
     +'<div style="display:flex;flex-direction:column;gap:10px">'
+    +sec('🌐 Hostinger — Deploy Web','<div style="background:rgba(115,203,51,0.07);border:1px solid rgba(115,203,51,0.22);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px">'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+      +f('dominio','Dominio','text','arrancafinancial.com')
+      +f('ftp_pass','FTP Password','password','Contraseña FTP del dominio')
+      +'<\/div>'
+      +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font-mono);font-size:10px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap">'
+      +'<span><span style="color:var(--text);opacity:.5">Host:</span> 195.35.15.97<\/span>'
+      +'<span><span style="color:var(--text);opacity:.5">User:</span> u437107073<\/span>'
+      +'<span style="color:rgba(115,203,51,0.7)">⚡ Web Designer deployea automáticamente<\/span>'
+      +'<\/div>'
+      +'<\/div>')
     +sec('📞 Twilio',f('twilio_sid','Account SID','text','AC...')+f('twilio_token','Auth Token','text','auth_token...')+f('twilio_phone','Número Twilio','tel','+1 (555) 000-0000'))
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
     +sec('📘 Facebook',f('facebook_page_id','Page ID','text','123456789...'))+sec('💳 Stripe',f('stripe_key','Secret Key','text','sk_live_...'))
@@ -1937,7 +1948,7 @@ async function wizCrearCliente(){
 }
 
 function wizReset(){
-  Object.assign(wizData,{nombre:'',industria:'',email:'',telefono:'',plan:'',canales:[],campana:{producto:'',avatar:'',dolor_deseo:'',objeciones:['','','','','',''],prueba_social:'',competencia:'',funnel_actual:'',oferta:'',tono:''},agentes:[],conexiones:{twilio_sid:'',twilio_token:'',twilio_phone:'',facebook_page_id:'',stripe_key:'',calendario_url:'',whatsapp_business_id:''},_clienteId:''});
+  Object.assign(wizData,{nombre:'',industria:'',email:'',telefono:'',plan:'',canales:[],campana:{producto:'',avatar:'',dolor_deseo:'',objeciones:['','','','','',''],prueba_social:'',competencia:'',funnel_actual:'',oferta:'',tono:''},agentes:[],conexiones:{twilio_sid:'',twilio_token:'',twilio_phone:'',facebook_page_id:'',stripe_key:'',calendario_url:'',whatsapp_business_id:'',dominio:'',ftp_pass:''},_clienteId:''});
   wizStep=1;
   var xb=document.getElementById('wiz-next');if(xb){xb.style.display='';xb.disabled=false;}
   wizRender();
