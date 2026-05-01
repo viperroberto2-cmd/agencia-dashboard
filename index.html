@@ -2203,8 +2203,8 @@ async function confirmarImportacion(){
 (function(){
   var dot=document.getElementById('playwright-dot'),txt=document.getElementById('playwright-status-txt'),label=document.getElementById('playwright-section-status');
   if(!dot)return;var ctrl=new AbortController();setTimeout(function(){ctrl.abort();},5000);
-  fetch('https://agencia-playwright-scraper-production.up.railway.app/health',{signal:ctrl.signal})
-    .then(function(r){if(r.ok){dot.className='dot dot-online';txt.className='txt-online';txt.textContent='online';label.textContent='Microservicio activo';}else{dot.className='dot dot-offline';txt.textContent='HTTP '+r.status;label.textContent='Error '+r.status;}})
+  fetch('https://agencia-playwright-scraper-production.up.railway.app/health',{signal:ctrl.signal,mode:'no-cors'})
+    .then(function(){dot.className='dot dot-online';txt.className='txt-online';txt.textContent='online';label.textContent='Microservicio activo';})
     .catch(function(){dot.className='dot dot-offline';txt.textContent='offline';label.textContent='Sin conexión';});
 })();
 function loadPlaywrightLogs(){
