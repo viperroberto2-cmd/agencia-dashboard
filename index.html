@@ -579,6 +579,10 @@ body{background:#EBEBF0 !important}
 .wiz-field label{font-family:var(--font-mono);font-size:10px;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.08em}
 .wiz-field input,.wiz-field select,.wiz-field textarea{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:var(--font);outline:none;box-sizing:border-box}
 .wiz-field textarea{resize:vertical}
+.cliente-select{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:var(--text);font-size:12px;cursor:pointer;outline:none;font-family:var(--font);min-width:150px;transition:border-color .2s}
+.cliente-select:focus,.cliente-select:hover{border-color:var(--primary)}
+.cliente-badge{display:inline-flex;align-items:center;gap:5px;background:#7C3AED18;color:#7C3AED;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
+.cliente-badge-dot{width:7px;height:7px;border-radius:50%;background:#7C3AED;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -691,6 +695,15 @@ body{background:#EBEBF0 !important}
 <main class="main">
   <div class="topbar">
     <span class="topbar-title" id="page-title">DASHBOARD</span>
+    <div style="display:flex;align-items:center;gap:8px;margin-right:4px">
+      <select class="cliente-select" id="cliente-select" onchange="setActiveCliente(this.value)" title="Cliente activo">
+        <option value="">Cargando clientes...</option>
+      </select>
+      <span class="cliente-badge" id="cliente-badge" style="display:none">
+        <span class="cliente-badge-dot"></span>
+        <span id="cliente-badge-name"></span>
+      </span>
+    </div>
     <button class="topbar-btn" onclick="showPanel('chat',document.querySelectorAll('.nav-btn')[1])">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
         <path d="M7 1v6M4 4l3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -1396,6 +1409,51 @@ document.addEventListener('paste',e=>{
   }
 });
 
+/* ── Cliente activo ── */
+window.activeCliente = null;
+window._clientesCache = [];
+
+async function loadClientes(){
+  const sel=document.getElementById('cliente-select');
+  try{
+    const SUPA_URL=window.SUPABASE_URL||localStorage.getItem('supa_url')||'';
+    const SUPA_KEY=window.SUPABASE_ANON_KEY||localStorage.getItem('supa_key')||'';
+    if(!SUPA_URL||!SUPA_KEY){sel.innerHTML='<option value="">Sin Supabase</option>';return;}
+    const r=await fetch(`${SUPA_URL}/rest/v1/clientes?select=cliente_id,nombre,plan,campana,canales,agentes&activo=eq.true&order=nombre`,{
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    const data=await r.json();
+    window._clientesCache=Array.isArray(data)?data:[];
+    sel.innerHTML='<option value="">— Sin cliente —</option>';
+    window._clientesCache.forEach(c=>{
+      const opt=document.createElement('option');
+      opt.value=c.cliente_id;
+      opt.textContent=`${c.nombre}${c.plan?' ('+c.plan+')':''}`;
+      sel.appendChild(opt);
+    });
+    if(window._clientesCache.length===0)sel.innerHTML='<option value="">Sin clientes aún</option>';
+  }catch(e){
+    console.error('loadClientes error:',e);
+    sel.innerHTML='<option value="">Error cargando</option>';
+  }
+}
+
+function setActiveCliente(clienteId){
+  const badge=document.getElementById('cliente-badge');
+  const badgeName=document.getElementById('cliente-badge-name');
+  if(!clienteId){
+    window.activeCliente=null;
+    badge.style.display='none';
+    return;
+  }
+  const c=window._clientesCache.find(x=>x.cliente_id===clienteId);
+  if(c){
+    window.activeCliente={cliente_id:c.cliente_id,nombre:c.nombre,campana:c.campana,canales:c.canales,agentes:c.agentes};
+    badgeName.textContent=c.nombre;
+    badge.style.display='inline-flex';
+  }
+}
+
 document.addEventListener('DOMContentLoaded',async()=>{
   const msgs=document.getElementById('chat-msgs');
   if(chatHistory.length>0&&msgs){
@@ -1416,6 +1474,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   dropZone.addEventListener('dragleave',()=>{dropZone.style.outline='';});
   dropZone.addEventListener('drop',async e=>{e.preventDefault();dropZone.style.outline='';const file=e.dataTransfer?.files?.[0];if(file)await _setPendingImage(file);});
   loadGmailStatus();
+  loadClientes();
 });
 
 /* ── sendMsg — uses currentAgent routing ── */
@@ -1439,7 +1498,7 @@ async function sendMsg(){
     addMsg('user',text);showTyping();
     try{
       const agentUrl=currentAgent.url+currentAgent.endpoint;
-      const r=await fetch(agentUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mensaje:text,user_id:USER_ID,telegram_chat_id:USER_ID})});
+      const r=await fetch(agentUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mensaje:text,user_id:USER_ID,telegram_chat_id:USER_ID,cliente_id:window.activeCliente?.cliente_id||'arranca'})});
       const d=await r.json();removeTyping();
       addMsg('agent',d.respuesta||'Sin respuesta.');
     }catch(e){removeTyping();addMsg('agent','Error de conexión con '+document.getElementById('chat-name').textContent+': '+e.message);}
