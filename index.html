@@ -1750,7 +1750,7 @@ async function wizCrearCliente(){
   if(!SUPA_URL||!SUPA_KEY||SUPA_URL.includes('__')){document.getElementById('wiz-err').textContent='Configura Supabase en ⚙️ primero';return;}
   var nb=document.getElementById('wiz-next');
   nb.textContent='⏳ Guardando...';nb.disabled=true;
-  var clienteId=wizData._clienteId;
+  var clienteId=wizData._clienteId+'_'+Date.now();
   var payload={cliente_id:clienteId,nombre:wizData.nombre,industria:wizData.industria,email:wizData.email,telefono:wizData.telefono,plan:wizData.plan,canales:wizData.canales,campana:wizData.campana,agentes:wizData.agentes,conexiones:wizData.conexiones,activo:true,user_id:USER_ID};
   console.log('Wizard payload a Supabase:', JSON.stringify(payload, null, 2));
   try{
