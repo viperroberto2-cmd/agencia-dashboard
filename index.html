@@ -436,7 +436,17 @@ body{background:#EBEBF0 !important}
 .chat-layout{
   display:grid;grid-template-columns:260px 1fr;
   gap:16px;height:calc(100vh - 104px);
+  transition:grid-template-columns .25s ease;
 }
+.chat-layout.has-analytics{grid-template-columns:260px 1fr 300px}
+#analytics-sidebar{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  display:none;flex-direction:column;overflow:hidden;
+}
+#analytics-sidebar.visible{display:flex;animation:an-slide .22s ease}
+@keyframes an-slide{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+@keyframes an-blink{0%,100%{opacity:1}50%{opacity:.2}}
+.an-live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#FFB800;animation:an-blink 1.8s ease infinite;flex-shrink:0}
 .chat-agents{
   background:var(--surface);border:1px solid var(--border);
   border-radius:16px;overflow-y:auto;padding:16px;
@@ -921,6 +931,77 @@ body{background:#EBEBF0 !important}
           <button class="send-btn" id="send-btn" onclick="sendMsg()">Enviar</button>
         </div>
       </div>
+
+      <!-- ══ ANALYTICS SIDEBAR ══ -->
+      <div id="analytics-sidebar">
+        <!-- Header -->
+        <div style="padding:11px 14px;border-bottom:2px solid #FFB800;display:flex;align-items:center;justify-content:space-between;background:var(--surface2)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="an-live-dot"></span>
+            <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:#FFB800;letter-spacing:.14em;text-transform:uppercase">Reporte en Vivo</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span id="an-sb-updated" style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">—</span>
+            <button onclick="loadAnalyticsSidebar()" title="Actualizar" style="background:rgba(255,184,0,0.12);border:1px solid rgba(255,184,0,0.35);border-radius:5px;color:#FFB800;font-size:11px;padding:1px 7px;cursor:pointer;font-family:var(--font-mono);line-height:1.6">↺</button>
+          </div>
+        </div>
+        <!-- Body -->
+        <div style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:14px">
+
+          <!-- KPIs -->
+          <div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px">Métricas — Esta Semana</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center">
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Leads</div>
+                <div id="an-sb-total" style="font-family:var(--font-display);font-size:22px;letter-spacing:.03em">—</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center">
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Cerrados</div>
+                <div id="an-sb-cerrados" style="font-family:var(--font-display);font-size:22px;color:#00D084;letter-spacing:.03em">—</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center">
+                <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Conv.</div>
+                <div id="an-sb-pct" style="font-family:var(--font-display);font-size:22px;color:#7C3AED;letter-spacing:.03em">—</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Revenue -->
+          <div style="background:linear-gradient(135deg,rgba(255,184,0,0.07),rgba(255,184,0,0.02));border:1px solid rgba(255,184,0,0.22);border-radius:10px;padding:12px">
+            <div style="font-family:var(--font-mono);font-size:9px;color:rgba(255,184,0,0.65);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Revenue Estimado</div>
+            <div id="an-sb-revenue" style="font-family:var(--font-display);font-size:26px;color:#FFB800;letter-spacing:.04em">$0</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:rgba(255,184,0,0.4);margin-top:2px">cerrados × $197</div>
+          </div>
+
+          <!-- Leads mini table -->
+          <div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px">Leads Recientes (7d)</div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+              <table style="width:100%;border-collapse:collapse">
+                <tbody id="an-sb-tbody">
+                  <tr><td colspan="4" style="padding:12px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--muted)">Cargando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Facebook Ads -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em">Facebook Ads</div>
+              <button id="an-sb-fb-btn" onclick="loadSidebarFbAds()" style="background:rgba(24,119,242,0.1);border:1px solid rgba(24,119,242,0.3);border-radius:5px;color:#1877F2;font-family:var(--font-mono);font-size:10px;padding:2px 8px;cursor:pointer">Cargar FB</button>
+            </div>
+            <div id="an-sb-fbads" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px">Presiona "Cargar FB".</div>
+          </div>
+
+          <!-- Telegram button -->
+          <button onclick="enviarReporteTelegram(this)" style="width:100%;padding:11px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.08em;cursor:pointer;text-transform:uppercase;box-shadow:0 4px 14px var(--primary-glow)">📤 Enviar a Telegram</button>
+
+        </div>
+      </div>
+      <!-- ══ FIN ANALYTICS SIDEBAR ══ -->
+
     </div>
   </div>
 
@@ -1304,6 +1385,17 @@ function selectAgent(el,emoji,name,role){
     hist.forEach(m=>_renderMsg(m.role==='user'?'user':'agent',m.content));
   }else{
     _renderMsg('agent',_WELCOME[name]||'Hola Roberto. Soy '+name+'. ¿En qué te ayudo?');
+  }
+  // Analytics sidebar
+  const sb=document.getElementById('analytics-sidebar');
+  const layout=document.querySelector('.chat-layout');
+  if(name==='Analytics'){
+    sb.style.display='flex';sb.classList.add('visible');
+    layout.classList.add('has-analytics');
+    loadAnalyticsSidebar();
+  }else{
+    sb.style.display='none';sb.classList.remove('visible');
+    layout.classList.remove('has-analytics');
   }
 }
 
@@ -2048,6 +2140,74 @@ async function generarReporteAnalytics(btn){
     const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),8000);
     await fetch(`${ANALYTICS_URL}/analytics/reporte`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:USER_ID,enviar_telegram:true}),signal:ctrl.signal});
     btn.textContent='✅ Enviado a Telegram';
+  }catch(e){btn.textContent='❌ Bot offline';}
+  setTimeout(()=>{btn.textContent=orig;btn.disabled=false;},3000);
+}
+
+/* ── Analytics Sidebar ── */
+async function loadAnalyticsSidebar(){
+  document.getElementById('an-sb-updated').textContent=new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+  const{url:SU,key:SK}=_getSupaCfg();
+  if(!SU||SU.includes('__')){
+    document.getElementById('an-sb-tbody').innerHTML='<tr><td colspan="4" style="padding:10px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--muted)">Sin Supabase</td></tr>';
+    return;
+  }
+  const since=new Date(Date.now()-7*86400000).toISOString();
+  let leads=[];
+  try{
+    const r=await fetch(`${SU}/rest/v1/leads?order=ts_creado.desc&limit=300`,{headers:{'apikey':SK,'Authorization':'Bearer '+SK}});
+    const all=await r.json();
+    leads=Array.isArray(all)?all.filter(l=>l.ts_creado>=since):[];
+  }catch(e){console.error('sb leads:',e);}
+  const total=leads.length,cerrados=leads.filter(l=>l.estado==='cerrado').length;
+  const pct=total>0?Math.round(cerrados/total*100):0;
+  document.getElementById('an-sb-total').textContent=total;
+  document.getElementById('an-sb-cerrados').textContent=cerrados;
+  document.getElementById('an-sb-pct').textContent=pct+'%';
+  document.getElementById('an-sb-revenue').textContent='$'+(cerrados*197).toLocaleString();
+  const tbody=document.getElementById('an-sb-tbody');
+  if(!leads.length){tbody.innerHTML='<tr><td colspan="4" style="padding:10px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--muted)">Sin leads esta semana</td></tr>';return;}
+  const sc={nuevo:'#7C3AED',contactado:'#3B82F6',interesado:'#F59E0B',cerrado:'#00D084'};
+  tbody.innerHTML=leads.slice(0,8).map(l=>{
+    const f=l.ts_creado?new Date(l.ts_creado).toLocaleDateString('es',{month:'short',day:'numeric'}):'—';
+    const col=sc[l.estado]||'var(--muted)';
+    return`<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:5px 8px;font-size:12px;font-weight:500;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.nombre||'—'}</td>
+      <td style="padding:5px 8px;font-family:var(--font-mono);font-size:10px;color:var(--muted)">${(l.canal||l.canal_preferido||'—').slice(0,8)}</td>
+      <td style="padding:5px 8px"><span style="padding:1px 6px;border-radius:20px;font-family:var(--font-mono);font-size:9px;font-weight:700;background:${col}22;color:${col}">${l.estado||'—'}</span></td>
+      <td style="padding:5px 8px;font-family:var(--font-mono);font-size:10px;color:var(--muted)">${f}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadSidebarFbAds(){
+  const el=document.getElementById('an-sb-fbads');
+  const btn=document.getElementById('an-sb-fb-btn');
+  btn.textContent='⏳';btn.disabled=true;
+  try{
+    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),5000);
+    const r=await fetch(`${ANALYTICS_URL}/analytics/reporte`,{signal:ctrl.signal});
+    const d=await r.json();const m=d.metrics||d;
+    el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">
+      ${[['IMP',m.impressions],['CLICS',m.clicks],['SPEND',m.spend?'$'+m.spend:'—']].map(([l,v])=>`
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase">${l}</div>
+        <div style="font-family:var(--font-display);font-size:14px;color:#FFB800;margin-top:2px">${v!=null?v:'—'}</div>
+      </div>`).join('')}
+    </div>${m.ctr!=null?`<div style="margin-top:6px;font-family:var(--font-mono);font-size:10px;color:var(--muted)">CTR: ${m.ctr}% · ROAS: ${m.roas||'—'}x</div>`:''}`;
+    btn.textContent='↺ FB';btn.disabled=false;
+  }catch(e){
+    el.innerHTML='<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">Bot offline — levanta en Railway<br><span style="color:#FFB800;font-size:10px">upbeat-endurance.up.railway.app</span></div>';
+    btn.textContent='↺ Reintentar';btn.disabled=false;
+  }
+}
+
+async function enviarReporteTelegram(btn){
+  const orig=btn.textContent;btn.textContent='⏳ Enviando...';btn.disabled=true;
+  try{
+    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),8000);
+    await fetch(`${ANALYTICS_URL}/analytics/reporte`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:USER_ID,enviar_telegram:true}),signal:ctrl.signal});
+    btn.textContent='✅ Enviado';
   }catch(e){btn.textContent='❌ Bot offline';}
   setTimeout(()=>{btn.textContent=orig;btn.disabled=false;},3000);
 }
