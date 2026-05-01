@@ -891,7 +891,7 @@ body{background:#EBEBF0 !important}
   <div class="panel content" id="panel-chat" style="padding:20px">
     <div class="chat-layout">
       <div class="chat-agents">
-        <div class="chat-agents-title">Tu equipo (10)</div>
+        <div class="chat-agents-title">Tu equipo (11)</div>
         <div class="chat-agent-item active" onclick="selectAgent(this,'🎯','Organizador','CEO · Delega y coordina')" data-name="Organizador">
           <span class="chat-agent-emoji">🎯</span>
           <div><div class="chat-agent-name">Organizador</div><div class="chat-agent-role">CEO · Delega y coordina</div></div>
@@ -931,6 +931,10 @@ body{background:#EBEBF0 !important}
         <div class="chat-agent-item" onclick="selectAgent(this,'🌐','WebDesigner','Web · Páginas y landing pages')" data-name="WebDesigner">
           <span class="chat-agent-emoji">🌐</span>
           <div><div class="chat-agent-name">Web Designer</div><div class="chat-agent-role">Web · Páginas animadas y deploy</div></div>
+        </div>
+        <div class="chat-agent-item" onclick="selectAgent(this,'🎞️','Motion','Motion Graphics · Remotion y Lottie')" data-name="Motion">
+          <span class="chat-agent-emoji">🎞️</span>
+          <div><div class="chat-agent-name">Motion Bot</div><div class="chat-agent-role">Gráficas animadas · Remotion · Lottie</div></div>
         </div>
       </div>
       <div class="chat-main">
@@ -1126,7 +1130,7 @@ body{background:#EBEBF0 !important}
   <div class="panel content" id="panel-agents">
     <div class="section-header">
       <span class="section-title">Tu equipo de agentes</span>
-      <span class="section-count">10 agentes activos</span>
+      <span class="section-count">11 agentes activos</span>
     </div>
     <div class="agents-grid">
       <div class="agent-card active" onclick="showPanel('chat',document.querySelectorAll('.nav-btn')[1])">
@@ -1199,6 +1203,13 @@ body{background:#EBEBF0 !important}
         <div class="agent-status"><div class="dot dot-offline" id="webdesigner-dot"></div><span class="txt-offline" id="webdesigner-status-txt">chequeando…</span></div>
         <div class="agent-tags"><span class="tag">Canvas Scroll</span><span class="tag">GSAP</span><span class="tag">Three.js</span><span class="tag">Hostinger</span></div>
       </div>
+      <div class="agent-card" id="motion-card" onclick="showPanel('chat',document.querySelectorAll('.nav-btn')[1]);setTimeout(()=>{document.querySelector('.chat-agent-item[onclick*=\'Motion\']')?.click();},100)">
+        <span class="agent-emoji">🎞️</span>
+        <div class="agent-name">Motion Bot</div>
+        <div class="agent-role">Motion graphics · Lottie JSON · Remotion render</div>
+        <div class="agent-status"><div class="dot dot-offline" id="motion-dot"></div><span class="txt-offline" id="motion-status-txt">chequeando…</span></div>
+        <div class="agent-tags"><span class="tag">Remotion</span><span class="tag">Lottie</span><span class="tag">FFmpeg</span><span class="tag">FTP deploy</span></div>
+      </div>
     </div>
   </div>
   <script>
@@ -1206,6 +1217,7 @@ body{background:#EBEBF0 !important}
   (function(){var d=document.getElementById('scraper-dot'),t=document.getElementById('scraper-status-txt');if(!d)return;var c=new AbortController();setTimeout(function(){c.abort();},5000);fetch('https://agencia-ai-scraper-production.up.railway.app/health',{signal:c.signal,mode:'no-cors'}).then(function(){d.className='dot dot-online';t.className='txt-online';t.textContent='online';}).catch(function(){d.className='dot dot-offline';t.textContent='offline';});})();
   (function(){var d=document.getElementById('seo-dot'),t=document.getElementById('seo-status-txt');if(!d)return;var c=new AbortController();setTimeout(function(){c.abort();},5000);fetch('https://agencia-ai-seo-production.up.railway.app/health',{signal:c.signal,mode:'no-cors'}).then(function(){d.className='dot dot-online';t.className='txt-online';t.textContent='online';}).catch(function(){d.className='dot dot-offline';t.textContent='offline';});})();
   (function(){var d=document.getElementById('webdesigner-dot'),t=document.getElementById('webdesigner-status-txt');if(!d)return;var c=new AbortController();setTimeout(function(){c.abort();},5000);fetch('https://agencia-ai-web-designer-production.up.railway.app/web/health',{signal:c.signal,mode:'no-cors'}).then(function(){d.className='dot dot-online';t.className='txt-online';t.textContent='online';}).catch(function(){d.className='dot dot-offline';t.textContent='offline';});})();
+  (function(){var d=document.getElementById('motion-dot'),t=document.getElementById('motion-status-txt');if(!d)return;var c=new AbortController();setTimeout(function(){c.abort();},5000);fetch('https://agencia-ai-motion-production.up.railway.app/motion/health',{signal:c.signal,mode:'no-cors'}).then(function(){d.className='dot dot-online';t.className='txt-online';t.textContent='online';}).catch(function(){d.className='dot dot-offline';t.textContent='offline';});})();
   </script>
 
   <!-- ══════════════════════════════════════ PANEL: CLIENTS ════════════════ -->
@@ -1434,6 +1446,7 @@ const AGENT_MAP = {
   'Scraper':       { url: SCRAPER_URL,  endpoint: '/scraper/task'     },
   'SEO':           { url: SEO_URL,      endpoint: '/seo/task'         },
   'WebDesigner':   { url: 'https://agencia-ai-web-designer-production.up.railway.app', endpoint: '/web/chat' },
+  'Motion':        { url: 'https://agencia-ai-motion-production.up.railway.app', endpoint: '/motion/chat' },
 };
 let currentAgent = AGENT_MAP['Organizador'];
 
@@ -1491,6 +1504,7 @@ const _WELCOME={
   'Scraper':       'Hola Roberto. Soy el Scraper — inteligencia competitiva.',
   'SEO':           'Hola Roberto. Soy el SEO Strategist — keywords y contenido.',
   'WebDesigner':   'Hola Roberto. Soy el Web Designer — landing pages, canvas scroll y deploy a Hostinger. Dime qué página construimos.',
+  'Motion':        'Hola Roberto. Soy Motion Bot — intros, lower thirds, reels, stories y animaciones Lottie. Usa /intro, /lowerthird, /reel, /stories o /lottie, o dime qué necesitas.',
 };
 
 function selectAgent(el,emoji,name,role){
