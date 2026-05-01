@@ -680,6 +680,14 @@ body{background:#EBEBF0 !important}
     </svg>
   </button>
 
+  <button class="nav-btn" onclick="showPanel('analytics',this)" title="Analytics">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="3" y="12" width="4" height="9" rx="1"/>
+      <rect x="10" y="7" width="4" height="14" rx="1"/>
+      <rect x="17" y="3" width="4" height="18" rx="1"/>
+    </svg>
+  </button>
+
   <div class="sidebar-bottom">
     <button class="nav-btn" onclick="showPanel('home',this)" title="Configuración">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -962,7 +970,7 @@ body{background:#EBEBF0 !important}
         <span class="agent-emoji">📈</span>
         <div class="agent-name">Analytics</div>
         <div class="agent-role">Reportes semanales y métricas</div>
-        <div class="agent-status"><div class="dot" style="background:#FFB800;box-shadow:0 0 6px rgba(255,184,0,0.6)"></div><span style="color:#FFB800;font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em">TELEGRAM ONLY</span></div>
+        <div class="agent-status"><div class="dot" style="background:#FFB800;box-shadow:0 0 6px rgba(255,184,0,0.6)"></div><span style="color:#FFB800;font-family:var(--font-mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em">ACTIVO</span></div>
         <div class="agent-tags"><span class="tag">Reportes</span><span class="tag">Métricas</span></div>
       </div>
       <div class="agent-card" id="compositor-card" onclick="showPanel('chat',document.querySelectorAll('.nav-btn')[1]);setTimeout(()=>{document.querySelector('.chat-agent-item[onclick*=\'CompositorBot\']')?.click();},100)">
@@ -1199,8 +1207,9 @@ body{background:#EBEBF0 !important}
 const ORG_URL      = 'https://web-production-77871.up.railway.app';
 const DIRECTOR_URL = 'https://agencia-ai-production.up.railway.app';
 const STRATEGY_URL = 'https://worker-production-035f.up.railway.app';
-const SCRAPER_URL  = 'https://agencia-ai-scraper-production.up.railway.app';
-const SEO_URL      = 'https://agencia-ai-seo-production.up.railway.app';
+const SCRAPER_URL    = 'https://agencia-ai-scraper-production.up.railway.app';
+const SEO_URL        = 'https://agencia-ai-seo-production.up.railway.app';
+const ANALYTICS_URL  = 'https://upbeat-endurance.up.railway.app';
 const USER_ID      = '8534665260';
 const _CHAT_KEY    = 'chat_history_' + USER_ID;
 let chatHistory    = JSON.parse(localStorage.getItem(_CHAT_KEY) || '[]');
@@ -1246,7 +1255,7 @@ let currentAgent = AGENT_MAP['Organizador'];
   setInterval(_checkDeploy,60000);
 })();
 
-const TITLES={home:'DASHBOARD',chat:'CHAT',agents:'AGENTES',clients:'CLIENTES',integrations:'INTEGRACIONES',aprobacion:'APROBAR POSTS','crear-bot':'ONBOARDING',gdrive:'GOOGLE DRIVE',crm:'CRM — LEADS',grabaciones:'GRABACIONES',playwright:'PLAYWRIGHT'};
+const TITLES={home:'DASHBOARD',chat:'CHAT',agents:'AGENTES',clients:'CLIENTES',integrations:'INTEGRACIONES',aprobacion:'APROBAR POSTS','crear-bot':'ONBOARDING',gdrive:'GOOGLE DRIVE',crm:'CRM — LEADS',grabaciones:'GRABACIONES',playwright:'PLAYWRIGHT',analytics:'ANALYTICS'};
 
 let _aprobacionTimer=null;
 function showPanel(id,btn){
@@ -1259,6 +1268,7 @@ function showPanel(id,btn){
   if(id==='aprobacion'){loadAprobacion();_aprobacionTimer=setInterval(loadAprobacion,30000);}
   if(id==='gdrive')loadGoogleDrive();
   if(id==='crm')loadCRM();
+  if(id==='analytics')loadAnalytics();
   if(id==='grabaciones')loadGrabaciones();
   if(id==='crear-bot')wizRender();
 }
@@ -1938,6 +1948,110 @@ async function loadCRM(){
   }catch(e){console.error('CRM error:',e);}
 }
 
+/* ── Analytics ── */
+async function loadAnalytics(){
+  const{url:SU,key:SK}=_getSupaCfg();
+  if(!SU||SU.includes('__'))return;
+  const since=new Date(Date.now()-7*86400000).toISOString();
+  let leads=[];
+  try{
+    const r=await fetch(`${SU}/rest/v1/leads?order=ts_creado.desc&limit=500`,{headers:{'apikey':SK,'Authorization':'Bearer '+SK}});
+    const all=await r.json();
+    leads=Array.isArray(all)?all.filter(l=>l.ts_creado>=since):[];
+  }catch(e){console.error('analytics leads:',e);}
+  _anKPIs(leads);_anCanales(leads);_anChart(leads);_anTable(leads);_anFbAds();
+}
+
+function _anKPIs(leads){
+  const total=leads.length,cerrados=leads.filter(l=>l.estado==='cerrado').length;
+  const pct=total>0?Math.round(cerrados/total*100):0;
+  document.getElementById('an-total-leads').textContent=total;
+  document.getElementById('an-cerrados').textContent=cerrados;
+  document.getElementById('an-cerrados-sub').textContent='de '+total+' leads';
+  document.getElementById('an-conversion').textContent=pct+'%';
+  document.getElementById('an-revenue').textContent='$'+(cerrados*197).toLocaleString();
+}
+
+function _anCanales(leads){
+  const c={llamada:0,sms:0,whatsapp:0,email:0};
+  leads.forEach(l=>{const k=l.canal||l.canal_preferido||'';if(c[k]!==undefined)c[k]++;});
+  const icons={llamada:'📞',sms:'💬',whatsapp:'🟢',email:'📧'};
+  document.getElementById('an-canales').innerHTML=Object.entries(c).map(([k,v])=>`
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:18px;margin-bottom:4px">${icons[k]}</div>
+      <div style="font-family:var(--font-display);font-size:20px">${v}</div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase;margin-top:2px">${k}</div>
+    </div>`).join('');
+}
+
+function _anChart(leads){
+  const days={};const labels=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(Date.now()-i*86400000);
+    const key=d.toISOString().slice(0,10);
+    const lbl=d.toLocaleDateString('es',{weekday:'short'}).slice(0,3);
+    days[key]=0;labels.push({key,lbl});
+  }
+  leads.forEach(l=>{const k=(l.ts_creado||'').slice(0,10);if(days[k]!==undefined)days[k]++;});
+  const max=Math.max(...Object.values(days),1);
+  document.getElementById('an-chart').innerHTML=labels.map(({key})=>{
+    const h=Math.max(Math.round(days[key]/max*76),3);
+    return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text)">${days[key]||''}</div>
+      <div style="width:100%;height:${h}px;background:linear-gradient(180deg,#7C3AED,#A855F7);border-radius:4px 4px 0 0"></div>
+    </div>`;
+  }).join('');
+  document.getElementById('an-chart-labels').innerHTML=labels.map(({lbl})=>
+    `<div style="flex:1;text-align:center;font-family:var(--font-mono);font-size:10px;color:var(--muted)">${lbl}</div>`
+  ).join('');
+}
+
+function _anTable(leads){
+  const tbody=document.getElementById('an-leads-tbody');if(!tbody)return;
+  document.getElementById('an-table-count').textContent=leads.length+' registros';
+  if(!leads.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-family:var(--font-mono);font-size:12px">Sin leads en los últimos 7 días</td></tr>';return;}
+  const sc={nuevo:'#7C3AED',contactado:'#3B82F6',interesado:'#F59E0B',cerrado:'#00D084'};
+  tbody.innerHTML=leads.slice(0,50).map(l=>{
+    const f=l.ts_creado?new Date(l.ts_creado).toLocaleDateString('es',{month:'short',day:'numeric'}):'—';
+    const col=sc[l.estado]||'var(--muted)';
+    return`<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:9px 16px;font-weight:500">${l.nombre||'—'}</td>
+      <td style="padding:9px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted)">${l.canal||l.canal_preferido||'—'}</td>
+      <td style="padding:9px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted)">${l.fuente||l.agente||'—'}</td>
+      <td style="padding:9px 16px"><span style="padding:2px 8px;border-radius:20px;font-family:var(--font-mono);font-size:11px;font-weight:600;background:${col}18;color:${col}">${l.estado||'—'}</span></td>
+      <td style="padding:9px 16px;font-family:var(--font-mono);font-size:12px;color:var(--muted)">${f}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function _anFbAds(){
+  const el=document.getElementById('fb-ads-section');if(!el)return;
+  try{
+    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),5000);
+    const r=await fetch(`${ANALYTICS_URL}/analytics/reporte`,{signal:ctrl.signal});
+    const d=await r.json();const m=d.metrics||d;
+    el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      ${[['Impresiones',m.impressions],['Clics',m.clicks],['CTR',m.ctr?m.ctr+'%':'—'],['Spend',m.spend?'$'+m.spend:'—'],['ROAS',m.roas||'—'],['Alcance',m.reach||'—']].map(([l,v])=>`
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px">
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase">${l}</div>
+        <div style="font-family:var(--font-display);font-size:16px">${v!==undefined&&v!==null?v:'—'}</div>
+      </div>`).join('')}
+    </div>`;
+  }catch(e){
+    el.innerHTML='<div style="color:var(--muted);font-family:var(--font-mono);font-size:12px;line-height:1.8">Bot Analytics offline<br><span style="font-size:10px;opacity:.6">upbeat-endurance.up.railway.app</span><br><span style="font-size:10px;color:#FFB800">Levanta el servicio en Railway para ver FB Ads</span></div>';
+  }
+}
+
+async function generarReporteAnalytics(btn){
+  const orig=btn.textContent;btn.textContent='⏳ Generando...';btn.disabled=true;
+  try{
+    const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),8000);
+    await fetch(`${ANALYTICS_URL}/analytics/reporte`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:USER_ID,enviar_telegram:true}),signal:ctrl.signal});
+    btn.textContent='✅ Enviado a Telegram';
+  }catch(e){btn.textContent='❌ Bot offline';}
+  setTimeout(()=>{btn.textContent=orig;btn.disabled=false;},3000);
+}
+
 async function agregarLead(){
   const SUPABASE_URL=window.SUPABASE_URL||'';const SUPABASE_KEY=window.SUPABASE_ANON_KEY||'';
   const nombre=document.getElementById('lead-nombre').value;if(!nombre){alert('El nombre es requerido');return;}
@@ -2275,6 +2389,86 @@ loadPlaywrightLogs();
   <div style="display:flex;gap:10px;flex-wrap:wrap">
     <button onclick="exportarSheets()" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);font-family:var(--font)">📤 Exportar a Sheets</button>
     <button onclick="abrirImportarSheets()" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);font-family:var(--font)">📥 Importar desde Sheets</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ PANEL: ANALYTICS ════════════════ -->
+<div class="panel content" id="panel-analytics" style="flex-direction:column;gap:20px;overflow-y:auto">
+  <div class="section-header">
+    <span class="section-title">📊 Analytics</span>
+    <div style="display:flex;gap:8px">
+      <button onclick="loadAnalytics()" style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--text);font-family:var(--font-mono)">↺ Actualizar</button>
+      <button id="btn-generar-reporte" onclick="generarReporteAnalytics(this)" style="padding:6px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 4px 10px var(--primary-glow)">📤 Generar Reporte</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Total Leads (7d)</div>
+      <div id="an-total-leads" style="font-family:var(--font-display);font-size:30px;letter-spacing:.04em">—</div>
+      <div id="an-leads-sub" style="font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--font-mono)">esta semana</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Cerrados</div>
+      <div id="an-cerrados" style="font-family:var(--font-display);font-size:30px;letter-spacing:.04em;color:#00D084">—</div>
+      <div id="an-cerrados-sub" style="font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--font-mono)">de — leads</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Conversión</div>
+      <div id="an-conversion" style="font-family:var(--font-display);font-size:30px;letter-spacing:.04em;color:#7C3AED">—</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--font-mono)">cerrados / total</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Revenue Est.</div>
+      <div id="an-revenue" style="font-family:var(--font-display);font-size:30px;letter-spacing:.04em;color:#FFB800">—</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--font-mono)">cerrados × $197</div>
+    </div>
+  </div>
+
+  <!-- Canales -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Leads por Canal</div>
+    <div id="an-canales" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+      <div style="color:var(--muted);font-family:var(--font-mono);font-size:12px">Cargando...</div>
+    </div>
+  </div>
+
+  <!-- Chart + FB Ads -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Leads por Día (7d)</div>
+      <div id="an-chart" style="display:flex;align-items:flex-end;gap:5px;height:80px;padding-bottom:2px"></div>
+      <div id="an-chart-labels" style="display:flex;gap:5px;margin-top:6px"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Facebook Ads — act_2622567464589584</div>
+      <div id="fb-ads-section"><div style="color:var(--muted);font-family:var(--font-mono);font-size:12px">Cargando...</div></div>
+    </div>
+  </div>
+
+  <!-- Tabla leads recientes -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Leads Recientes (7 días)</span>
+      <span id="an-table-count" style="font-family:var(--font-mono);font-size:11px;color:var(--muted)"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:var(--surface2)">
+            <th style="text-align:left;padding:10px 16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;border-bottom:1px solid var(--border)">NOMBRE</th>
+            <th style="text-align:left;padding:10px 16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;border-bottom:1px solid var(--border)">CANAL</th>
+            <th style="text-align:left;padding:10px 16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;border-bottom:1px solid var(--border)">FUENTE</th>
+            <th style="text-align:left;padding:10px 16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;border-bottom:1px solid var(--border)">ESTADO</th>
+            <th style="text-align:left;padding:10px 16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;border-bottom:1px solid var(--border)">FECHA</th>
+          </tr>
+        </thead>
+        <tbody id="an-leads-tbody">
+          <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-family:var(--font-mono);font-size:12px">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
