@@ -440,6 +440,7 @@ body{background:#EBEBF0 !important}
   transition:grid-template-columns .25s ease;
 }
 .chat-layout.has-analytics{grid-template-columns:260px 1fr 300px}
+.chat-layout.has-scheduler{grid-template-columns:260px 1fr 300px}
 #analytics-sidebar{
   background:var(--surface);border:1px solid var(--border);border-radius:16px;
   display:none;flex-direction:column;overflow:hidden;
@@ -448,6 +449,35 @@ body{background:#EBEBF0 !important}
 @keyframes an-slide{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
 @keyframes an-blink{0%,100%{opacity:1}50%{opacity:.2}}
 .an-live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#FFB800;animation:an-blink 1.8s ease infinite;flex-shrink:0}
+/* ── Scheduler Sidebar ── */
+#scheduler-sidebar{
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  display:none;flex-direction:column;overflow:hidden;
+}
+#scheduler-sidebar.visible{display:flex;animation:sch-slide .22s ease}
+@keyframes sch-slide{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+@keyframes sch-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.82)}}
+.sch-live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#00C9A7;animation:sch-pulse 2s ease infinite;flex-shrink:0}
+/* Cal grid */
+.sch-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.sch-cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:9px;border-radius:5px;position:relative;cursor:default;
+  color:var(--muted);transition:background .15s}
+.sch-cal-day.today{background:rgba(0,201,167,.18);color:#00C9A7;font-weight:700}
+.sch-cal-day.has-post{color:var(--fg)}
+.sch-cal-day .sch-dot{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;border-radius:50%;background:#00C9A7}
+/* Platform chips */
+.sch-plat{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:12px;
+  font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.sch-plat.fb{background:rgba(24,119,242,.15);color:#1877F2;border:1px solid rgba(24,119,242,.3)}
+.sch-plat.ig{background:rgba(225,48,108,.15);color:#E1306C;border:1px solid rgba(225,48,108,.3)}
+.sch-plat.tw{background:rgba(29,155,240,.15);color:#1D9BF0;border:1px solid rgba(29,155,240,.3)}
+.sch-plat.li{background:rgba(0,119,181,.15);color:#0077B5;border:1px solid rgba(0,119,181,.3)}
+.sch-plat.yt{background:rgba(255,0,0,.12);color:#FF0000;border:1px solid rgba(255,0,0,.25)}
+/* Timeline bars */
+.sch-tl-bar{height:5px;border-radius:3px;background:rgba(0,201,167,.35);transition:width .4s ease}
+.sch-tl-bar.active{background:#00C9A7}
 .chat-agents{
   background:var(--surface);border:1px solid var(--border);
   border-radius:16px;overflow-y:auto;padding:16px;
@@ -1006,6 +1036,80 @@ body{background:#EBEBF0 !important}
       </div>
       <!-- ══ FIN ANALYTICS SIDEBAR ══ -->
 
+      <!-- ══ SCHEDULER SIDEBAR ══ -->
+      <div id="scheduler-sidebar">
+        <!-- Header -->
+        <div style="padding:11px 14px;border-bottom:2px solid #00C9A7;display:flex;align-items:center;justify-content:space-between;background:var(--surface2)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="sch-live-dot"></span>
+            <span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:#00C9A7;letter-spacing:.14em;text-transform:uppercase">Content Calendar</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span id="sch-sb-updated" style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">—</span>
+            <button onclick="loadSchedulerSidebar()" title="Actualizar" style="background:rgba(0,201,167,0.1);border:1px solid rgba(0,201,167,0.35);border-radius:5px;color:#00C9A7;font-size:11px;padding:1px 7px;cursor:pointer;font-family:var(--font-mono);line-height:1.6">↺</button>
+          </div>
+        </div>
+        <!-- Body -->
+        <div style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:14px">
+
+          <!-- Monthly Calendar -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em">Calendario</div>
+              <div id="sch-cal-month" style="font-family:var(--font-mono);font-size:9px;color:#00C9A7;font-weight:700;text-transform:uppercase;letter-spacing:.1em">—</div>
+            </div>
+            <!-- Day headers -->
+            <div class="sch-cal-grid" style="margin-bottom:4px">
+              <div style="font-family:var(--font-mono);font-size:8px;color:var(--muted);text-align:center;padding:2px 0">D</div>
+              <div style="font-family:var(--font-mono);font-size:8px;color:var(--muted);text-align:center;padding:2px 0">L</div>
+              <div style="font-family:var(--font-mono);font-size:8px;color:var(--muted);text-align:center;padding:2px 0">M</div>
+              <div style="font-family:var(--font-mono);font-size:8px;color:var(--muted);text-align:center;padding:2px 0">X</div>
+              <div style="font-family:var(--font-mono);font-size:8px;color:var(--muted);text-align:center;padding:2px 0">J</div>
+              <div style="font-family:var(--font-mono);font-size:8px;color:var(--muted);text-align:center;padding:2px 0">V</div>
+              <div style="font-family:var(--font-mono);font-size:8px;color:var(--muted);text-align:center;padding:2px 0">S</div>
+            </div>
+            <div id="sch-cal-grid" class="sch-cal-grid"></div>
+          </div>
+
+          <!-- Posts de hoy -->
+          <div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px">Posts de Hoy</div>
+            <div id="sch-posts-hoy" style="display:flex;flex-direction:column;gap:6px">
+              <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center">Cargando...</div>
+            </div>
+          </div>
+
+          <!-- Próximos 7 días -->
+          <div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px">Próximos 7 Días</div>
+            <div id="sch-timeline" style="display:flex;flex-direction:column;gap:5px"></div>
+          </div>
+
+          <!-- Programar nuevo post -->
+          <div>
+            <button onclick="toggleNuevoPostForm()" id="sch-btn-nuevo" style="width:100%;padding:11px;background:linear-gradient(135deg,#00C9A7,#00A88A);color:#0D0D0D;border:none;border-radius:10px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.08em;cursor:pointer;text-transform:uppercase;box-shadow:0 4px 14px rgba(0,201,167,0.4);display:flex;align-items:center;justify-content:center;gap:6px">＋ Programar Nuevo Post</button>
+            <!-- Inline form -->
+            <div id="sch-form-nuevo" style="display:none;flex-direction:column;gap:8px;margin-top:10px;background:var(--surface2);border:1px solid rgba(0,201,167,0.25);border-radius:10px;padding:12px">
+              <select id="sch-f-plat" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--fg);font-family:var(--font-mono);font-size:11px;padding:6px 8px">
+                <option value="facebook">📘 Facebook</option>
+                <option value="instagram">📸 Instagram</option>
+                <option value="twitter">🐦 Twitter / X</option>
+                <option value="linkedin">💼 LinkedIn</option>
+                <option value="youtube">▶️ YouTube</option>
+              </select>
+              <input id="sch-f-fecha" type="datetime-local" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--fg);font-family:var(--font-mono);font-size:11px;padding:6px 8px">
+              <textarea id="sch-f-content" rows="3" placeholder="Contenido del post..." style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--fg);font-family:var(--font-mono);font-size:11px;padding:7px 8px;resize:none"></textarea>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <button onclick="guardarNuevoPost(this)" style="padding:8px;background:rgba(0,201,167,0.15);border:1px solid rgba(0,201,167,0.4);border-radius:7px;color:#00C9A7;font-family:var(--font-mono);font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase">✓ Guardar</button>
+                <button onclick="toggleNuevoPostForm()" style="padding:8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:var(--font-mono);font-size:10px;cursor:pointer;text-transform:uppercase">✕ Cancelar</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- ══ FIN SCHEDULER SIDEBAR ══ -->
+
     </div>
   </div>
 
@@ -1390,16 +1494,22 @@ function selectAgent(el,emoji,name,role){
   }else{
     _renderMsg('agent',_WELCOME[name]||'Hola Roberto. Soy '+name+'. ¿En qué te ayudo?');
   }
-  // Analytics sidebar
-  const sb=document.getElementById('analytics-sidebar');
+  // Sidebars
+  const anSb=document.getElementById('analytics-sidebar');
+  const schSb=document.getElementById('scheduler-sidebar');
   const layout=document.querySelector('.chat-layout');
+  // Reset both
+  anSb.style.display='none';anSb.classList.remove('visible');
+  schSb.style.display='none';schSb.classList.remove('visible');
+  layout.classList.remove('has-analytics','has-scheduler');
   if(name==='Analytics'){
-    sb.style.display='flex';sb.classList.add('visible');
+    anSb.style.display='flex';anSb.classList.add('visible');
     layout.classList.add('has-analytics');
     loadAnalyticsSidebar();
-  }else{
-    sb.style.display='none';sb.classList.remove('visible');
-    layout.classList.remove('has-analytics');
+  }else if(name==='Scheduler'){
+    schSb.style.display='flex';schSb.classList.add('visible');
+    layout.classList.add('has-scheduler');
+    loadSchedulerSidebar();
   }
 }
 
@@ -2363,6 +2473,134 @@ async function descargarPDF(btn){
     btn.textContent='❌ Error: '+(e.message||'jsPDF');
   }
   setTimeout(()=>{btn.textContent=orig;btn.disabled=false;},3000);
+}
+
+/* ── Scheduler Sidebar ── */
+const SCH_PLAT_MAP={facebook:{cls:'fb',icon:'📘'},instagram:{cls:'ig',icon:'📸'},twitter:{cls:'tw',icon:'🐦'},linkedin:{cls:'li',icon:'💼'},youtube:{cls:'yt',icon:'▶️'}};
+
+async function loadSchedulerSidebar(){
+  document.getElementById('sch-sb-updated').textContent=new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+  const{url,key}=_getSupaCfg();
+  let posts=[];
+  if(url&&key){
+    try{
+      const now=new Date();
+      const from=new Date(now.getFullYear(),now.getMonth(),1).toISOString();
+      const to=new Date(now.getFullYear(),now.getMonth()+2,0).toISOString();
+      const r=await fetch(`${url}/rest/v1/posts_programados?fecha_hora=gte.${from}&fecha_hora=lte.${to}&order=fecha_hora.asc&limit=100`,
+        {headers:{'apikey':key,'Authorization':'Bearer '+key}});
+      if(r.ok) posts=await r.json();
+    }catch(_){}
+  }
+  _renderCalendar(posts);
+  _renderPostsHoy(posts);
+  _renderTimeline7d(posts);
+}
+
+function _renderCalendar(posts){
+  const now=new Date();
+  const y=now.getFullYear(),m=now.getMonth();
+  document.getElementById('sch-cal-month').textContent=now.toLocaleDateString('es',{month:'long',year:'numeric'}).toUpperCase();
+  const postDays=new Set(posts.map(p=>{const d=new Date(p.fecha_hora);return d.getFullYear()===y&&d.getMonth()===m?d.getDate():null}).filter(Boolean));
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const grid=document.getElementById('sch-cal-grid');grid.innerHTML='';
+  // Empty cells before first day
+  for(let i=0;i<firstDay;i++){const el=document.createElement('div');el.className='sch-cal-day';grid.appendChild(el);}
+  for(let d=1;d<=daysInMonth;d++){
+    const el=document.createElement('div');el.className='sch-cal-day';
+    el.textContent=d;
+    if(d===now.getDate()) el.classList.add('today');
+    if(postDays.has(d)){
+      el.classList.add('has-post');
+      const dot=document.createElement('span');dot.className='sch-dot';el.appendChild(dot);
+    }
+    grid.appendChild(el);
+  }
+}
+
+function _renderPostsHoy(posts){
+  const cont=document.getElementById('sch-posts-hoy');
+  const now=new Date();
+  const hoy=posts.filter(p=>{const d=new Date(p.fecha_hora);return d.toDateString()===now.toDateString()});
+  if(!hoy.length){
+    cont.innerHTML='<div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center">Sin posts hoy</div>';
+    return;
+  }
+  cont.innerHTML=hoy.map(p=>{
+    const plat=SCH_PLAT_MAP[p.plataforma]||{cls:'fb',icon:'📢'};
+    const hora=new Date(p.fecha_hora).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+    const est=p.estado||'pendiente';
+    const estColor={publicado:'#00C9A7',pendiente:'#FFB800',fallido:'#FF3B30'}[est]||'var(--muted)';
+    return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;display:flex;flex-direction:column;gap:5px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span class="sch-plat ${plat.cls}">${plat.icon} ${p.plataforma||'—'}</span>
+        <span style="font-family:var(--font-mono);font-size:10px;color:#00C9A7;font-weight:700">${hora}</span>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--fg);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${(p.contenido||'').replace(/</g,'&lt;')}</div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:${estColor};text-transform:uppercase;letter-spacing:.06em">${est}</div>
+    </div>`;
+  }).join('');
+}
+
+function _renderTimeline7d(posts){
+  const cont=document.getElementById('sch-timeline');cont.innerHTML='';
+  const now=new Date();
+  for(let i=0;i<7;i++){
+    const d=new Date(now);d.setDate(now.getDate()+i);
+    const dayPosts=posts.filter(p=>new Date(p.fecha_hora).toDateString()===d.toDateString());
+    const label=i===0?'HOY':i===1?'MAÑANA':d.toLocaleDateString('es',{weekday:'short',day:'numeric'}).toUpperCase();
+    const pct=Math.min(100,dayPosts.length*25);
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:8px';
+    row.innerHTML=`<div style="font-family:var(--font-mono);font-size:9px;color:${i===0?'#00C9A7':'var(--muted)'};width:44px;flex-shrink:0;text-transform:uppercase;letter-spacing:.05em">${label.slice(0,5)}</div>
+      <div style="flex:1;background:var(--surface2);border-radius:3px;overflow:hidden;height:5px">
+        <div class="sch-tl-bar${i===0?' active':''}" style="width:${pct}%"></div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:${i===0?'#00C9A7':'var(--muted)'};width:14px;text-align:right">${dayPosts.length}</div>`;
+    cont.appendChild(row);
+  }
+}
+
+function toggleNuevoPostForm(){
+  const form=document.getElementById('sch-form-nuevo');
+  const btn=document.getElementById('sch-btn-nuevo');
+  const open=form.style.display==='none'||form.style.display==='';
+  form.style.display=open?'flex':'none';
+  if(open){
+    btn.style.display='none';
+    // Set default datetime to next hour
+    const d=new Date();d.setHours(d.getHours()+1,0,0,0);
+    const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+    document.getElementById('sch-f-fecha').value=local;
+  }else{
+    btn.style.display='flex';
+  }
+}
+
+async function guardarNuevoPost(btn){
+  const orig=btn.textContent;btn.textContent='⏳';btn.disabled=true;
+  const plat=document.getElementById('sch-f-plat').value;
+  const fecha=document.getElementById('sch-f-fecha').value;
+  const content=document.getElementById('sch-f-content').value.trim();
+  if(!fecha||!content){btn.textContent='⚠ Falta info';setTimeout(()=>{btn.textContent=orig;btn.disabled=false;},2000);return;}
+  const{url,key}=_getSupaCfg();
+  if(url&&key){
+    try{
+      await fetch(`${url}/rest/v1/posts_programados`,{
+        method:'POST',
+        headers:{'apikey':key,'Authorization':'Bearer '+key,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify({plataforma:plat,fecha_hora:new Date(fecha).toISOString(),contenido:content,estado:'pendiente'})
+      });
+    }catch(_){}
+  }
+  btn.textContent='✅';
+  setTimeout(()=>{
+    btn.textContent=orig;btn.disabled=false;
+    document.getElementById('sch-f-content').value='';
+    toggleNuevoPostForm();
+    loadSchedulerSidebar();
+  },1200);
 }
 
 async function agregarLead(){
