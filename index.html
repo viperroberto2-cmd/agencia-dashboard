@@ -729,6 +729,11 @@ body{background:#EBEBF0 !important}
     </svg>
   </button>
 
+  <button class="nav-btn" onclick="showPanel('chat',this)" title="Web Designer">
+    🌐
+    <span>WEB</span>
+  </button>
+
   <div class="sidebar-bottom">
     <button class="nav-btn" onclick="showPanel('home',this)" title="Configuración">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -886,7 +891,7 @@ body{background:#EBEBF0 !important}
   <div class="panel content" id="panel-chat" style="padding:20px">
     <div class="chat-layout">
       <div class="chat-agents">
-        <div class="chat-agents-title">Tu equipo (9)</div>
+        <div class="chat-agents-title">Tu equipo (10)</div>
         <div class="chat-agent-item active" onclick="selectAgent(this,'🎯','Organizador','CEO · Delega y coordina')" data-name="Organizador">
           <span class="chat-agent-emoji">🎯</span>
           <div><div class="chat-agent-name">Organizador</div><div class="chat-agent-role">CEO · Delega y coordina</div></div>
@@ -922,6 +927,10 @@ body{background:#EBEBF0 !important}
         <div class="chat-agent-item" onclick="selectAgent(this,'🏷️','SEO','Estratega SEO · Keywords y contenido')" data-name="SEO">
           <span class="chat-agent-emoji">🏷️</span>
           <div><div class="chat-agent-name">SEO Strategist</div><div class="chat-agent-role">Estratega SEO</div></div>
+        </div>
+        <div class="chat-agent-item" onclick="selectAgent(this,'🌐','WebDesigner','Web · Páginas y landing pages')" data-name="WebDesigner">
+          <span class="chat-agent-emoji">🌐</span>
+          <div><div class="chat-agent-name">Web Designer</div><div class="chat-agent-role">Web · Páginas animadas y deploy</div></div>
         </div>
       </div>
       <div class="chat-main">
@@ -1117,7 +1126,7 @@ body{background:#EBEBF0 !important}
   <div class="panel content" id="panel-agents">
     <div class="section-header">
       <span class="section-title">Tu equipo de agentes</span>
-      <span class="section-count">9 agentes activos</span>
+      <span class="section-count">10 agentes activos</span>
     </div>
     <div class="agents-grid">
       <div class="agent-card active" onclick="showPanel('chat',document.querySelectorAll('.nav-btn')[1])">
@@ -1183,12 +1192,20 @@ body{background:#EBEBF0 !important}
         <div class="agent-status"><div class="dot dot-offline" id="seo-dot"></div><span class="txt-offline" id="seo-status-txt">chequeando…</span></div>
         <div class="agent-tags"><span class="tag">Keywords</span><span class="tag">Auditoría</span><span class="tag">Artículos</span><span class="tag">SERP</span></div>
       </div>
+      <div class="agent-card" id="webdesigner-card" onclick="showPanel('chat',document.querySelectorAll('.nav-btn')[1]);setTimeout(()=>{document.querySelector('.chat-agent-item[onclick*=\'WebDesigner\']')?.click();},100)">
+        <span class="agent-emoji">🌐</span>
+        <div class="agent-name">Web Designer</div>
+        <div class="agent-role">Páginas animadas · Scroll effects · Hostinger deploy</div>
+        <div class="agent-status"><div class="dot dot-offline" id="webdesigner-dot"></div><span class="txt-offline" id="webdesigner-status-txt">chequeando…</span></div>
+        <div class="agent-tags"><span class="tag">Canvas Scroll</span><span class="tag">GSAP</span><span class="tag">Three.js</span><span class="tag">Hostinger</span></div>
+      </div>
     </div>
   </div>
   <script>
   (function(){var d=document.getElementById('compositor-dot'),t=document.getElementById('compositor-status-txt');if(!d)return;var c=new AbortController();setTimeout(function(){c.abort();},5000);fetch('https://compositorbot-production.up.railway.app/compositor/health',{signal:c.signal,mode:'no-cors'}).then(function(){d.className='dot dot-online';t.className='txt-online';t.textContent='online';}).catch(function(){d.className='dot dot-offline';t.textContent='offline';});})();
   (function(){var d=document.getElementById('scraper-dot'),t=document.getElementById('scraper-status-txt');if(!d)return;var c=new AbortController();setTimeout(function(){c.abort();},5000);fetch('https://agencia-ai-scraper-production.up.railway.app/health',{signal:c.signal,mode:'no-cors'}).then(function(){d.className='dot dot-online';t.className='txt-online';t.textContent='online';}).catch(function(){d.className='dot dot-offline';t.textContent='offline';});})();
   (function(){var d=document.getElementById('seo-dot'),t=document.getElementById('seo-status-txt');if(!d)return;var c=new AbortController();setTimeout(function(){c.abort();},5000);fetch('https://agencia-ai-seo-production.up.railway.app/health',{signal:c.signal,mode:'no-cors'}).then(function(){d.className='dot dot-online';t.className='txt-online';t.textContent='online';}).catch(function(){d.className='dot dot-offline';t.textContent='offline';});})();
+  (function(){var d=document.getElementById('webdesigner-dot'),t=document.getElementById('webdesigner-status-txt');if(!d)return;var c=new AbortController();setTimeout(function(){c.abort();},5000);fetch('https://agencia-ai-web-designer-production.up.railway.app/web/health',{signal:c.signal,mode:'no-cors'}).then(function(){d.className='dot dot-online';t.className='txt-online';t.textContent='online';}).catch(function(){d.className='dot dot-offline';t.textContent='offline';});})();
   </script>
 
   <!-- ══════════════════════════════════════ PANEL: CLIENTS ════════════════ -->
@@ -1416,6 +1433,7 @@ const AGENT_MAP = {
   'CompositorBot': { url: 'https://compositorbot-production.up.railway.app', endpoint: '/compositor/chat' },
   'Scraper':       { url: SCRAPER_URL,  endpoint: '/scraper/task'     },
   'SEO':           { url: SEO_URL,      endpoint: '/seo/task'         },
+  'WebDesigner':   { url: 'https://agencia-ai-web-designer-production.up.railway.app', endpoint: '/web/chat' },
 };
 let currentAgent = AGENT_MAP['Organizador'];
 
@@ -1472,6 +1490,7 @@ const _WELCOME={
   'CompositorBot': 'Hola Roberto. Soy CompositorBot — scoring y bandas sonoras.',
   'Scraper':       'Hola Roberto. Soy el Scraper — inteligencia competitiva.',
   'SEO':           'Hola Roberto. Soy el SEO Strategist — keywords y contenido.',
+  'WebDesigner':   'Hola Roberto. Soy el Web Designer — landing pages, canvas scroll y deploy a Hostinger. Dime qué página construimos.',
 };
 
 function selectAgent(el,emoji,name,role){
