@@ -1751,7 +1751,7 @@ async function wizCrearCliente(){
   var nb=document.getElementById('wiz-next');
   nb.textContent='⏳ Guardando...';nb.disabled=true;
   var clienteId=wizData._clienteId;
-  var payload={cliente_id:clienteId,nombre:wizData.nombre,industria:wizData.industria,email:wizData.email,telefono:wizData.telefono,plan:wizData.plan,canales:wizData.canales,campana:wizData.campana,agentes:wizData.agentes,conexiones:wizData.conexiones,activo:true};
+  var payload={cliente_id:clienteId,nombre:wizData.nombre,industria:wizData.industria,email:wizData.email,telefono:wizData.telefono,plan:wizData.plan,canales:wizData.canales,campana:wizData.campana,agentes:wizData.agentes,conexiones:wizData.conexiones,activo:true,user_id:USER_ID};
   console.log('Wizard payload a Supabase:', JSON.stringify(payload, null, 2));
   try{
     var res=await fetch(SUPA_URL+'/rest/v1/clientes',{method:'POST',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)});
