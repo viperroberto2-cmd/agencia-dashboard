@@ -1274,6 +1274,15 @@ body{background:#EBEBF0 !important}
 
   <!-- ══════════════════════════════════════ PANEL: INTEGRATIONS ═══════════ -->
   <div class="panel content" id="panel-integrations">
+    <div id="aviso-integracion" style="
+        background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px;
+        padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #92400e;
+        display: flex; align-items: center; gap: 8px;">
+      ⚠️ <span id="texto-aviso-integracion">
+        Select a client from the top menu before connecting accounts.
+        Each client needs their own credentials.
+      </span>
+    </div>
     <div class="section-header">
       <span class="section-title">Integraciones</span>
       <span class="section-count">Conecta tus herramientas</span>
@@ -1507,6 +1516,7 @@ function showPanel(id,btn){
   if(id==='analytics')loadAnalytics();
   if(id==='grabaciones')loadGrabaciones();
   if(id==='crear-bot')setTimeout(()=>{typeof wizRender==='function'&&wizRender();},0);
+  if(id==='integrations')actualizarAvisoIntegracion();
 }
 
 const _WELCOME={
@@ -1728,12 +1738,31 @@ async function eliminarCliente(nombreCliente, btnEl) {
   }
 }
 
+function actualizarAvisoIntegracion() {
+  const aviso = document.getElementById('aviso-integracion');
+  const texto = document.getElementById('texto-aviso-integracion');
+  if (!aviso || !texto) return;
+  const nombre = window.activeCliente?.nombre || '';
+  if (nombre) {
+    aviso.style.background = '#dcfce7';
+    aviso.style.borderColor = '#16a34a';
+    aviso.style.color = '#14532d';
+    texto.textContent = `✅ Connecting accounts for: ${nombre}`;
+  } else {
+    aviso.style.background = '#fef3c7';
+    aviso.style.borderColor = '#f59e0b';
+    aviso.style.color = '#92400e';
+    texto.textContent = '⚠️ Select a client from the top menu before connecting accounts. Each client needs their own credentials.';
+  }
+}
+
 function setActiveCliente(clienteId){
   const badge=document.getElementById('cliente-badge');
   const badgeName=document.getElementById('cliente-badge-name');
   if(!clienteId){
     window.activeCliente=null;
     badge.style.display='none';
+    actualizarAvisoIntegracion();
     return;
   }
   const c=window._clientesCache.find(x=>x.cliente_id===clienteId);
@@ -1742,6 +1771,7 @@ function setActiveCliente(clienteId){
     badgeName.textContent=c.nombre;
     badge.style.display='inline-flex';
   }
+  actualizarAvisoIntegracion();
 }
 
 document.addEventListener('DOMContentLoaded',async()=>{
