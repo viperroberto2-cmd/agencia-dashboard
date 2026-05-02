@@ -11,7 +11,10 @@ const BOTS = {
   org: 'https://web-production-77871.up.railway.app/health',
   b5:     'https://worker-production-aa53.up.railway.app/scheduler/health',
   web:    'https://agencia-ai-web-designer-production.up.railway.app/health',
-  motion: 'https://web-production-d67bad.up.railway.app/health',
+  motion:    'https://web-production-d67bad.up.railway.app/health',
+  scraper:   'https://agencia-ai-scraper-production.up.railway.app/health',
+  seo:       'https://agencia-ai-seo-production.up.railway.app/health',
+  analytics: 'https://upbeat-endurance.up.railway.app/health',
 };
 
 function checkUrl(url) {
