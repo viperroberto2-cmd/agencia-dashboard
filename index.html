@@ -409,7 +409,7 @@ body{background:#EBEBF0 !important}
 }
 .client-card{
   background:#FFFFFF;border:1px solid rgba(0,0,0,0.06);box-shadow:0 2px 8px rgba(0,0,0,0.08);
-  border-radius:16px;padding:20px;
+  border-radius:16px;padding:20px;position:relative;
 }
 .client-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .client-av{
@@ -1242,6 +1242,7 @@ body{background:#EBEBF0 !important}
     </div>
     <div class="clients-grid">
       <div class="client-card">
+        <button class="btn-delete-cliente" onclick="eliminarCliente('Arranca Financial',this)" title="Eliminar cliente" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:#ef4444;cursor:pointer;font-size:16px;padding:4px;border-radius:4px;opacity:0.6;" onmouseover="this.style.opacity='1';this.style.background='#fee2e2'" onmouseout="this.style.opacity='0.6';this.style.background='transparent'">🗑️</button>
         <div class="client-header">
           <div class="client-av" style="background:rgba(124,58,237,.18)">💰</div>
           <div><div class="client-name">Arranca Financial</div><div class="client-industry">Educación financiera hispana</div></div>
@@ -1255,6 +1256,7 @@ body{background:#EBEBF0 !important}
         </div>
       </div>
       <div class="client-card">
+        <button class="btn-delete-cliente" onclick="eliminarCliente('Sofía',this)" title="Eliminar cliente" style="position:absolute;top:8px;right:8px;background:transparent;border:none;color:#ef4444;cursor:pointer;font-size:16px;padding:4px;border-radius:4px;opacity:0.6;" onmouseover="this.style.opacity='1';this.style.background='#fee2e2'" onmouseout="this.style.opacity='0.6';this.style.background='transparent'">🗑️</button>
         <div class="client-header">
           <div class="client-av" style="background:rgba(0,208,132,.15)">💊</div>
           <div><div class="client-name">Sofía</div><div class="client-industry">Clínica de pérdida de peso GLP-1</div></div>
@@ -1504,7 +1506,7 @@ function showPanel(id,btn){
   if(id==='crm')loadCRM();
   if(id==='analytics')loadAnalytics();
   if(id==='grabaciones')loadGrabaciones();
-  if(id==='crear-bot')wizRender();
+  if(id==='crear-bot')setTimeout(()=>{typeof wizRender==='function'&&wizRender();},0);
 }
 
 const _WELCOME={
@@ -1698,6 +1700,31 @@ async function loadClientes(){
   }catch(e){
     console.error('loadClientes error:',e);
     sel.innerHTML='<option value="">Error cargando</option>';
+  }
+}
+
+async function eliminarCliente(nombreCliente, btnEl) {
+  if (!confirm(`¿Eliminar a ${nombreCliente}? Esta acción no se puede deshacer.`)) return;
+  const card = btnEl.closest('.client-card') || btnEl.closest('[class*="client"]') || btnEl.closest('li');
+  if (card) card.style.opacity = '0.4';
+  try {
+    const resp = await fetch(ORG_URL + '/api/cliente/' + encodeURIComponent(nombreCliente), {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (resp.ok) {
+      if (card) card.remove();
+      const _n=document.createElement('div');
+      _n.textContent='✅ Cliente eliminado';
+      Object.assign(_n.style,{position:'fixed',bottom:'24px',right:'24px',background:'#10b981',color:'#fff',padding:'10px 18px',borderRadius:'8px',zIndex:'9999',fontWeight:'600',boxShadow:'0 4px 12px rgba(0,0,0,.2)'});
+      document.body.appendChild(_n);setTimeout(()=>_n.remove(),3000);
+    } else {
+      if (card) card.style.opacity = '1';
+      alert('Error al eliminar cliente');
+    }
+  } catch(e) {
+    if (card) card.style.opacity = '1';
+    alert('Error de conexión: ' + e.message);
   }
 }
 
