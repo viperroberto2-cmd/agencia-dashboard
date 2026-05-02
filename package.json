@@ -1,1 +1,1 @@
-{"name":"agencia-dashboard","version":"1.0.0","main":"server.js","scripts":{"start":"node server.js"},"dependencies":{"express":"^4.18.0"}}
+{"name":"agencia-dashboard","version":"1.0.0","main":"server.js","scripts":{"start":"node server.js"},"dependencies":{"express":"^4.18.0","canvas":"^2.11.2"}}

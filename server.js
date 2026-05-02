@@ -29,6 +29,46 @@ function checkUrl(url) {
 
 app.use(express.static(path.join(__dirname), { index: false }));
 
+// ── PWA Icons ──────────────────────────────────────
+function buildIcon(size) {
+  const { createCanvas } = require('canvas');
+  const c = createCanvas(size, size);
+  const ctx = c.getContext('2d');
+  const g = ctx.createLinearGradient(0, 0, size, size);
+  g.addColorStop(0, '#7c3aed');
+  g.addColorStop(1, '#4f46e5');
+  ctx.fillStyle = g;
+  const r = size * 0.22;
+  ctx.beginPath();
+  ctx.moveTo(r,0); ctx.lineTo(size-r,0);
+  ctx.quadraticCurveTo(size,0,size,r);
+  ctx.lineTo(size,size-r);
+  ctx.quadraticCurveTo(size,size,size-r,size);
+  ctx.lineTo(r,size);
+  ctx.quadraticCurveTo(0,size,0,size-r);
+  ctx.lineTo(0,r);
+  ctx.quadraticCurveTo(0,0,r,0);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = `bold ${Math.floor(size*.38)}px Arial`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('AI', size/2, size/2 - size*.04);
+  ctx.fillStyle = '#c4b5fd';
+  ctx.font = `${Math.floor(size*.12)}px Arial`;
+  ctx.fillText('AGENCIA', size/2, size/2 + size*.28);
+  return c.toBuffer('image/png');
+}
+
+app.get('/icon-192.png', (_,res) => {
+  try { res.type('image/png').set('Cache-Control','public,max-age=86400').send(buildIcon(192)); }
+  catch(e) { res.status(500).end(); }
+});
+app.get('/icon-512.png', (_,res) => {
+  try { res.type('image/png').set('Cache-Control','public,max-age=86400').send(buildIcon(512)); }
+  catch(e) { res.status(500).end(); }
+});
+// ── End PWA Icons ───────────────────────────────────
+
 function serveIndex(res) {
   const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8')
     .replace(/__SUPABASE_URL__/g, process.env.SUPABASE_URL || '')
