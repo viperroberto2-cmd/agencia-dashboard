@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RG Production — Client Onboarding</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:#f9f8f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1a1a1a}
+.wrap{max-width:580px;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+.logo{text-align:center;margin-bottom:2.5rem}
+.logo-lockup{display:inline-flex;align-items:center;gap:12px;margin-bottom:.5rem}
+.logo-mark{width:48px;height:48px;background:#1a1a1a;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.logo-mark span{color:#fff;font-size:15px;font-weight:700;letter-spacing:1px}
+.logo-wordmark .name{font-size:18px;font-weight:600;color:#1a1a1a;letter-spacing:1px}
+.logo-wordmark .sub{font-size:10px;letter-spacing:3px;color:#aaa;text-transform:uppercase;margin-top:4px}
+.logo-tagline{font-size:12px;color:#bbb;letter-spacing:.5px;margin-top:8px}
+.progress-bar{background:#e8e8e8;border-radius:99px;height:3px;overflow:hidden;margin-bottom:.5rem}
+.progress-fill{height:100%;background:#1a1a1a;border-radius:99px;transition:width .4s ease}
+.step-label{font-size:11px;color:#bbb;text-align:right;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2rem}
+.card{background:#fff;border-radius:20px;padding:2rem;border:0.5px solid #e5e5e5;margin-bottom:1.5rem}
+.step-title{font-size:22px;font-weight:600;color:#1a1a1a;margin-bottom:.5rem}
+.step-sub{font-size:14px;color:#999;margin-bottom:2rem;line-height:1.6}
+.field{margin-bottom:1.25rem}
+.field label{display:block;font-size:11px;font-weight:600;color:#777;margin-bottom:6px;letter-spacing:.4px;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;border:1px solid #e0e0e0;border-radius:10px;padding:13px 14px;font-size:15px;color:#1a1a1a;background:#fafafa;transition:border .2s;font-family:inherit;-webkit-appearance:none}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#1a1a1a;box-shadow:0 0 0 3px rgba(26,26,26,.08);background:#fff}
+.field textarea{resize:vertical;min-height:90px;line-height:1.5}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-hint{font-size:11px;color:#bbb;margin-top:5px}
+@media(max-width:480px){.field-row{grid-template-columns:1fr}}
+.goals-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+.goal-pill{border:1.5px solid #e8e8e8;border-radius:14px;padding:16px 12px;cursor:pointer;transition:all .2s;text-align:center;background:#fafafa;user-select:none}
+.goal-pill:hover{border-color:#aaa;background:#f5f5f5}
+.goal-pill.selected{border-color:#1a1a1a;background:#f0f0f0}
+.goal-pill .icon{font-size:22px;margin-bottom:8px}
+.goal-pill .text{font-size:12px;color:#555;font-weight:500;line-height:1.3}
+.wa-section{background:#f0faf4;border:1.5px solid #d1f0df;border-radius:16px;padding:1.5rem;margin-bottom:1.25rem}
+.wa-header{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:#1a5c35;margin-bottom:4px}
+.wa-sub{font-size:13px;color:#4a8c65;margin-bottom:1.25rem;line-height:1.5}
+.wa-section .field label{color:#2d7a50}
+.wa-section .field input,.wa-section .field select{border-color:#c5e8d5;background:#f8fef9}
+.wa-section .field input:focus,.wa-section .field select:focus{border-color:#25d366;box-shadow:0 0 0 3px rgba(37,211,102,.12)}
+.wa-badge{background:#25d366;color:#fff;font-size:10px;font-weight:600;padding:3px 9px;border-radius:99px;letter-spacing:.3px}
+.hours-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hour-opt{border:1.5px solid #e8e8e8;border-radius:12px;padding:12px;cursor:pointer;text-align:center;font-size:12px;color:#666;font-weight:500;background:#fafafa;transition:all .2s;user-select:none;line-height:1.4}
+.hour-opt:hover{border-color:#aaa;color:#333}
+.hour-opt.selected{border-color:#1a1a1a;background:#f0f0f0;color:#1a1a1a}
+.social-field{display:flex;align-items:center;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;background:#fafafa;margin-bottom:10px;transition:border .2s}
+.social-field:focus-within{border-color:#1a1a1a;box-shadow:0 0 0 3px rgba(26,26,26,.08);background:#fff}
+.social-prefix{padding:13px 10px 13px 14px;font-size:12px;color:#999;white-space:nowrap;border-right:1px solid #ececec;background:#f5f5f5;min-width:120px;flex-shrink:0}
+.social-input{border:none;background:transparent;padding:13px 12px;font-size:15px;flex:1;color:#1a1a1a;font-family:inherit;min-width:0}
+.social-input:focus{outline:none}
+.divider{display:flex;align-items:center;gap:12px;margin:1.25rem 0}
+.divider-line{flex:1;height:.5px;background:#eee}
+.divider-text{font-size:11px;color:#ccc;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.btn-primary{width:100%;background:#1a1a1a;color:#fff;border:none;border-radius:12px;padding:16px;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s,transform .1s;font-family:inherit;letter-spacing:.3px}
+.btn-primary:hover{background:#333}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{background:#999;cursor:not-allowed;transform:none}
+.btn-back{background:none;border:1px solid #e0e0e0;color:#888;border-radius:12px;padding:13px 20px;font-size:14px;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap}
+.btn-back:hover{border-color:#aaa;color:#444}
+.nav{display:flex;align-items:center;gap:12px;margin-top:1.5rem}
+.nav .btn-primary{flex:1}
+.summary-section{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.5px;padding:12px 0 4px;font-weight:600}
+.summary-row{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:.5px solid #f5f5f5;gap:16px}
+.summary-row:last-child{border:none}
+.summary-label{font-size:11px;color:#bbb;text-transform:uppercase;letter-spacing:.4px;flex-shrink:0;padding-top:2px}
+.summary-value{font-size:13px;color:#1a1a1a;font-weight:500;text-align:right}
+.success-wrap{text-align:center;padding:1rem 1rem 2rem}
+.success-circle{width:72px;height:72px;background:#f0f0f0;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:32px}
+.success-title{font-size:24px;font-weight:600;color:#1a1a1a;margin-bottom:.75rem}
+.success-sub{font-size:14px;color:#999;line-height:1.7;max-width:380px;margin:0 auto 1.5rem}
+.success-info{background:#f5f5f5;border-radius:14px;padding:1.25rem;margin-bottom:1.5rem;text-align:left}
+.success-info p{font-size:13px;color:#666;line-height:1.8}
+.success-info strong{color:#1a1a1a}
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:#25d366;color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;font-weight:600;cursor:pointer;width:100%;font-family:inherit;text-decoration:none}
+.step{display:none}.step.active{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="logo">
+  <div class="logo-lockup">
+    <div class="logo-mark"><span>RG</span></div>
+    <div class="logo-wordmark">
+      <div class="name">RG PRODUCTION</div>
+      <div class="sub">Creative Agency</div>
+    </div>
+  </div>
+  <div class="logo-tagline">Client Onboarding</div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="pbar" style="width:20%"></div></div>
+<div class="step-label" id="slabel">Step 1 of 5</div>
+
+<!-- STEP 1 -->
+<div class="step active" id="step1">
+  <div class="card">
+    <div class="step-title">Tell us about your business</div>
+    <div class="step-sub">This helps us tailor your strategy and build your presence from day one.</div>
+    <div class="field"><label>Business name *</label><input type="text" id="f-name" placeholder="e.g. Clinica Salud &amp; Bienestar"></div>
+    <div class="field-row">
+      <div class="field"><label>Your name *</label><input type="text" id="f-owner" placeholder="First &amp; last name"></div>
+      <div class="field"><label>Industry *</label>
+        <select id="f-industry">
+          <option value="">Select...</option>
+          <option>Medical Clinic / GLP-1</option><option>Dental Clinic</option>
+          <option>Aesthetic Clinic</option><option>Chiropractic</option>
+          <option>Mental Health</option><option>Physical Therapy</option>
+          <option>Financial Services</option><option>Real Estate</option>
+          <option>Car Dealership</option><option>Restaurant / Food</option>
+          <option>Wellness / Spa</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Email *</label><input type="email" id="f-email" placeholder="you@email.com"></div>
+      <div class="field"><label>Your phone *</label><input type="tel" id="f-phone" placeholder="+1 (555) 000-0000"></div>
+    </div>
+    <div class="field"><label>City &amp; State</label><input type="text" id="f-city" placeholder="e.g. Los Angeles, CA"></div>
+  </div>
+  <div class="nav"><button class="btn-primary" onclick="goStep(2)">Continue →</button></div>
+</div>
+
+<!-- STEP 2 -->
+<div class="step" id="step2">
+  <div class="card">
+    <div class="step-title">What are your goals?</div>
+    <div class="step-sub">Select everything that applies. We'll build your strategy around these priorities.</div>
+    <div class="goals-grid">
+      <div class="goal-pill" onclick="toggleGoal(this,'New patient leads')"><div class="icon">🎯</div><div class="text">New patient leads</div></div>
+      <div class="goal-pill" onclick="toggleGoal(this,'Automated follow-ups')"><div class="icon">🔁</div><div class="text">Automated follow-ups</div></div>
+      <div class="goal-pill" onclick="toggleGoal(this,'Social media content')"><div class="icon">📱</div><div class="text">Social media content</div></div>
+      <div class="goal-pill" onclick="toggleGoal(this,'Online reviews')"><div class="icon">⭐</div><div class="text">Online reviews</div></div>
+      <div class="goal-pill" onclick="toggleGoal(this,'Email campaigns')"><div class="icon">📧</div><div class="text">Email campaigns</div></div>
+      <div class="goal-pill" onclick="toggleGoal(this,'Appointment reminders')"><div class="icon">📅</div><div class="text">Appointment reminders</div></div>
+      <div class="goal-pill" onclick="toggleGoal(this,'Brand awareness')"><div class="icon">🌟</div><div class="text">Brand awareness</div></div>
+      <div class="goal-pill" onclick="toggleGoal(this,'Video production')"><div class="icon">🎬</div><div class="text">Video production</div></div>
+    </div>
+    <div class="field"><label>Monthly marketing budget (USD)</label>
+      <select id="f-budget">
+        <option value="">Prefer not to say</option>
+        <option>Under $500</option><option>$500 - $1,000</option>
+        <option>$1,000 - $2,500</option><option>$2,500 - $5,000</option><option>$5,000+</option>
+      </select>
+    </div>
+    <div class="field"><label>Anything else we should know?</label>
+      <textarea id="f-notes" placeholder="Your biggest challenge, current tools, what is not working..."></textarea>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goStep(1)">← Back</button>
+    <button class="btn-primary" onclick="goStep(3)">Continue →</button>
+  </div>
+</div>
+
+<!-- STEP 3: WhatsApp -->
+<div class="step" id="step3">
+  <div class="card">
+    <div class="step-title">Your virtual assistant</div>
+    <div class="step-sub">We will set up a dedicated assistant that answers your patients on WhatsApp 24/7 from your own business number.</div>
+    <div class="wa-section">
+      <div class="wa-header">
+        <svg width="20" height="20" fill="#25d366" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        WhatsApp Business Number
+        <span class="wa-badge">Included</span>
+      </div>
+      <div class="wa-sub">This is the number your patients will text. It can be your existing business phone or a new dedicated line. We activate it in 3-7 business days.</div>
+      <div class="field"><label>Business WhatsApp number *</label><input type="tel" id="f-wa-number" placeholder="+1 (555) 000-0000"></div>
+      <div class="field"><label>Is this number currently active?</label>
+        <select id="f-wa-active">
+          <option value="yes">Yes, it is an active phone number</option>
+          <option value="new">No, I need a new number</option>
+          <option value="unsure">Not sure - let RG Production decide</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Assistant name *</label>
+      <input type="text" id="f-agent-name" placeholder="e.g. Sofia, Maria, Diana, Ana...">
+      <div class="field-hint">This is the name your patients will see. Choose something warm and professional.</div>
+    </div>
+    <div class="field"><label>Assistant language</label>
+      <select id="f-agent-lang">
+        <option value="bilingual">Bilingual - Spanish &amp; English</option>
+        <option value="spanish">Spanish only</option>
+        <option value="english">English only</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Response hours</label>
+      <div class="hours-grid">
+        <div class="hour-opt selected" onclick="selectHours(this,'24/7 - Always on')">24/7<br><span style="font-size:10px;opacity:.7">Always on</span></div>
+        <div class="hour-opt" onclick="selectHours(this,'Business hours 8am-8pm')">8am - 8pm<br><span style="font-size:10px;opacity:.7">Business hours</span></div>
+        <div class="hour-opt" onclick="selectHours(this,'Mon-Fri 9am-6pm')">Mon-Fri<br><span style="font-size:10px;opacity:.7">9am - 6pm</span></div>
+        <div class="hour-opt" onclick="selectHours(this,'Custom - team will contact')">Custom<br><span style="font-size:10px;opacity:.7">Team will contact</span></div>
+      </div>
+      <input type="hidden" id="f-agent-hours" value="24/7 - Always on">
+    </div>
+    <div class="field"><label>Tone &amp; personality</label>
+      <select id="f-agent-tone">
+        <option value="warm-professional">Warm &amp; professional - friendly but credible</option>
+        <option value="formal">Formal - very professional, no emojis</option>
+        <option value="casual">Casual &amp; friendly - conversational, uses emojis</option>
+        <option value="empathetic">Empathetic - especially for health and wellness</option>
+      </select>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goStep(2)">← Back</button>
+    <button class="btn-primary" onclick="goStep(4)">Continue →</button>
+  </div>
+</div>
+
+<!-- STEP 4: Social Media -->
+<div class="step" id="step4">
+  <div class="card">
+    <div class="step-title">Your online presence</div>
+    <div class="step-sub">Share your handles and we will analyze what is working. Skip anything you do not have yet - we will help you build it.</div>
+    <div class="social-field"><div class="social-prefix">facebook.com/</div><input class="social-input" type="text" id="f-fb" placeholder="yourpagename"></div>
+    <div class="social-field"><div class="social-prefix">instagram.com/</div><input class="social-input" type="text" id="f-ig" placeholder="@yourhandle"></div>
+    <div class="social-field"><div class="social-prefix">youtube.com/@</div><input class="social-input" type="text" id="f-yt" placeholder="yourchannel"></div>
+    <div class="social-field"><div class="social-prefix">tiktok.com/@</div><input class="social-input" type="text" id="f-tt" placeholder="yourhandle"></div>
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">Optional</div><div class="divider-line"></div></div>
+    <div class="field"><label>Website</label><input type="url" id="f-web" placeholder="https://yoursite.com"></div>
+    <div class="field"><label>Google Business name</label><input type="text" id="f-gmb" placeholder="Exact name as it appears on Google Maps"></div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goStep(3)">← Back</button>
+    <button class="btn-primary" onclick="goStep(5)">Review &amp; Submit →</button>
+  </div>
+</div>
+
+<!-- STEP 5: Review -->
+<div class="step" id="step5">
+  <div class="card">
+    <div class="step-title">Review your information</div>
+    <div class="step-sub">Everything look correct? Once submitted our team will be in touch within 24 hours.</div>
+    <div id="summary"></div>
+  </div>
+  <div class="nav">
+    <button class="btn-back" onclick="goStep(4)">← Back</button>
+    <button class="btn-primary" id="submitBtn" onclick="submitForm()">Submit →</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="step" id="stepSuccess">
+  <div class="card">
+    <div class="success-wrap">
+      <div class="success-circle">✓</div>
+      <div class="success-title">Welcome to RG Production</div>
+      <div class="success-sub">Your onboarding is complete. Here is what happens next:</div>
+      <div class="success-info"><p>
+        <strong>Within 24 hours</strong> - You will receive a confirmation email.<br><br>
+        <strong>Days 1-3</strong> - Our team sets up your assistant and reviews your goals.<br><br>
+        <strong>Days 3-7</strong> - Your WhatsApp number activates and your assistant goes live.<br><br>
+        <strong>Week 2</strong> - First content calendar and campaign strategy delivered.
+      </p></div>
+      <a class="wa-btn" href="https://wa.me/12136694427?text=Hi!+I+just+completed+my+onboarding+with+RG+Production" target="_blank">
+        <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Message us on WhatsApp
+      </a>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+var step=1,goals=[],hours='24/7 - Always on';
+function v(id){return document.getElementById(id).value.trim();}
+function toggleGoal(el,g){el.classList.toggle('selected');goals=el.classList.contains('selected')?[...goals,g]:goals.filter(function(x){return x!==g;});}
+function selectHours(el,h){hours=h;document.getElementById('f-agent-hours').value=h;document.querySelectorAll('.hour-opt').forEach(function(o){o.classList.remove('selected');});el.classList.add('selected');}
+function goStep(n){
+  if(n>1&&(!v('f-name')||!v('f-owner')||!v('f-email')||!v('f-phone')||!v('f-industry'))){alert('Please fill in all required fields.');return;}
+  if(n>3&&(!v('f-wa-number')||!v('f-agent-name'))){alert('Please enter your WhatsApp number and assistant name.');return;}
+  document.getElementById('step'+step).classList.remove('active');
+  step=n;
+  document.getElementById(n<=5?'step'+n:'stepSuccess').classList.add('active');
+  document.getElementById('pbar').style.width=(n<=5?n*20:100)+'%';
+  document.getElementById('slabel').textContent=n<=5?'Step '+n+' of 5':'Done';
+  if(n===5)buildSummary();
+  window.scrollTo(0,0);
+}
+function buildSummary(){
+  var rows=[
+    {s:'Business'},{l:'Business',v:v('f-name')},{l:'Owner',v:v('f-owner')},{l:'Industry',v:v('f-industry')},
+    {l:'Email',v:v('f-email')},{l:'Phone',v:v('f-phone')},{l:'City',v:v('f-city')||'-'},
+    {s:'Goals'},{l:'Goals',v:goals.length?goals.join(', '):'-'},{l:'Budget',v:v('f-budget')||'-'},
+    {s:'WhatsApp Assistant'},{l:'WA Number',v:v('f-wa-number')},{l:'Assistant',v:v('f-agent-name')},
+    {l:'Language',v:v('f-agent-lang')},{l:'Hours',v:hours},{l:'Tone',v:v('f-agent-tone')},
+    {s:'Social Media'},{l:'Facebook',v:v('f-fb')||'-'},{l:'Instagram',v:v('f-ig')||'-'},{l:'Website',v:v('f-web')||'-'}
+  ];
+  document.getElementById('summary').innerHTML=rows.map(function(r){
+    return r.s?'<div class="summary-section">'+r.s+'</div>':'<div class="summary-row"><span class="summary-label">'+r.l+'</span><span class="summary-value">'+r.v+'</span></div>';
+  }).join('');
+}
+function submitForm(){
+  var btn=document.getElementById('submitBtn');
+  btn.textContent='Sending...';btn.disabled=true;
+  var payload={nombre:v('f-name'),owner:v('f-owner'),email:v('f-email'),telefono:v('f-phone'),
+    industria:v('f-industry'),ciudad:v('f-city'),objetivos:goals,presupuesto:v('f-budget'),notas:v('f-notes'),
+    whatsapp:{numero:v('f-wa-number'),activo:v('f-wa-active'),nombre_agente:v('f-agent-name'),
+      idioma:v('f-agent-lang'),horario:hours,tono:v('f-agent-tone')},
+    redes:{facebook:v('f-fb'),instagram:v('f-ig'),youtube:v('f-yt'),tiktok:v('f-tt'),website:v('f-web'),google_business:v('f-gmb')},
+    agencia:'RG Production',fuente:'client-onboarding'};
+  fetch('/api/onboard-cliente',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+  .finally(function(){
+    document.getElementById('step5').classList.remove('active');
+    document.getElementById('stepSuccess').classList.add('active');
+    document.getElementById('pbar').style.width='100%';
+    document.getElementById('slabel').textContent='Done';
+    window.scrollTo(0,0);
+  });
+}
+</script>
+</body>
+</html>
