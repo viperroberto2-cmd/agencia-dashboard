@@ -635,8 +635,20 @@ body{background:#EBEBF0 !important}
   /* Sidebar → barra fija en la parte inferior */
   .sidebar{position:fixed!important;bottom:0;left:0;right:0;top:auto!important;width:100%!important;min-width:0!important;height:56px;flex-direction:row;padding:0 8px;border-right:none;border-top:1px solid var(--border);justify-content:space-around;z-index:200;gap:0;overflow:visible}
   .sidebar::after{display:none}
-  .logo-icon{width:32px;height:32px;font-size:12px;margin-bottom:0}
+  /* Ocultar logo y botones secundarios en mobile */
+  .logo-icon{display:none!important}
+  .nav-btn[title="Aprobar Posts"],
+  .nav-btn[title="Crear Bot"],
+  .nav-btn[title="Google Drive"],
+  .nav-btn[title="CRM"],
+  .nav-btn[title="Grabaciones"],
+  .nav-btn[title="Playwright Monitor"],
+  .nav-btn[title="Analytics"],
+  .nav-btn[title="Web Designer"]{display:none!important}
+  /* Botones visibles: Dashboard, Chat, Agentes, Clientes, Integraciones + Config */
+  .nav-btn{width:48px;height:48px;border-radius:12px}
   .sidebar-bottom{flex-direction:row;margin-top:0;gap:0;align-items:center}
+  .sidebar-bottom .nav-btn{display:flex!important}
 
   /* Main ocupa el espacio menos el sidebar fijo */
   .main{height:100%;padding-bottom:56px;overflow:hidden}
