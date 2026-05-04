@@ -628,25 +628,32 @@ body{background:#EBEBF0 !important}
 /* ── MOBILE ────────────────────────────────────────────────────────────────── */
 .mobile-team-btn{display:none}
 @media(max-width:768px){
-  body{flex-direction:column-reverse;overflow:hidden}
-  .sidebar{width:100% !important;min-width:0 !important;height:56px;flex-direction:row;padding:0 8px;border-right:none;border-top:1px solid var(--border);overflow:visible;justify-content:space-around;gap:0;position:relative}
+  /* Sidebar → barra fija en la parte inferior */
+  .sidebar{position:fixed!important;bottom:0;left:0;right:0;top:auto!important;width:100%!important;min-width:0!important;height:56px;flex-direction:row;padding:0 8px;border-right:none;border-top:1px solid var(--border);justify-content:space-around;z-index:200;gap:0;overflow:visible}
   .sidebar::after{display:none}
-  .logo-icon{width:32px;height:32px;font-size:12px;margin-bottom:0;flex-shrink:0}
+  .logo-icon{width:32px;height:32px;font-size:12px;margin-bottom:0}
   .sidebar-bottom{flex-direction:row;margin-top:0;gap:0;align-items:center}
-  .main{flex:1;height:calc(100vh - 56px);overflow:hidden;min-height:0}
+  /* Main: padding-bottom para no quedar bajo el sidebar fijo */
+  body{overflow-x:hidden}
+  .main{padding-bottom:56px;height:100vh;overflow:hidden}
   .content{padding:12px}
   .topbar{padding:0 12px;gap:8px}
   .topbar-title{font-size:16px}
-  .chat-layout{grid-template-columns:1fr !important;height:calc(100vh - 152px) !important;gap:0}
-  .chat-agents{display:none !important}
-  .chat-agents.mobile-open{display:flex !important;flex-direction:column;position:fixed;top:56px;left:0;right:0;bottom:56px;z-index:50;border-radius:0;border:none;border-top:1px solid var(--border);overflow-y:auto;background:var(--surface)}
-  #analytics-sidebar.visible,#scheduler-sidebar.visible{position:fixed;top:56px;left:0;right:0;bottom:56px;width:100% !important;max-width:none;border-radius:0;z-index:45;border:none;background:var(--surface);overflow-y:auto}
-  .mobile-team-btn{display:flex !important}
+  /* Chat: bloque simple, agentes ocultos, chat-main ocupa todo */
+  .chat-layout,.chat-layout.has-analytics,.chat-layout.has-scheduler{display:block!important;height:calc(100vh - 152px)!important}
+  .chat-agents{display:none!important;visibility:hidden!important}
+  .chat-agents.mobile-open{display:flex!important;visibility:visible!important;flex-direction:column;position:fixed;top:56px;left:0;right:0;bottom:56px;z-index:100;border-radius:0;border:none;border-top:1px solid var(--border);overflow-y:auto;background:var(--surface)}
+  .chat-main{height:100%!important;display:flex!important;flex-direction:column!important}
+  #analytics-sidebar.visible,#scheduler-sidebar.visible{position:fixed!important;top:56px;left:0;right:0;bottom:56px;width:100%!important;max-width:none!important;border-radius:0;z-index:99;border:none;background:var(--surface);overflow-y:auto;display:flex!important;flex-direction:column}
+  /* Botón de equipo mobile */
+  .mobile-team-btn{display:flex!important}
+  /* Hero */
   .hero-card{padding:20px 16px;flex-wrap:wrap}
-  .hero-title{font-size:32px !important}
+  .hero-title{font-size:32px!important}
   .hero-avatar{font-size:44px;width:64px;height:64px}
   .hero-stats{flex-wrap:wrap}
   .hero-stat{padding:0 10px;border-right:none}
+  /* Grids responsive */
   .agents-grid{grid-template-columns:1fr 1fr}
   .integrations-grid{grid-template-columns:1fr 1fr}
   .clients-grid{grid-template-columns:1fr}
