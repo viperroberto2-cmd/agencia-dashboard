@@ -191,6 +191,59 @@ app.post('/api/generar-bot', (req, res) => {
   proxyReq.end();
 });
 
+// ── Google Drive ─────────────────────────────────────────────────────
+async function getGoogleAccessToken() {
+    const body = JSON.stringify({
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          client_secret: process.env.GOOGLE_CLIENT_SECRET,
+          refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
+          grant_type: 'refresh_token'
+    });
+    return new Promise((resolve, reject) => {
+          const req = https.request({
+                  hostname: 'oauth2.googleapis.com',
+                  path: '/token',
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+          }, res => {
+                  let d = '';
+                  res.on('data', c => d += c);
+                  res.on('end', () => {
+                            try { resolve(JSON.parse(d).access_token); } catch(e) { reject(e); }
+                  });
+          });
+          req.on('error', reject);
+          req.write(body); req.end();
+    });
+}
+
+app.get('/gdrive/listar', async (req, res) => {
+    try {
+          const token = await getGoogleAccessToken();
+          const folder = process.env.GDRIVE_ROOT_FOLDER || 'root';
+          const tipo = req.query.tipo || 'all';
+          let q = `'${folder}' in parents and trashed=false`;
+          if (tipo === 'video') q += ` and mimeType contains 'video'`;
+          else if (tipo === 'audio') q += ` and mimeType contains 'audio'`;
+          else if (tipo === 'image') q += ` and mimeType contains 'image'`;
+          const params = new URLSearchParams({ q, fields: 'files(id,name,mimeType,size,modifiedTime,webViewLink,thumbnailLink)', pageSize: '50', orderBy: 'modifiedTime desc' });
+          const driveRes = await new Promise((resolve, reject) => {
+                  const r = https.get(`https://www.googleapis.com/drive/v3/files?${params}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                  }, response => {
+                            let d = '';
+                            response.on('data', c => d += c);
+                            response.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { reject(e); } });
+                  });
+                  r.on('error', reject);
+          });
+          res.json({ ok: true, archivos: driveRes.files || [], total: (driveRes.files || []).length });
+    } catch(e) {
+          console.error('GDrive error:', e.message);
+          res.status(500).json({ ok: false, error: e.message });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Dashboard running on port ${PORT}`));
 
