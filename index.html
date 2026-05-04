@@ -2199,6 +2199,23 @@ async function rechazarPost(postId){
   catch(e){alert('Error rechazando: '+e.message);}
 }
 
+function mostrarNotificacion(titulo, mensaje, tipo) {
+  const colores = { info: '#7c3aed', success: '#10b981', error: '#ef4444', warning: '#f59e0b' };
+  const n = document.createElement('div');
+  n.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;background:#1e1e2e;border:1px solid ${colores[tipo]||colores.info};border-radius:12px;padding:14px 18px;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:fadeIn .2s ease`;
+  n.innerHTML = `<div style="font-size:13px;font-weight:700;color:${colores[tipo]||colores.info};margin-bottom:4px">${titulo}</div><div style="font-size:12px;color:#aaa;line-height:1.5">${mensaje}</div>`;
+  document.body.appendChild(n);
+  setTimeout(() => n.remove(), 5000);
+}
+
+function conectarServicio(servicio) {
+  if (servicio === 'higgsfield') {
+    window.open('https://higgsfield.ai', '_blank');
+    mostrarNotificacion('Higgsfield AI', 'Abre tu cuenta en Higgsfield y copia tu API key', 'info');
+    return;
+  }
+}
+
 async function instalarHyperFrames(btn){
   btn.textContent='⏳ Instalando...';btn.disabled=true;
   try{
