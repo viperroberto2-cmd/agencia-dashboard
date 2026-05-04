@@ -628,31 +628,51 @@ body{background:#EBEBF0 !important}
 /* ── MOBILE ────────────────────────────────────────────────────────────────── */
 .mobile-team-btn{display:none}
 @media(max-width:768px){
+  /* Usar height:100% en lugar de 100vh — evita bug de Android con barra de URL */
+  html{height:100%}
+  body{height:100%;overflow:hidden;overflow-x:hidden}
+
   /* Sidebar → barra fija en la parte inferior */
   .sidebar{position:fixed!important;bottom:0;left:0;right:0;top:auto!important;width:100%!important;min-width:0!important;height:56px;flex-direction:row;padding:0 8px;border-right:none;border-top:1px solid var(--border);justify-content:space-around;z-index:200;gap:0;overflow:visible}
   .sidebar::after{display:none}
   .logo-icon{width:32px;height:32px;font-size:12px;margin-bottom:0}
   .sidebar-bottom{flex-direction:row;margin-top:0;gap:0;align-items:center}
-  /* Main: padding-bottom para no quedar bajo el sidebar fijo */
-  body{overflow-x:hidden}
-  .main{padding-bottom:56px;height:100vh;overflow:hidden}
-  .content{padding:12px}
-  .topbar{padding:0 12px;gap:8px}
+
+  /* Main ocupa el espacio menos el sidebar fijo */
+  .main{height:100%;padding-bottom:56px;overflow:hidden}
+  .topbar{flex-shrink:0;padding:0 12px;gap:8px}
   .topbar-title{font-size:16px}
-  /* Chat: bloque simple, agentes ocultos, chat-main ocupa todo */
-  .chat-layout,.chat-layout.has-analytics,.chat-layout.has-scheduler{display:block!important;height:calc(100vh - 152px)!important}
+
+  /* Panels: llenan el espacio restante */
+  .panel.active{display:flex!important;flex-direction:column;flex:1;min-height:0;overflow-y:auto}
+  .content{padding:12px}
+
+  /* Panel chat: sin padding extra, flex column */
+  #panel-chat{padding:12px!important;overflow:hidden!important}
+
+  /* Chat layout: flex column (no grid), ocupa todo el panel */
+  .chat-layout,.chat-layout.has-analytics,.chat-layout.has-scheduler{display:flex!important;flex-direction:column!important;flex:1!important;height:auto!important;min-height:0;gap:0}
+
+  /* Ocultar panel de bots */
   .chat-agents{display:none!important;visibility:hidden!important}
   .chat-agents.mobile-open{display:flex!important;visibility:visible!important;flex-direction:column;position:fixed;top:56px;left:0;right:0;bottom:56px;z-index:100;border-radius:0;border:none;border-top:1px solid var(--border);overflow-y:auto;background:var(--surface)}
-  .chat-main{height:100%!important;display:flex!important;flex-direction:column!important}
+
+  /* Chat principal ocupa todo el espacio */
+  .chat-main{flex:1!important;min-height:0!important;display:flex!important;flex-direction:column!important}
+
+  /* Analytics / Scheduler como overlay */
   #analytics-sidebar.visible,#scheduler-sidebar.visible{position:fixed!important;top:56px;left:0;right:0;bottom:56px;width:100%!important;max-width:none!important;border-radius:0;z-index:99;border:none;background:var(--surface);overflow-y:auto;display:flex!important;flex-direction:column}
-  /* Botón de equipo mobile */
+
+  /* Botón equipo mobile */
   .mobile-team-btn{display:flex!important}
-  /* Hero */
+
+  /* Hero card */
   .hero-card{padding:20px 16px;flex-wrap:wrap}
   .hero-title{font-size:32px!important}
   .hero-avatar{font-size:44px;width:64px;height:64px}
   .hero-stats{flex-wrap:wrap}
   .hero-stat{padding:0 10px;border-right:none}
+
   /* Grids responsive */
   .agents-grid{grid-template-columns:1fr 1fr}
   .integrations-grid{grid-template-columns:1fr 1fr}
