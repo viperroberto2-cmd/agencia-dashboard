@@ -2210,16 +2210,60 @@ function mostrarNotificacion(titulo, mensaje, tipo) {
 
 function conectarServicio(servicio) {
   if (servicio === 'higgsfield') {
-    _mostrarModalApiKey({
-      servicio: 'higgsfield',
-      nombre: 'Higgsfield AI',
-      icono: '🎬',
-      placeholder: 'hf-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-      ayuda: 'Encuéntrala en higgsfield.ai → Settings → API Keys',
-      linkAyuda: 'https://higgsfield.ai'
-    });
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.setAttribute('data-modal', 'higgsfield');
+    overlay.innerHTML = `
+      <div style="background:#1a1a2e;border:1px solid #333;border-radius:16px;padding:28px 24px;width:100%;max-width:460px;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <div style="font-size:28px">🎬</div>
+          <div>
+            <div style="font-size:16px;font-weight:700;color:#fff">Higgsfield AI</div>
+            <div style="font-size:12px;color:#888;margin-top:2px">Conexión vía MCP / CLI</div>
+          </div>
+          <button onclick="this.closest('[data-modal]').remove()" style="margin-left:auto;background:none;border:none;color:#666;font-size:20px;cursor:pointer;padding:4px">✕</button>
+        </div>
+        <div style="background:#0d0d1a;border-radius:10px;padding:16px;margin-bottom:16px;font-size:13px;color:#ccc;line-height:1.8">
+          <div style="color:#7c3aed;font-weight:700;margin-bottom:8px;font-size:12px;letter-spacing:.5px;text-transform:uppercase">Paso 1 — Instalar CLI</div>
+          <code style="background:#111;border-radius:6px;padding:6px 10px;display:block;color:#a78bfa;font-size:12px;margin-bottom:12px">npm install -g @higgsfield/cli</code>
+          <div style="color:#7c3aed;font-weight:700;margin-bottom:8px;font-size:12px;letter-spacing:.5px;text-transform:uppercase">Paso 2 — Autenticar</div>
+          <code style="background:#111;border-radius:6px;padding:6px 10px;display:block;color:#a78bfa;font-size:12px;margin-bottom:12px">higgsfield auth login</code>
+          <div style="color:#7c3aed;font-weight:700;margin-bottom:8px;font-size:12px;letter-spacing:.5px;text-transform:uppercase">Paso 3 — Conectar MCP</div>
+          <code style="background:#111;border-radius:6px;padding:6px 10px;display:block;color:#a78bfa;font-size:12px;margin-bottom:4px">higgsfield mcp install</code>
+          <div style="font-size:11px;color:#666;margin-top:8px">Esto agrega Higgsfield como servidor MCP a Claude Code.</div>
+        </div>
+        <a href="https://higgsfield.ai/docs" target="_blank"
+          style="display:block;text-align:center;font-size:12px;color:#7c3aed;text-decoration:none;margin-bottom:16px;padding:8px;border:1px solid #2d2d4e;border-radius:8px">
+          📖 Ver documentación oficial →
+        </a>
+        <div style="display:flex;gap:10px">
+          <button onclick="this.closest('[data-modal]').remove()"
+            style="flex:1;padding:11px;background:none;border:1px solid #333;border-radius:10px;color:#888;font-size:13px;cursor:pointer">
+            Cerrar
+          </button>
+          <button onclick="_marcarHiggsfieldConfigurado(this)"
+            style="flex:2;padding:11px;background:#f59e0b;border:none;border-radius:10px;color:#000;font-size:13px;font-weight:700;cursor:pointer">
+            ✓ Ya lo configuré
+          </button>
+        </div>
+      </div>`;
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
     return;
   }
+}
+
+function _marcarHiggsfieldConfigurado(btn) {
+  document.querySelector('[data-modal="higgsfield"]')?.remove();
+  document.querySelectorAll('.int-card').forEach(card => {
+    if (card.querySelector('.int-name')?.textContent === 'Higgsfield AI') {
+      const status = card.querySelector('.int-status');
+      if (status) { status.className = 'int-status pending'; status.textContent = '◐ En configuración'; }
+      const b = card.querySelector('button');
+      if (b) { b.textContent = '◐ Configurando'; b.style.opacity = '.6'; b.disabled = true; }
+    }
+  });
+  mostrarNotificacion('Higgsfield AI', 'Marcado como en configuración — actívalo cuando completes el setup MCP', 'warning');
 }
 
 function _mostrarModalApiKey({ servicio, nombre, icono, placeholder, ayuda, linkAyuda }) {
