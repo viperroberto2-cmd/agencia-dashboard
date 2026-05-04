@@ -2210,9 +2210,90 @@ function mostrarNotificacion(titulo, mensaje, tipo) {
 
 function conectarServicio(servicio) {
   if (servicio === 'higgsfield') {
-    window.open('https://higgsfield.ai', '_blank');
-    mostrarNotificacion('Higgsfield AI', 'Abre tu cuenta en Higgsfield y copia tu API key', 'info');
+    _mostrarModalApiKey({
+      servicio: 'higgsfield',
+      nombre: 'Higgsfield AI',
+      icono: '🎬',
+      placeholder: 'hf-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      ayuda: 'Encuéntrala en higgsfield.ai → Settings → API Keys',
+      linkAyuda: 'https://higgsfield.ai'
+    });
     return;
+  }
+}
+
+function _mostrarModalApiKey({ servicio, nombre, icono, placeholder, ayuda, linkAyuda }) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = `
+    <div style="background:#1a1a2e;border:1px solid #333;border-radius:16px;padding:28px 24px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <div style="font-size:28px">${icono}</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:#fff">${nombre}</div>
+          <div style="font-size:12px;color:#888;margin-top:2px">Conectar integración</div>
+        </div>
+        <button onclick="this.closest('[data-modal]').remove()" style="margin-left:auto;background:none;border:none;color:#666;font-size:20px;cursor:pointer;padding:4px">✕</button>
+      </div>
+      <label style="display:block;font-size:11px;font-weight:600;color:#888;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">API Key</label>
+      <input id="_modal_apikey_input" type="password" placeholder="${placeholder}"
+        style="width:100%;background:#0d0d1a;border:1px solid #333;border-radius:10px;padding:12px 14px;font-size:14px;color:#fff;font-family:monospace;margin-bottom:8px;outline:none"
+        onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#333'">
+      <div style="font-size:11px;color:#666;margin-bottom:20px">
+        ${ayuda} — <a href="${linkAyuda}" target="_blank" style="color:#7c3aed;text-decoration:none">Abrir sitio</a>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="this.closest('[data-modal]').remove()"
+          style="flex:1;padding:11px;background:none;border:1px solid #333;border-radius:10px;color:#888;font-size:13px;cursor:pointer">
+          Cancelar
+        </button>
+        <button onclick="_guardarApiKey('${servicio}','${nombre}')"
+          style="flex:2;padding:11px;background:#7c3aed;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">
+          Guardar y conectar
+        </button>
+      </div>
+    </div>`;
+  overlay.setAttribute('data-modal', servicio);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById('_modal_apikey_input')?.focus(), 50);
+}
+
+async function _guardarApiKey(servicio, nombre) {
+  const input = document.getElementById('_modal_apikey_input');
+  const apiKey = input?.value?.trim();
+  if (!apiKey) { input.style.borderColor = '#ef4444'; return; }
+  const SUPA_URL = window.SUPABASE_URL || localStorage.getItem('supa_url') || '';
+  const SUPA_KEY = window.SUPABASE_ANON_KEY || localStorage.getItem('supa_key') || '';
+  if (!SUPA_URL || !SUPA_KEY) {
+    mostrarNotificacion('Error', 'Supabase no configurado', 'error'); return;
+  }
+  const btn = document.querySelector(`[data-modal="${servicio}"] button:last-child`);
+  if (btn) { btn.textContent = 'Guardando...'; btn.disabled = true; }
+  try {
+    await fetch(`${SUPA_URL}/rest/v1/integraciones`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ servicio, valor: apiKey, updated_at: new Date().toISOString() })
+    });
+    document.querySelector(`[data-modal="${servicio}"]`)?.remove();
+    // Actualizar card en el DOM
+    const cards = document.querySelectorAll('.int-card');
+    cards.forEach(card => {
+      if (card.querySelector('.int-name')?.textContent === nombre) {
+        const status = card.querySelector('.int-status');
+        if (status) { status.className = 'int-status connected'; status.textContent = '● Conectado'; }
+        const btn = card.querySelector('button');
+        if (btn) { btn.textContent = '✓ Conectado'; btn.disabled = true; btn.style.opacity = '.5'; }
+      }
+    });
+    mostrarNotificacion(nombre, '✅ API key guardada — integración activa', 'success');
+  } catch(e) {
+    mostrarNotificacion('Error', 'No se pudo guardar: ' + e.message, 'error');
+    if (btn) { btn.textContent = 'Guardar y conectar'; btn.disabled = false; }
   }
 }
 
