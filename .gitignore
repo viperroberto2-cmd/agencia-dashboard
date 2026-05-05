@@ -1,0 +1,18 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Claude Code
+.claude/settings.local.json
+.claude/skills/
+skills-lock.json
+
+# Backups y drafts locales
+index_backup.html
+index_v2.html
+_design-reference.html
+rg-production-client-portal.html
+
+# OS
+.DS_Store
+Thumbs.db
