@@ -853,6 +853,418 @@ body{background:#EBEBF0 !important}
   .clients-grid{grid-template-columns:1fr}
   .metrics{grid-template-columns:1fr 1fr}
 }
+/* ── Marketing Studio ───────────────────────────────────────────────────── */
+const CREW_URL      = 'https://worker-production-34f9.up.railway.app';
+const SCHEDULER_URL = 'https://worker-production-aa53.up.railway.app';
+
+async function msGenerar(){
+  const brief = document.getElementById('ms-brief').value.trim();
+  if(!brief){ alert('Escribe un brief antes de generar.'); return; }
+  const plataforma = document.getElementById('ms-plataforma').value;
+  const tipo       = document.getElementById('ms-tipo').value;
+  const btn        = document.getElementById('ms-btn-generar');
+  const statusEl   = document.getElementById('ms-status');
+
+  btn.disabled = true;
+  btn.textContent = 'Generando...';
+  statusEl.textContent = '⏳ Enviando al Crew...';
+
+  try {
+    const cliente = document.getElementById('cliente-badge-name')?.textContent || '';
+    const res = await fetch('/api/crew/seedance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ brief, plataforma, tipo, cliente })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || res.statusText);
+
+    const contenido = data.resultado || data.content || data.output || JSON.stringify(data, null, 2);
+    document.getElementById('ms-resultado').textContent = contenido;
+    document.getElementById('ms-caption').value = data.caption || contenido;
+    document.getElementById('ms-output').style.display = 'flex';
+    statusEl.textContent = '✅ Generado';
+
+    /* Preseleccionar fecha: ahora + 24h */
+    const d = new Date(Date.now() + 86400000);
+    document.getElementById('ms-fecha').value = d.toISOString().slice(0,16);
+  } catch(e){
+    statusEl.textContent = '❌ Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg> Generar';
+  }
+}
+
+async function msPublicar(){
+  const caption    = document.getElementById('ms-caption').value.trim();
+  const plataforma = document.getElementById('ms-plataforma').value;
+  const fecha      = document.getElementById('ms-fecha').value;
+  const btn        = document.getElementById('ms-btn-publicar');
+  const estadoEl   = document.getElementById('ms-estado');
+  const statusEl   = document.getElementById('ms-status');
+
+  if(!caption){ alert('El caption no puede estar vacío.'); return; }
+  btn.disabled = true;
+  estadoEl.textContent = 'Publicando...';
+  statusEl.textContent = '⏳ Enviando al Scheduler...';
+
+  try {
+    const cliente = document.getElementById('cliente-badge-name')?.textContent || '';
+    const res = await fetch('/api/scheduler/publicar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caption, plataforma, fecha, cliente })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || res.statusText);
+
+    estadoEl.textContent = '✅ Publicado / Programado';
+    estadoEl.style.color = 'var(--green,#4ade80)';
+    statusEl.textContent = '✅ Publicado';
+  } catch(e){
+    estadoEl.textContent = '❌ ' + e.message;
+    statusEl.textContent = '❌ Error al publicar';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function msReset(){
+  document.getElementById('ms-brief').value = '';
+  document.getElementById('ms-output').style.display = 'none';
+  document.getElementById('ms-resultado').textContent = '';
+  document.getElementById('ms-caption').value = '';
+  document.getElementById('ms-fecha').value = '';
+  document.getElementById('ms-estado').textContent = 'Listo para publicar';
+  document.getElementById('ms-estado').style.color = '';
+  document.getElementById('ms-status').textContent = '';
+}
+</script>
+
+
+<!-- ═══════════════════════════════════════ PANEL: GRABACIONES ═══════════════ -->
+<div class="panel content" id="panel-grabaciones" style="flex-direction:column;gap:16px;overflow-y:auto">
+  <div class="section-header">
+    <span class="section-title">🎙️ Grabaciones</span>
+    <span class="section-count" id="grab-count"></span>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <select id="grab-filtro-agente" onchange="renderGrabaciones()" style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-mono);font-size:13px">
+      <option value="todos">Todos los agentes</option>
+      <option value="maría">María</option>
+      <option value="sofía">Sofía</option>
+    </select>
+    <input id="grab-busqueda" type="text" placeholder="Buscar por teléfono..." oninput="renderGrabaciones()" style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-mono);font-size:13px;min-width:200px;outline:none">
+    <button onclick="loadGrabaciones()" style="padding:8px 14px;background:var(--purple-dim);color:var(--purple);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-mono)">↺ Recargar</button>
+  </div>
+  <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:2px solid var(--border)">
+          <th style="text-align:left;padding:8px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;white-space:nowrap">Fecha</th>
+          <th style="text-align:left;padding:8px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Agente</th>
+          <th style="text-align:left;padding:8px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Teléfono</th>
+          <th style="text-align:center;padding:8px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Duración</th>
+          <th style="text-align:left;padding:8px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Audio</th>
+          <th style="text-align:left;padding:8px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Transcripción</th>
+        </tr>
+      </thead>
+      <tbody id="grab-tbody">
+        <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted);font-family:var(--font-mono)">Selecciona el tab para cargar</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ PANEL: PLAYWRIGHT ════════════════ -->
+<div class="panel content" id="panel-playwright" style="flex-direction:column;gap:20px;overflow-y:auto">
+  <div class="section-header">
+    <span class="section-title">🕷️ Playwright Monitor</span>
+    <span class="section-count" id="playwright-section-status">Chequeando...</span>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;align-items:center;gap:16px">
+    <div style="width:44px;height:44px;background:var(--purple-dim);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🕷️</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:15px;font-weight:700">Playwright Scraper</div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">agencia-playwright-scraper-production.up.railway.app</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+      <div class="dot dot-offline" id="playwright-dot"></div>
+      <span class="txt-offline" id="playwright-status-txt" style="font-family:var(--font-mono);font-size:12px;font-weight:600">chequeando…</span>
+    </div>
+  </div>
+  <div>
+    <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Endpoints disponibles</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px">
+        <div style="display:inline-block;background:var(--purple-dim);color:var(--purple);font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:10px;letter-spacing:.04em">POST</div>
+        <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">/scrape</div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px">Extrae texto completo de cualquier URL. Playwright first, BS4 fallback.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag">Organizador</span><span class="tag">Estratega</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px">
+        <div style="display:inline-block;background:var(--purple-dim);color:var(--purple);font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:10px;letter-spacing:.04em">POST</div>
+        <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">/screenshot</div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px">Captura screenshot de una página. Devuelve imagen base64.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag" style="background:var(--gold-dim);color:var(--gold);border-color:rgba(255,184,0,.2)">Próximo: Director</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px">
+        <div style="display:inline-block;background:var(--purple-dim);color:var(--purple);font-family:var(--font-mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:10px;letter-spacing:.04em">POST</div>
+        <div style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">/search</div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:10px">Búsqueda web headless. Devuelve resultados estructurados con contexto.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag" style="background:var(--gold-dim);color:var(--gold);border-color:rgba(255,184,0,.2)">Próximo: Analytics</span></div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Últimos requests</div>
+      <button onclick="loadPlaywrightLogs()" style="padding:6px 12px;background:var(--purple-dim);color:var(--purple);border:none;border-radius:8px;font-family:var(--font-mono);font-size:12px;font-weight:600;cursor:pointer">↺ Recargar</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="border-bottom:2px solid var(--border)">
+            <th style="text-align:left;padding:7px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600;white-space:nowrap">Hora</th>
+            <th style="text-align:left;padding:7px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Endpoint</th>
+            <th style="text-align:left;padding:7px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">URL / Query</th>
+            <th style="text-align:center;padding:7px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Status</th>
+            <th style="text-align:right;padding:7px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">ms</th>
+            <th style="text-align:left;padding:7px 10px;font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:600">Bot</th>
+          </tr>
+        </thead>
+        <tbody id="playwright-logs-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted);font-family:var(--font-mono)">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var dot=document.getElementById('playwright-dot'),txt=document.getElementById('playwright-status-txt'),label=document.getElementById('playwright-section-status');
+  if(!dot)return;var ctrl=new AbortController();setTimeout(function(){ctrl.abort();},5000);
+  fetch('https://agencia-playwright-scraper-production.up.railway.app/health',{signal:ctrl.signal,mode:'no-cors'})
+    .then(function(){dot.className='dot dot-online';txt.className='txt-online';txt.textContent='online';label.textContent='Microservicio activo';})
+    .catch(function(){dot.className='dot dot-offline';txt.textContent='offline';label.textContent='Sin conexión';});
+})();
+function loadPlaywrightLogs(){
+  var tbody=document.getElementById('playwright-logs-tbody');if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);font-family:var(--font-mono)">Cargando…</td></tr>';
+  var base=window.SUPABASE_URL||'',key=window.SUPABASE_ANON_KEY||'';
+  var url=base+'/rest/v1/playwright_logs?select=timestamp,endpoint,url_query,status_code,duracion_ms,bot_origen&order=timestamp.desc&limit=10';
+  fetch(url,{headers:{'apikey':key,'Authorization':'Bearer '+key}})
+    .then(function(r){return r.json();})
+    .then(function(rows){
+      if(!Array.isArray(rows)||rows.length===0){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);font-family:var(--font-mono)">Sin registros aún</td></tr>';return;}
+      tbody.innerHTML=rows.map(function(r){
+        var hora=r.timestamp?new Date(r.timestamp).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
+        var epBg=r.endpoint==='/scrape'?'var(--purple-dim)':r.endpoint==='/screenshot'?'var(--gold-dim)':'var(--green-dim)';
+        var epClr=r.endpoint==='/scrape'?'var(--purple)':r.endpoint==='/screenshot'?'var(--gold)':'var(--green)';
+        var ok=r.status_code&&r.status_code<400;
+        var urlT=(r.url_query||'—').length>42?(r.url_query||'').slice(0,42)+'…':(r.url_query||'—');
+        return'<tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px;color:var(--muted);white-space:nowrap;font-family:var(--font-mono);font-size:11px">'+hora+'</td><td style="padding:7px 10px"><span style="display:inline-block;background:'+epBg+';color:'+epClr+';font-family:var(--font-mono);font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px">'+(r.endpoint||'—')+'</span></td><td style="padding:7px 10px;color:var(--text);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono)" title="'+(r.url_query||'')+'">'+urlT+'</td><td style="padding:7px 10px;text-align:center"><span style="display:inline-block;background:'+(ok?'var(--green-dim)':'rgba(255,45,85,.12)')+';color:'+(ok?'var(--green)':'var(--primary)')+';font-family:var(--font-mono);font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px">'+(r.status_code||'—')+'</span></td><td style="padding:7px 10px;text-align:right;color:var(--muted);font-family:var(--font-mono);font-size:12px">'+(r.duracion_ms!=null?r.duracion_ms:'—')+'</td><td style="padding:7px 10px;color:var(--muted);font-family:var(--font-mono);font-size:12px">'+(r.bot_origen||'—')+'</td></tr>';
+      }).join('');
+    })
+    .catch(function(e){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--primary);font-family:var(--font-mono)">Error: '+e.message+'</td></tr>';});
+}
+loadPlaywrightLogs();
+</script>
+
+<!-- ═══════════════════════════════════════ PANEL: CRM ═══════════════════════ -->
+<div class="panel content" id="panel-crm" style="flex-direction:column;gap:20px;overflow-y:auto">
+  <div class="section-header">
+    <span class="section-title">👥 CRM — Leads</span>
+    <span class="section-count" id="crm-count">Cargando...</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">🆕 Nuevo</div>
+      <div id="leads-nuevo" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">📞 Contactado</div>
+      <div id="leads-contactado" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">🔥 Interesado</div>
+      <div id="leads-interesado" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px">
+      <div style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">✅ Cerrado</div>
+      <div id="leads-cerrado" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px">
+    <div style="font-family:var(--font-display);font-size:16px;letter-spacing:.06em;margin-bottom:12px">+ Agregar Lead</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+      <input id="lead-nombre" placeholder="Nombre *" style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);outline:none">
+      <input id="lead-email" placeholder="Email" style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font);outline:none">
+      <input id="lead-telefono" placeholder="Teléfono" style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <select id="lead-fuente" style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font)">
+        <option value="manual">Manual</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="apollo">Apollo</option><option value="referido">Referido</option>
+      </select>
+      <select id="lead-canal" style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:var(--font)">
+        <option value="email">Email</option><option value="sms">SMS/Texto</option><option value="llamada">Llamada</option><option value="whatsapp">WhatsApp</option>
+      </select>
+    </div>
+    <textarea id="lead-notas" placeholder="Notas..." rows="2" style="width:100%;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;resize:vertical;margin-bottom:10px;font-family:var(--font);outline:none"></textarea>
+    <button onclick="agregarLead()" style="padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px var(--primary-glow)">✅ Agregar Lead</button>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button onclick="exportarSheets()" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);font-family:var(--font)">📤 Exportar a Sheets</button>
+    <button onclick="abrirImportarSheets()" style="padding:10px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);font-family:var(--font)">📥 Importar desde Sheets</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ PANEL: ANALYTICS ════════════════ -->
+<div class="panel content" id="panel-analytics" style="flex-direction:column;gap:20px;overflow-y:auto">
+  <div class="section-header">
+    <span class="section-title">📊 Analytics</span>
+    <div style="display:flex;gap:8px">
+      <button onclick="loadAnalytics()" style="padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--text);font-family:var(--font-mono)">↺ Actualizar</button>
+      <button id="btn-generar-reporte" onclick="generarReporteAnalytics(this)" style="padding:6px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 4px 10px var(--primary-glow)">📤 Generar Reporte</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Total Leads (7d)</div>
+      <div id="an-total-leads" style="font-family:var(--font-display);font-size:30px;letter-spacing:.04em">—</div>
+      <div id="an-leads-sub" style="font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--font-mono)">esta semana</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Cerrados</div>
+      <div id="an-cerrados" style="font-family:var(--font-display);font-size:30px;letter-spacing:.04em;color:#00D084">—</div>
+      <div id="an-cerrados-sub" style="font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--font-mono)">de — leads</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Conversión</div>
+      <div id="an-conversion" style="font-family:var(--font-display);font-size:30px;letter-spacing:.04em;color:#7C3AED">—</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--font-mono)">cerrados / total</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Revenue Est.</div>
+      <div id="an-revenue" style="font-family:var(--font-display);font-size:30px;letter-spacing:.04em;color:#FFB800">—</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;font-family:var(--font-mono)">cerrados × $197</div>
+    </div>
+  </div>
+
+  <!-- Canales -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Leads por Canal</div>
+    <div id="an-canales" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+      <div style="color:var(--muted);font-family:var(--font-mono);font-size:12px">Cargando...</div>
+    </div>
+  </div>
+
+  <!-- Chart + FB Ads -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Leads por Día (7d)</div>
+      <div id="an-chart" style="display:flex;align-items:flex-end;gap:5px;height:80px;padding-bottom:2px"></div>
+      <div id="an-chart-labels" style="display:flex;gap:5px;margin-top:6px"></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Facebook Ads — act_2622567464589584</div>
+      <div id="fb-ads-section"><div style="color:var(--muted);font-family:var(--font-mono);font-size:12px">Cargando...</div></div>
+    </div>
+  </div>
+
+  <!-- Tabla leads recientes -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Leads Recientes (7 días)</span>
+      <span id="an-table-count" style="font-family:var(--font-mono);font-size:11px;color:var(--muted)"></span>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:var(--surface2)">
+            <th style="text-align:left;padding:10px 16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;border-bottom:1px solid var(--border)">NOMBRE</th>
+            <th style="text-align:left;padding:10px 16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;border-bottom:1px solid var(--border)">CANAL</th>
+            <th style="text-align:left;padding:10px 16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;border-bottom:1px solid var(--border)">FUENTE</th>
+            <th style="text-align:left;padding:10px 16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;border-bottom:1px solid var(--border)">ESTADO</th>
+            <th style="text-align:left;padding:10px 16px;font-family:var(--font-mono);font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.06em;border-bottom:1px solid var(--border)">FECHA</th>
+          </tr>
+        </thead>
+        <tbody id="an-leads-tbody">
+          <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);font-family:var(--font-mono);font-size:12px">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ MODALES ══════════════════════════ -->
+<!-- Lead detail -->
+<div id="detalle-overlay" onclick="cerrarDetalleLead()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000"></div>
+<div id="detalle-modal" style="display:none;position:fixed;top:0;right:0;width:440px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:1001;overflow-y:auto;padding:24px;box-shadow:-8px 0 40px rgba(0,0,0,0.4);flex-direction:column;gap:0">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;position:sticky;top:0;background:var(--surface);padding-bottom:12px;border-bottom:1px solid var(--border)">
+    <span id="detalle-nombre" style="font-family:var(--font-display);font-size:20px;letter-spacing:.07em"></span>
+    <button onclick="cerrarDetalleLead()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1">✕</button>
+  </div>
+  <div id="detalle-body"></div>
+</div>
+
+<!-- Sheets import -->
+<div id="sheets-import-modal" onclick="if(event.target===this)cerrarImportarSheets()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:2000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;width:100%;max-width:680px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 60px rgba(0,0,0,0.5)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <span style="font-family:var(--font-display);font-size:18px;letter-spacing:.07em">📥 Importar desde Google Sheets</span>
+      <button onclick="cerrarImportarSheets()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1">✕</button>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-bottom:12px">Pega la URL del Google Sheet público (debe tener permiso "Cualquier persona con el enlace puede ver").</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <input id="sheets-url-input" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." style="flex:1;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none">
+      <button onclick="previewImportacion()" style="padding:9px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:var(--font)">Ver preview</button>
+    </div>
+    <div id="sheets-preview"></div>
+    <button id="sheets-confirm-btn" onclick="confirmarImportacion()" style="display:none;width:100%;margin-top:16px;padding:11px;background:var(--green);color:#000;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Confirmar importación</button>
+  </div>
+</div>
+
+<!-- ══════════════════ MOBILE CHAT OVERLAY ══════════════════ -->
+<div id="mob-chat">
+  <div class="mc-header">
+    <button class="mc-back" onclick="closeMobChat()">‹</button>
+    <div class="mc-agent-emoji" id="mc-emoji">🎯</div>
+    <div class="mc-agent-info">
+      <div class="mc-agent-name" id="mc-name">Organizador</div>
+      <div class="mc-agent-status" id="mc-status">● online · responde al instante</div>
+    </div>
+    <button class="mc-team-btn" onclick="toggleMobTeam()">👥</button>
+  </div>
+  <div class="mc-drawer" id="mc-drawer">
+    <div style="font-family:var(--font-display);font-size:13px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:10px">Tu equipo</div>
+    <div id="mc-team-list"></div>
+  </div>
+  <div class="mc-msgs" id="mc-msgs"></div>
+  <div class="mc-chips">
+    <button class="mc-chip" onclick="sendMobQ('¿Qué proyectos tenemos activos?')">Estado proyectos</button>
+    <button class="mc-chip" onclick="sendMobQ('Nueva campaña para Arranca Financial')">Nueva campaña</button>
+    <button class="mc-chip" onclick="sendMobQ('Reporte semanal')">Reporte semanal</button>
+    <button class="mc-chip" onclick="sendMobQ('¿Qué sabes sobre Arranca Financial?')">Ver cliente</button>
+  </div>
+  <div class="mc-input-row">
+    <input class="mc-input" id="mc-input" type="text" placeholder="Mensaje..." autocomplete="off"
+      enterkeyhint="send"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMobMsg()}">
+    <button class="mc-mic-btn" id="mc-mic" title="Mantén presionado para hablar">🎤</button>
+    <button class="mc-send-btn" onclick="sendMobMsg()">➤</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════════
+   MOBILE CHAT — Self-contained WhatsApp-style overlay
+══════════════════════════════════════════════════════════════════════════════ */
+(function(){
+  
 </style>
 </head>
 <body>
@@ -930,6 +1342,14 @@ body{background:#EBEBF0 !important}
     </svg>
     <span class="nav-label">Google Drive</span>
   </button>
+  <button class="nav-btn" onclick="showPanel('marketing-studio',this)" title="Marketing Studio" data-panel="marketing-studio">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="3" width="20" height="14" rx="2"/>
+        <path d="M8 21h8M12 17v4"/>
+        <path d="M10 8l5 3-5 3V8z" fill="currentColor" stroke="none"/>
+      </svg>
+      <span class="nav-label">Marketing Studio</span>
+    </button>
 
   <button class="nav-btn" onclick="showPanel('crm',this)" title="CRM">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1745,7 +2165,7 @@ let currentAgent = AGENT_MAP['Organizador'];
   setInterval(_checkDeploy,60000);
 })();
 
-const TITLES={home:'DASHBOARD',chat:'CHAT',agents:'AGENTES',clients:'CLIENTES',integrations:'INTEGRACIONES',aprobacion:'APROBAR POSTS','crear-bot':'ONBOARDING',gdrive:'GOOGLE DRIVE',crm:'CRM — LEADS',grabaciones:'GRABACIONES',playwright:'PLAYWRIGHT',analytics:'ANALYTICS'};
+const TITLES={home:'DASHBOARD',chat:'CHAT',agents:'AGENTES',clients:'CLIENTES',integrations:'INTEGRACIONES',aprobacion:'APROBAR POSTS','crear-bot':'ONBOARDING',gdrive:'GOOGLE DRIVE',crm:'CRM — LEADS',grabaciones:'GRABACIONES',playwright:'PLAYWRIGHT',analytics:'ANALYTICS','marketing-studio':'MARKETING STUDIO'};
 
 let _aprobacionTimer=null;
 function showPanel(id,btn){
@@ -3870,5 +4290,88 @@ loadPlaywrightLogs();
 })();
 </script>
 
+<div class="panel content" id="panel-marketing-studio" style="flex-direction:column;gap:20px;overflow-y:auto">
+
+  <!-- Header -->
+  <div class="section-header">
+    <span class="section-title">🎬 Marketing Studio</span>
+    <span class="section-count" id="ms-status"></span>
+  </div>
+
+  <!-- Form grid -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Plataforma</label>
+      <select id="ms-plataforma" style="padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
+        <option value="Facebook">Facebook</option>
+        <option value="Instagram">Instagram</option>
+        <option value="YouTube">YouTube</option>
+        <option value="LinkedIn">LinkedIn</option>
+        <option value="TikTok">TikTok</option>
+      </select>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Tipo de contenido</label>
+      <select id="ms-tipo" style="padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
+        <option value="Video">Video (Seedance)</option>
+        <option value="Post">Post con imagen</option>
+        <option value="Story">Story</option>
+        <option value="Carrusel">Carrusel</option>
+        <option value="Reel">Reel</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Brief -->
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Brief / Descripción</label>
+    <textarea id="ms-brief" rows="4" placeholder="Describe el contenido que quieres generar. Incluye tono, mensaje principal, llamada a la acción, audiencia objetivo..." style="padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-mono);font-size:13px;resize:vertical;outline:none;line-height:1.6;transition:border-color .2s" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+  </div>
+
+  <!-- Botón Generar -->
+  <button onclick="msGenerar()" id="ms-btn-generar" style="align-self:flex-start;padding:10px 24px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-family:var(--font-mono);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:opacity .2s">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+    Generar
+  </button>
+
+  <!-- Output -->
+  <div id="ms-output" style="display:none;flex-direction:column;gap:14px">
+    <div style="height:1px;background:var(--border)"></div>
+
+    <!-- Resultado del crew -->
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Contenido generado</label>
+      <div id="ms-resultado" style="padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-family:var(--font-mono);font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap;min-height:80px"></div>
+    </div>
+
+    <!-- Caption / Copy editable -->
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Caption / Copy (editable)</label>
+      <textarea id="ms-caption" rows="4" style="padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-mono);font-size:13px;resize:vertical;outline:none;line-height:1.6;transition:border-color .2s" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+    </div>
+
+    <!-- Programar publicación -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Fecha y hora</label>
+        <input type="datetime-local" id="ms-fecha" style="padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Estado</label>
+        <div id="ms-estado" style="padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-family:var(--font-mono);font-size:13px;color:var(--muted)">Listo para publicar</div>
+      </div>
+    </div>
+
+    <!-- Botón Publicar -->
+    <div style="display:flex;gap:10px;align-items:center">
+      <button onclick="msPublicar()" id="ms-btn-publicar" style="padding:10px 24px;background:var(--green-dim,rgba(74,222,128,0.12));color:var(--green,#4ade80);border:1px solid rgba(74,222,128,0.3);border-radius:10px;font-family:var(--font-mono);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Publicar
+      </button>
+      <button onclick="msReset()" style="padding:10px 16px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:var(--font-mono);font-size:13px;cursor:pointer">Nuevo</button>
+    </div>
+  </div>
+
+</div>
 </body>
 </html>
