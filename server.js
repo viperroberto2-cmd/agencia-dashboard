@@ -8,7 +8,7 @@ const BOTS = {
   b1:  'https://worker-production-0c858.up.railway.app/bot1/health',
   b2:  'https://worker-production-34f9.up.railway.app/crew/health',
   b3: 'https://worker-production-035f.up.railway.app/strategy/health',
-  org: 'https://web-production-77871.up.railway.app/health',
+  org: 'https://web-production-77871.up.railway.app/health', h
   b5:     'https://worker-production-aa53.up.railway.app/scheduler/health',
   web:    'https://agencia-ai-web-designer-production.up.railway.app/web/health',
   motion:    'https://web-production-d67bad.up.railway.app/motion/health',
@@ -71,7 +71,7 @@ app.get('/icon-512.png', (_,res) => {
 // ── End PWA Icons ───────────────────────────────────
 
 function serveIndex(res) {
-  const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8')
+  const html = fs.readFileSync(path.join(__dirname, 'index-v2.html'), 'utf8')
     .replace(/__SUPABASE_URL__/g, process.env.SUPABASE_URL || '')
     .replace(/__SUPABASE_ANON_KEY__/g, process.env.SUPABASE_ANON_KEY || '');
   console.log('Serving index with SUPABASE_URL:', html.includes('__SUPABASE_URL__') ? 'PLACEHOLDER NOT REPLACED!' : 'REPLACED OK');
