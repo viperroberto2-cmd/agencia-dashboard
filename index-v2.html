@@ -2337,11 +2337,7 @@ function renderDriveFilters() {
 function setDriveFilter(id) { driveFilter = id; renderDriveFilters(); renderDrive(); }
 
 function renderDrive() {
-  const items = window._driveAPIItems || driveItems;
-  const driveItemsOrig = driveItems;
-  // swap for render
-  
-  let items = driveItems;
+  let items = window._driveAPIItems || driveItems;
   if (driveFilter !== 'all') items = items.filter(d => d.type === driveFilter);
   document.getElementById('driveGrid').innerHTML = items.map(d => `
     <button class="drive-card" onclick="alert('Abriendo ${d.name}...')">
