@@ -81,71 +81,56 @@ function serveIndex(res) {
 }
 
 app.get('/', (req, res) => serveIndex(res));
-app.post('/api/onboard-cliente', async (req, res) => {
-  const {
-    nombre, owner, email, telefono, industria,
-    ciudad, objetivos, presupuesto, notas, redes
-  } = req.body;
 
-  if (!nombre || !email) return res.status(400).json({error: 'Missing required fields'});
-
-  const SUPABASE_URL  = process.env.SUPABASE_PROJECT_URL;
-  const SUPABASE_KEY  = process.env.SUPABASE_SECRET_KEY;
-
-  try {
-    // Cargar CRM existente o crear uno nuevo
-    const existing = await fetch(`${SUPABASE_URL}/rest/v1/clientes?user_id=eq.roberto_agencia&select=data`, {
-      headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`}
-    }).then(r => r.json());
-
-    const crm = existing[0]?.data || {cliente_activo: null, clientes: {}};
-
-    // Agregar el nuevo cliente
-    crm.clientes[nombre] = {
-      owner, email, telefono, industria, ciudad,
-      objetivos, presupuesto, notas,
-      redes_sociales: redes,
-      onboarding_completo: true,
-      fecha_onboarding: new Date().toISOString(),
-      fuente: 'self-onboarding'
-    };
-
-    // Guardar en Supabase
-    await fetch(`${SUPABASE_URL}/rest/v1/clientes`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify({user_id: 'roberto_agencia', data: crm})
-    });
-
-    // Notificar a Roberto por Telegram (opcional pero poderoso)
-    const TG_TOKEN  = process.env.TELEGRAM_BOT_TOKEN;
-    const TG_CHATID = process.env.TELEGRAM_CHAT_ID;
-    if (TG_TOKEN && TG_CHATID) {
-      await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          chat_id: TG_CHATID,
-          text: `🎉 NUEVO CLIENTE vía onboarding!\n\n🏢 ${nombre}\n👤 ${owner}\n📧 ${email}\n📱 ${telefono}\n🏥 ${industria}\n🎯 ${(objetivos||[]).join(', ')}`
-        })
-      });
-    }
-
-    res.json({ok: true, cliente: nombre});
-  } catch(e) {
-    console.error('Onboard error:', e);
-    res.status(500).json({error: e.message});
-  }
-});
-
-// Servir la página de onboarding en /onboard
 app.get('/onboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'onboard.html'));
+});
+
+app.get('/v2', (req, res) => {
+  const html = fs.readFileSync(path.join(__dirname, 'index-v2.html'), 'utf8')
+    .replace(/__SUPABASE_URL__/g, process.env.SUPABASE_URL || '')
+    .replace(/__SUPABASE_ANON_KEY__/g, process.env.SUPABASE_ANON_KEY || '');
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.send(html);
+});
+
+app.post('/api/onboard-cliente', async (req, res) => {
+  const data = req.body;
+  const SUPABASE_URL = process.env.SUPABASE_PROJECT_URL;
+  const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
+  try {
+    const existing = await fetch(
+      `${SUPABASE_URL}/rest/v1/clientes?user_id=eq.roberto_agencia&select=data`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }}
+    ).then(r => r.json());
+    const crm = existing[0]?.data || { cliente_activo: null, clientes: {} };
+    crm.clientes[data.nombre] = {
+      owner: data.owner, email: data.email, telefono: data.telefono,
+      industria: data.industria, ciudad: data.ciudad,
+      objetivos: data.objetivos, presupuesto: data.presupuesto,
+      notas: data.notas, redes_sociales: data.redes,
+      onboarding_completo: true,
+      fecha_onboarding: new Date().toISOString(),
+      fuente: 'RG Production self-onboarding'
+    };
+    await fetch(`${SUPABASE_URL}/rest/v1/clientes`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
+                 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify({ user_id: 'roberto_agencia', data: crm })
+    });
+    const TG = process.env.TELEGRAM_BOT_TOKEN;
+    const CHAT = process.env.TELEGRAM_CHAT_ID;
+    if (TG && CHAT) {
+      await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: CHAT,
+          text: `🎉 New client via RG Production onboarding!\n\n🏢 ${data.nombre}\n👤 ${data.owner}\n📧 ${data.email}\n📱 ${data.telefono}\n🏥 ${data.industria}\n🎯 ${(data.objetivos||[]).join(', ')}` })
+      });
+    }
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/index.html', (req, res) => serveIndex(res));
