@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script>
+window.SUPABASE_URL = '__SUPABASE_URL__';
+window.SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
+window.AGENT_MAP = {
+  organizador: { url: 'https://web-production-77871.up.railway.app',               endpoint: '/organizador/chat' },
+  director:    { url: 'https://agencia-ai-production.up.railway.app',               endpoint: '/director/chat'    },
+  crew:        { url: 'https://worker-production-34f9.up.railway.app',              endpoint: '/crew/chat'        },
+  estrategia:  { url: 'https://worker-production-035f.up.railway.app',             endpoint: '/estratega/chat'   },
+  scheduler:   { url: 'https://worker-production-aa53.up.railway.app',             endpoint: '/scheduler/chat'   },
+  analytics:   { url: 'https://upbeat-endurance.up.railway.app',                   endpoint: '/analytics/chat'   },
+  compositor:  { url: 'https://compositorbot-production.up.railway.app',            endpoint: '/compositor/chat'  },
+  scraper:     { url: 'https://agencia-ai-scraper-production.up.railway.app',       endpoint: '/scraper/task'     },
+  seo:         { url: 'https://agencia-ai-seo-production.up.railway.app',           endpoint: '/seo/task'         },
+  web:         { url: 'https://agencia-ai-web-designer-production.up.railway.app',  endpoint: '/web/chat'         },
+  motion:      { url: 'https://web-production-d67bad.up.railway.app',               endpoint: '/motion/chat'      }
+};
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Agencia AI</title>
@@ -1574,7 +1591,11 @@ input, textarea { font-family: inherit; }
         <button class="nav-item" data-section="crm" onclick="goSection('crm')"><span class="nav-icon">👥</span> CRM<span class="nav-count">12</span></button>
         <button class="nav-item" data-section="scheduler" onclick="goSection('scheduler')"><span class="nav-icon">📅</span> Scheduler</button>
         <button class="nav-item" data-section="grabaciones" onclick="goSection('grabaciones')"><span class="nav-icon">🎙️</span> Grabaciones</button>
-        <button class="nav-item" data-section="drive" onclick="goSection('drive')"><span class="nav-icon">📂</span> Drive</button>
+        <button class="nav-item" data-section="drive" onclick="goSection('drive')"><span class="nav-icon">📂</span>
+        <div class="nav-item" data-section="marketing" onclick="goSection('marketing')">
+          <span class="nav-icon">🎬</span>
+          <span class="nav-label">Marketing Studio</span>
+        </div> Drive</button>
         <button class="nav-item" data-section="onboarding" onclick="goSection('onboarding')"><span class="nav-icon">🚀</span> Onboarding</button>
       </div>
       <div class="nav-section">
@@ -2075,6 +2096,7 @@ function goSection(name) {
     b.classList.toggle('active', b.dataset.section === name);
   });
   document.querySelector('.main').scrollTop = 0;
+  if (name === 'drive') loadDriveFromAPI();
   closeAllDropdowns();
   if (document.getElementById('drawer').classList.contains('open')) toggleDrawer();
 }
@@ -2318,6 +2340,10 @@ function renderDriveFilters() {
 function setDriveFilter(id) { driveFilter = id; renderDriveFilters(); renderDrive(); }
 
 function renderDrive() {
+  const items = window._driveAPIItems || driveItems;
+  const driveItemsOrig = driveItems;
+  // swap for render
+  
   let items = driveItems;
   if (driveFilter !== 'all') items = items.filter(d => d.type === driveFilter);
   document.getElementById('driveGrid').innerHTML = items.map(d => `
@@ -2407,24 +2433,37 @@ function sendMessage() {
   const text = chatInput.value.trim();
   if (!text) return;
   const msgs = document.getElementById('chatMessages');
-  msgs.innerHTML += `
-    <div class="message-group user">
-      <div class="message-meta" style="text-align: right;">Tú · ahora</div>
-      <div class="message user">${escapeHtml(text)}</div>
-    </div>
-  `;
+  msgs.innerHTML += `<div class="message-group user"><div class="message-meta" style="text-align:right">Tú · ahora</div><div class="message user">${escapeHtml(text)}</div></div>`;
   chatInput.value = '';
   chatInput.style.height = 'auto';
   msgs.scrollTop = msgs.scrollHeight;
-  setTimeout(() => {
-    msgs.innerHTML += `
-      <div class="message-group">
-        <div class="message-meta">${activeAgent.name} · ahora</div>
-        <div class="message bot">${simulateReply(text)}</div>
-      </div>
-    `;
+
+  // Loading indicator
+  const loadId = 'load-' + Date.now();
+  msgs.innerHTML += `<div class="message-group" id="${loadId}"><div class="message-meta">${activeAgent.name} · ahora</div><div class="message bot" style="opacity:.5">⏳ Pensando...</div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const agentCfg = window.AGENT_MAP && window.AGENT_MAP[activeAgent.id];
+  if (!agentCfg) {
+    document.getElementById(loadId).querySelector('.message').textContent = simulateReply(text);
+    return;
+  }
+  fetch(agentCfg.url + agentCfg.endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: text, client: currentClient })
+  })
+  .then(r => r.json())
+  .then(d => {
+    const reply = d.response || d.message || d.reply || d.content || JSON.stringify(d);
+    document.getElementById(loadId).querySelector('.message').style.opacity = '1';
+    document.getElementById(loadId).querySelector('.message').textContent = reply;
     msgs.scrollTop = msgs.scrollHeight;
-  }, 700);
+  })
+  .catch(e => {
+    document.getElementById(loadId).querySelector('.message').textContent = '⚠ Sin respuesta del agente (' + e.message + ')';
+    document.getElementById(loadId).querySelector('.message').style.opacity = '1';
+  });
 }
 
 function sendQuick(text) { chatInput.value = text; sendMessage(); }
@@ -2618,6 +2657,124 @@ renderAgentDropdown();
 renderStepper();
 renderStepContent();
 renderUsers();
+
+// ── HEALTH CHECK ──────────────────────────────────────────────────
+async function loadHealth() {
+  try {
+    const res = await fetch('/api/health');
+    const data = await res.json();
+    const map = {
+      b2: 'Crew bot', b1: 'Bot 1', org: 'Organizador', b5: 'Scheduler',
+      web: 'Web Designer', motion: 'Motion', scraper: 'Scraper',
+      seo: 'SEO', analytics: 'Analytics', b3: 'Estrategia'
+    };
+    const container = document.getElementById('systemStatusList');
+    if (!container) return;
+    container.innerHTML = Object.entries(data).map(([k, v]) => {
+      const label = map[k] || k;
+      const ok = v && v.ok;
+      return `<div class="status-row">
+        <span class="status-label">${label}</span>
+        <span class="status-dot ${ok ? 'dot-green' : 'dot-red'}"></span>
+        <span class="status-text" style="color:${ok ? '#4ade80' : '#f87171'}">${ok ? 'Operacional' : 'Offline'}</span>
+      </div>`;
+    }).join('');
+  } catch(e) { console.warn('Health check failed:', e.message); }
+}
+loadHealth();
+setInterval(loadHealth, 30000);
+
+
+// ── GDRIVE LIVE LOAD ──────────────────────────────────────────────
+async function loadDriveFromAPI() {
+  try {
+    const tipo = driveFilter === 'all' ? 'all' : driveFilter;
+    const res = await fetch('/gdrive/listar?tipo=' + tipo);
+    const data = await res.json();
+    if (!data.ok || !data.archivos.length) return; // fallback to static data
+    const iconMap = { video: '🎬', audio: '🎵', image: '🖼️' };
+    window._driveAPIItems = data.archivos.map(f => {
+      const mime = f.mimeType || '';
+      const type = mime.includes('video') ? 'video' : mime.includes('audio') ? 'audio' : mime.includes('image') ? 'image' : 'file';
+      const sizeKB = f.size ? Math.round(f.size / 1024) : 0;
+      const sizeFmt = sizeKB > 1024 ? (sizeKB/1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+      return { type, name: f.name, size: sizeFmt, source: 'Drive', date: new Date(f.modifiedTime).toLocaleDateString('es-MX',{month:'short',day:'numeric'}), icon: iconMap[type]||'📄', link: f.webViewLink };
+    });
+    renderDrive();
+  } catch(e) { console.warn('GDrive API failed, using static data:', e.message); }
+}
+
+
+// ── MARKETING STUDIO ──────────────────────────────────────────────
+let msPreset = 'ugc';
+function msSelect(el, id) {
+  document.querySelectorAll('.ms-preset-card').forEach(c => { c.style.borderColor='#2a2540'; c.style.background='#1a1730'; });
+  el.style.borderColor = '#7c5cfc'; el.style.background = '#1e1a3a';
+  msPreset = id;
+}
+async function msGenerar() {
+  const brief = document.getElementById('ms-brief').value.trim();
+  if (!brief) { document.getElementById('ms-status').textContent = '⚠ Escribe un brief primero'; return; }
+  document.getElementById('ms-status').textContent = '⏳ Enviando al Crew bot...';
+  document.getElementById('ms-output').style.display = 'none';
+  try {
+    const r = await fetch('/api/crew/seedance', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ preset: msPreset, brief, client: currentClient })
+    });
+    const d = await r.json();
+    const out = document.getElementById('ms-output');
+    out.textContent = d.prompt || d.message || JSON.stringify(d, null, 2);
+    out.style.display = 'block';
+    document.getElementById('ms-status').textContent = d.job_id ? '✓ Job ID: ' + d.job_id : '✓ Completado';
+  } catch(e) {
+    document.getElementById('ms-status').textContent = '⚠ Error: ' + e.message;
+  }
+}
+
 </script>
+
+<div class="section" id="section-marketing">
+  <div style="padding:28px 32px;max-width:900px">
+    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:4px">🎬 Marketing Studio</div>
+    <div style="font-size:12px;color:#7b6fa0;margin-bottom:28px">Seedance 2.0 · kie.ai · RG Production</div>
+
+    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:12px">Tipo de video</div>
+    <div id="ms-presets" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px">
+      <div class="ms-preset-card ms-active" onclick="msSelect(this,'ugc')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
+          <div style="font-size:22px;margin-bottom:8px">👤</div>
+          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">UGC</div>
+          <div style="font-size:11px;color:#7b6fa0">Video estilo usuario real</div>
+        </div><div class="ms-preset-card" onclick="msSelect(this,'tutorial')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
+          <div style="font-size:22px;margin-bottom:8px">📋</div>
+          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Tutorial</div>
+          <div style="font-size:11px;color:#7b6fa0">Paso a paso del producto</div>
+        </div><div class="ms-preset-card" onclick="msSelect(this,'tvspot')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
+          <div style="font-size:22px;margin-bottom:8px">📺</div>
+          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">TV Spot</div>
+          <div style="font-size:11px;color:#7b6fa0">Comercial cinematográfico</div>
+        </div><div class="ms-preset-card" onclick="msSelect(this,'hypermotion')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
+          <div style="font-size:22px;margin-bottom:8px">⚡</div>
+          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Hyper Motion</div>
+          <div style="font-size:11px;color:#7b6fa0">Alta energía y acción</div>
+        </div><div class="ms-preset-card" onclick="msSelect(this,'review')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
+          <div style="font-size:22px;margin-bottom:8px">⭐</div>
+          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Review</div>
+          <div style="font-size:11px;color:#7b6fa0">Testimonio de cliente</div>
+        </div><div class="ms-preset-card" onclick="msSelect(this,'wildcard')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
+          <div style="font-size:22px;margin-bottom:8px">🃏</div>
+          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Wild Card</div>
+          <div style="font-size:11px;color:#7b6fa0">Formato libre</div>
+        </div>
+    </div>
+
+    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Brief</div>
+    <textarea id="ms-brief" placeholder="Describe el contenido: tono, audiencia, mensaje, CTA..." style="width:100%;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;color:#e8e0ff;resize:vertical;min-height:90px;box-sizing:border-box;outline:none;margin-bottom:16px"></textarea>
+
+    <button onclick="msGenerar()" style="width:100%;background:linear-gradient(135deg,#7c5cfc,#a78bfa);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;margin-bottom:8px">✦ Generar Video</button>
+    <div id="ms-status" style="font-size:12px;color:#7c5cfc;min-height:16px;margin-bottom:12px"></div>
+    <div id="ms-output" style="background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:14px;min-height:60px;font-size:12px;color:#9b8ec4;white-space:pre-wrap;display:none"></div>
+  </div>
+</div>
 </body>
 </html>
