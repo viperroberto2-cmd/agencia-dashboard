@@ -6,7 +6,7 @@ window.SUPABASE_URL = '__SUPABASE_URL__';
 window.SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
 </script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
 <title>Agencia AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -625,86 +625,80 @@ body{background:#EBEBF0 !important}
 .cliente-badge{display:inline-flex;align-items:center;gap:5px;background:#7C3AED18;color:#7C3AED;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
 .cliente-badge-dot{width:7px;height:7px;border-radius:50%;background:#7C3AED;flex-shrink:0}
 
+/* ── MIC BUTTON ────────────────────────────────────────────────────────────── */
+.mic-btn{
+  width:44px;height:44px;border-radius:50%;
+  background:none;border:1.5px solid var(--border);
+  color:var(--muted);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;
+  -webkit-user-select:none;user-select:none;touch-action:none;
+}
+.mic-btn:hover{border-color:var(--primary);color:var(--primary)}
+.mic-btn.recording{
+  background:rgba(255,45,85,0.12);border-color:#FF3B30;color:#FF3B30;
+  animation:mic-pulse 1s ease-in-out infinite;
+}
+@keyframes mic-pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,0.5)}
+  50%{box-shadow:0 0 0 10px rgba(255,59,48,0)}
+}
+
 /* ── MOBILE ────────────────────────────────────────────────────────────────── */
 .mobile-team-btn{display:none}
 @media(max-width:768px){
 
-  /* ── BARRA INFERIOR FIJA ── */
+  /* ══════════════════ BARRA NAVEGACIÓN INFERIOR ══════════════════ */
   .sidebar{
     position:fixed!important;bottom:0;left:0;right:0;top:auto!important;
     width:100%!important;min-width:0!important;height:60px;
     flex-direction:row;padding:0 4px;
     border-right:none;border-top:1px solid var(--border);
     justify-content:space-around;align-items:center;
-    z-index:999;gap:0;overflow:visible;
-    background:#fff;
+    z-index:999;gap:0;overflow:visible;background:var(--surface);
   }
   .sidebar::after{display:none}
   .logo-icon{display:none!important}
-  /* Solo mostrar 5 íconos principales */
-  .nav-btn[title="Aprobar Posts"],
-  .nav-btn[title="Crear Bot"],
-  .nav-btn[title="Google Drive"],
-  .nav-btn[title="CRM"],
-  .nav-btn[title="Grabaciones"],
-  .nav-btn[title="Playwright Monitor"],
-  .nav-btn[title="Analytics"],
-  .nav-btn[title="Web Designer"]{display:none!important}
+  .nav-btn[title="Aprobar Posts"],.nav-btn[title="Crear Bot"],
+  .nav-btn[title="Google Drive"],.nav-btn[title="CRM"],
+  .nav-btn[title="Grabaciones"],.nav-btn[title="Playwright Monitor"],
+  .nav-btn[title="Analytics"],.nav-btn[title="Web Designer"]{display:none!important}
   .nav-btn{width:48px;height:48px;border-radius:12px;flex-shrink:0}
   .sidebar-bottom{flex-direction:row;margin-top:0;gap:0;align-items:center}
   .sidebar-bottom .nav-btn{display:flex!important}
 
-  /* ── TOPBAR FIJO ARRIBA ── */
+  /* ══════════════════ TOPBAR FIJO ARRIBA ══════════════════ */
   .topbar{
-    position:fixed!important;top:0;left:0;right:0;
-    z-index:998;padding:0 12px;gap:8px;
-    background:#fff;border-bottom:1px solid var(--border);
+    position:fixed!important;top:0;left:0;right:0;z-index:998;
+    padding:0 12px;gap:8px;background:var(--surface);
+    border-bottom:1px solid var(--border);
   }
   .topbar-title{font-size:16px}
 
-  /* ── MAIN: espacio entre topbar y bottom nav ── */
-  .main{
-    padding-top:56px!important;
-    padding-bottom:60px!important;
-    height:100vh;
-    overflow:hidden;
-  }
-
-  /* ── PANELES SCROLLEABLES ── */
-  .panel.active{
-    display:block!important;
-    height:100%;
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-  }
+  /* ══════════════════ LAYOUT PRINCIPAL ══════════════════ */
+  .main{padding-top:56px!important;padding-bottom:60px!important;overflow:hidden}
+  .panel.active{display:block!important;height:calc(100vh - 116px);overflow-y:auto;-webkit-overflow-scrolling:touch}
   .content{padding:12px}
 
-  /* ── PANEL CHAT: fixed entre topbar y bottom nav ── */
+  /* ══════════════════ PANEL CHAT — ESTILO WHATSAPP ══════════════════ */
   #panel-chat.active{
     position:fixed!important;
     top:56px!important;left:0!important;right:0!important;bottom:60px!important;
-    height:auto!important;
-    padding:8px!important;
-    display:flex!important;
-    flex-direction:column!important;
-    overflow:hidden!important;
-    background:var(--bg);
-    z-index:10;
-  }
-
-  /* Chat layout: columna simple */
-  .chat-layout,
-  .chat-layout.has-analytics,
-  .chat-layout.has-scheduler{
+    height:auto!important;padding:0!important;
     display:flex!important;flex-direction:column!important;
-    flex:1!important;height:100%!important;gap:0;
+    overflow:hidden!important;background:var(--bg);z-index:10;
   }
 
-  /* Ocultar lista de bots */
+  /* Chat layout: una sola columna */
+  .chat-layout,.chat-layout.has-analytics,.chat-layout.has-scheduler{
+    display:flex!important;flex-direction:column!important;
+    flex:1!important;height:100%!important;min-height:0;gap:0;
+  }
+
+  /* Lista de bots — oculta, aparece como drawer al tocar 👥 */
   .chat-agents{display:none!important;visibility:hidden!important}
   .chat-agents.mobile-open{
-    display:flex!important;visibility:visible!important;
-    flex-direction:column;
+    display:flex!important;visibility:visible!important;flex-direction:column;
     position:fixed;top:56px;left:0;right:0;bottom:60px;
     z-index:100;border-radius:0;border:none;
     border-top:1px solid var(--border);
@@ -712,35 +706,88 @@ body{background:#EBEBF0 !important}
     background:var(--surface);
   }
 
-  /* Chat principal ocupa todo */
+  /* ── Chat principal: header + msgs + input (como WhatsApp) ── */
   .chat-main{
     flex:1!important;min-height:0!important;
     display:flex!important;flex-direction:column!important;
-    border-radius:12px!important;overflow:hidden!important;
+    border-radius:0!important;overflow:hidden!important;
   }
-  .chat-msgs{-webkit-overflow-scrolling:touch}
 
-  /* Botón equipo mobile */
+  /* Header del chat — fijo arriba dentro del panel */
+  .chat-header{
+    flex-shrink:0!important;
+    padding:12px 14px!important;
+    background:var(--surface)!important;
+    border-bottom:1px solid var(--border)!important;
+    position:sticky;top:0;z-index:5;
+  }
+  .chat-header-emoji{font-size:26px!important}
+  .chat-header-name{font-size:16px!important}
+
+  /* Mensajes — solo esto hace scroll */
+  .chat-msgs{
+    flex:1!important;min-height:0!important;
+    overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;
+    padding:10px 12px!important;
+    background:var(--bg)!important;
+  }
+
+  /* Burbujas */
+  .msg-bubble{max-width:82%!important;font-size:14px!important}
+
+  /* Chips — scroll horizontal sin wrap */
+  .chat-chips-row{
+    flex-shrink:0!important;
+    padding:6px 10px!important;gap:5px!important;
+    overflow-x:auto!important;flex-wrap:nowrap!important;
+    -webkit-overflow-scrolling:touch!important;
+    scrollbar-width:none;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+  }
+  .chat-chips-row::-webkit-scrollbar{display:none}
+  .chip{white-space:nowrap!important;font-size:11px!important;padding:5px 11px!important}
+
+  /* Input row — fijo en la parte inferior */
+  .chat-input-row{
+    flex-shrink:0!important;
+    padding:8px 10px!important;gap:6px!important;
+    background:var(--surface)!important;
+    border-top:1px solid var(--border)!important;
+    align-items:center!important;
+  }
+  /* input text — font-size 16px evita zoom en iOS/Android */
+  .chat-input{
+    font-size:16px!important;
+    padding:10px 14px!important;
+    border-radius:22px!important;
+    max-height:100px;
+  }
+  /* Botón enviar — círculo con flecha */
+  .send-btn{
+    width:44px!important;height:44px!important;
+    padding:0!important;border-radius:50%!important;
+    font-size:18px!important;flex-shrink:0;
+  }
+  .send-btn-text{display:none}
+
+  /* Botón equipo */
   .mobile-team-btn{display:flex!important}
 
   /* Analytics / Scheduler overlay */
-  #analytics-sidebar.visible,
-  #scheduler-sidebar.visible{
+  #analytics-sidebar.visible,#scheduler-sidebar.visible{
     position:fixed!important;top:56px;left:0;right:0;bottom:60px;
-    width:100%!important;max-width:none!important;
-    border-radius:0;z-index:99;border:none;
-    background:var(--surface);overflow-y:auto;
-    display:flex!important;flex-direction:column;
+    width:100%!important;max-width:none!important;border-radius:0;
+    z-index:99;border:none;background:var(--surface);
+    overflow-y:auto;display:flex!important;flex-direction:column;
   }
 
-  /* ── HERO ── */
-  .hero-card{padding:20px 16px;flex-wrap:wrap;gap:12px}
+  /* ══════════════════ OTROS PANELES ══════════════════ */
+  .hero-card{padding:20px 14px;flex-wrap:wrap;gap:12px}
   .hero-title{font-size:28px!important}
-  .hero-avatar{font-size:40px;width:56px;height:56px}
-  .hero-stats{flex-wrap:wrap;gap:0}
-  .hero-stat{padding:0 10px;border-right:none}
-
-  /* ── GRIDS ── */
+  .hero-avatar{font-size:38px;width:52px;height:52px}
+  .hero-stats{flex-wrap:wrap}
+  .hero-stat{padding:0 8px;border-right:none}
   .agents-grid{grid-template-columns:1fr 1fr}
   .integrations-grid{grid-template-columns:1fr 1fr}
   .clients-grid{grid-template-columns:1fr}
@@ -1094,8 +1141,9 @@ body{background:#EBEBF0 !important}
         <div class="chat-input-row" id="chat-input-row">
           <input type="file" id="img-input" accept="image/*" style="display:none" onchange="sendImage(this)">
           <button onclick="document.getElementById('img-input').click()" title="Enviar imagen" style="background:none;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;color:var(--muted);font-size:16px;line-height:1">📎</button>
-          <input class="chat-input" id="chat-input" placeholder="Escríbele al Organizador... (pega o arrastra una imagen)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}">
-          <button class="send-btn" id="send-btn" onclick="sendMsg()">Enviar</button>
+          <input class="chat-input" id="chat-input" placeholder="Escríbele al Organizador..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}">
+          <button id="mic-btn" class="mic-btn" title="Mantén presionado para hablar">🎤</button>
+          <button class="send-btn" id="send-btn" onclick="sendMsg()"><span class="send-btn-text">Enviar</span><span class="send-btn-icon" style="display:none">➤</span></button>
         </div>
       </div>
 
@@ -3122,6 +3170,88 @@ async function confirmarImportacion(){
   btn.textContent=`✅ ${payload.length} leads importados`;
   setTimeout(()=>{cerrarImportarSheets();loadCRM();},1500);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MOBILE: Micrófono hold-to-talk + teclado virtual
+══════════════════════════════════════════════════════════════════════════════ */
+(function(){
+  /* ── Detectar mobile ── */
+  const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+
+  /* ── Send button: mostrar ícono en mobile ── */
+  const sendBtn = document.getElementById('send-btn');
+  if(sendBtn && isMobile){
+    sendBtn.querySelector('.send-btn-text').style.display='none';
+    sendBtn.querySelector('.send-btn-icon').style.display='inline';
+  }
+
+  /* ── Micrófono (hold-to-talk estilo WhatsApp) ── */
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const micBtn = document.getElementById('mic-btn');
+  if(SpeechRec && micBtn){
+    const rec = new SpeechRec();
+    rec.lang = navigator.language || 'es-US';
+    rec.continuous = false;
+    rec.interimResults = false;
+    let isRecording = false;
+
+    function startRec(e){
+      e.preventDefault();
+      if(isRecording) return;
+      isRecording = true;
+      micBtn.classList.add('recording');
+      micBtn.textContent = '🔴';
+      try{ rec.start(); }catch(err){}
+    }
+    function stopRec(e){
+      e && e.preventDefault();
+      if(!isRecording) return;
+      isRecording = false;
+      micBtn.classList.remove('recording');
+      micBtn.textContent = '🎤';
+      try{ rec.stop(); }catch(err){}
+    }
+
+    micBtn.addEventListener('touchstart', startRec, {passive:false});
+    micBtn.addEventListener('touchend',   stopRec,  {passive:false});
+    micBtn.addEventListener('touchcancel',stopRec,  {passive:false});
+    micBtn.addEventListener('mousedown',  startRec);
+    document.addEventListener('mouseup',  stopRec);
+
+    rec.onresult = function(e){
+      const text = e.results[0][0].transcript;
+      const input = document.getElementById('chat-input');
+      if(input){ input.value = text; sendMsg(); }
+    };
+    rec.onerror = function(){ stopRec(); };
+    rec.onend   = function(){ stopRec(); };
+  } else if(micBtn){
+    /* Navegador sin soporte: ocultar botón */
+    micBtn.style.display = 'none';
+  }
+
+  /* ── Visual Viewport API: teclado no rompe el chat ── */
+  if(window.visualViewport && isMobile){
+    const chatPanel = document.getElementById('panel-chat');
+    function adjustForKeyboard(){
+      if(!chatPanel || !chatPanel.classList.contains('active')) return;
+      const keyboardH = Math.max(0, window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop);
+      chatPanel.style.bottom = (60 + keyboardH) + 'px';
+      /* Scroll al último mensaje cuando abre teclado */
+      const msgs = document.getElementById('chat-msgs');
+      if(msgs) setTimeout(()=>{ msgs.scrollTop = msgs.scrollHeight; }, 100);
+    }
+    window.visualViewport.addEventListener('resize', adjustForKeyboard);
+    window.visualViewport.addEventListener('scroll', adjustForKeyboard);
+
+    /* Restaurar cuando se cierra el panel de chat */
+    const origShowPanel = window.showPanel;
+    window.showPanel = function(id, el){
+      origShowPanel && origShowPanel(id, el);
+      if(id !== 'chat') chatPanel.style.bottom = '60px';
+    };
+  }
+})();
 </script>
 
 <!-- ═══════════════════════════════════════ PANEL: GOOGLE DRIVE ══════════════ -->
