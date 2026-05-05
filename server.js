@@ -176,6 +176,37 @@ app.post('/api/generar-bot', (req, res) => {
   proxyReq.end();
 });
 
+// ── Marketing Studio proxies ─────────────────────────────────────────
+function proxyPost(targetUrl, req, res) {
+  const body = JSON.stringify(req.body);
+  const u = new URL(targetUrl);
+  const options = {
+    hostname: u.hostname,
+    path: u.pathname,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+  };
+  const proxyReq = https.request(options, (proxyRes) => {
+    let data = '';
+    proxyRes.on('data', chunk => data += chunk);
+    proxyRes.on('end', () => {
+      try { res.status(proxyRes.statusCode).json(JSON.parse(data)); }
+      catch(e) { res.status(500).json({ error: 'Parse error', raw: data.slice(0, 500) }); }
+    });
+  });
+  proxyReq.on('error', e => res.status(500).json({ error: e.message }));
+  proxyReq.write(body);
+  proxyReq.end();
+}
+
+app.post('/api/crew/seedance', (req, res) => {
+  proxyPost('https://worker-production-34f9.up.railway.app/crew/seedance', req, res);
+});
+
+app.post('/api/scheduler/publicar', (req, res) => {
+  proxyPost('https://worker-production-aa53.up.railway.app/scheduler/publicar', req, res);
+});
+
 // ── Google Drive ─────────────────────────────────────────────────────
 async function getGoogleAccessToken() {
     const body = JSON.stringify({

@@ -918,6 +918,14 @@ body{background:#EBEBF0 !important}
     </svg>
   </button>
 
+  <button class="nav-btn" onclick="showPanel('marketing-studio',this)" title="Marketing Studio" data-panel="marketing-studio">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="2" y="3" width="20" height="14" rx="2"/>
+      <path d="M8 21h8M12 17v4"/>
+      <path d="M10 8l5 3-5 3V8z" fill="currentColor" stroke="none"/>
+    </svg>
+  </button>
+
   <button class="nav-btn" onclick="showPanel('crm',this)" title="CRM">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -1727,7 +1735,7 @@ let currentAgent = AGENT_MAP['Organizador'];
   setInterval(_checkDeploy,60000);
 })();
 
-const TITLES={home:'DASHBOARD',chat:'CHAT',agents:'AGENTES',clients:'CLIENTES',integrations:'INTEGRACIONES',aprobacion:'APROBAR POSTS','crear-bot':'ONBOARDING',gdrive:'GOOGLE DRIVE',crm:'CRM — LEADS',grabaciones:'GRABACIONES',playwright:'PLAYWRIGHT',analytics:'ANALYTICS'};
+const TITLES={home:'DASHBOARD',chat:'CHAT',agents:'AGENTES',clients:'CLIENTES',integrations:'INTEGRACIONES',aprobacion:'APROBAR POSTS','crear-bot':'ONBOARDING',gdrive:'GOOGLE DRIVE','marketing-studio':'MARKETING STUDIO',crm:'CRM — LEADS',grabaciones:'GRABACIONES',playwright:'PLAYWRIGHT',analytics:'ANALYTICS'};
 
 let _aprobacionTimer=null;
 function showPanel(id,btn){
@@ -3307,6 +3315,94 @@ async function confirmarImportacion(){
     };
   }
 })();
+
+/* ── Marketing Studio ───────────────────────────────────────────────────── */
+const CREW_URL      = 'https://worker-production-34f9.up.railway.app';
+const SCHEDULER_URL = 'https://worker-production-aa53.up.railway.app';
+
+async function msGenerar(){
+  const brief = document.getElementById('ms-brief').value.trim();
+  if(!brief){ alert('Escribe un brief antes de generar.'); return; }
+  const plataforma = document.getElementById('ms-plataforma').value;
+  const tipo       = document.getElementById('ms-tipo').value;
+  const btn        = document.getElementById('ms-btn-generar');
+  const statusEl   = document.getElementById('ms-status');
+
+  btn.disabled = true;
+  btn.textContent = 'Generando...';
+  statusEl.textContent = '⏳ Enviando al Crew...';
+
+  try {
+    const cliente = document.getElementById('cliente-badge-name')?.textContent || '';
+    const res = await fetch('/api/crew/seedance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ brief, plataforma, tipo, cliente })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || res.statusText);
+
+    const contenido = data.resultado || data.content || data.output || JSON.stringify(data, null, 2);
+    document.getElementById('ms-resultado').textContent = contenido;
+    document.getElementById('ms-caption').value = data.caption || contenido;
+    document.getElementById('ms-output').style.display = 'flex';
+    statusEl.textContent = '✅ Generado';
+
+    /* Preseleccionar fecha: ahora + 24h */
+    const d = new Date(Date.now() + 86400000);
+    document.getElementById('ms-fecha').value = d.toISOString().slice(0,16);
+  } catch(e){
+    statusEl.textContent = '❌ Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg> Generar';
+  }
+}
+
+async function msPublicar(){
+  const caption    = document.getElementById('ms-caption').value.trim();
+  const plataforma = document.getElementById('ms-plataforma').value;
+  const fecha      = document.getElementById('ms-fecha').value;
+  const btn        = document.getElementById('ms-btn-publicar');
+  const estadoEl   = document.getElementById('ms-estado');
+  const statusEl   = document.getElementById('ms-status');
+
+  if(!caption){ alert('El caption no puede estar vacío.'); return; }
+  btn.disabled = true;
+  estadoEl.textContent = 'Publicando...';
+  statusEl.textContent = '⏳ Enviando al Scheduler...';
+
+  try {
+    const cliente = document.getElementById('cliente-badge-name')?.textContent || '';
+    const res = await fetch('/api/scheduler/publicar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caption, plataforma, fecha, cliente })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || res.statusText);
+
+    estadoEl.textContent = '✅ Publicado / Programado';
+    estadoEl.style.color = 'var(--green,#4ade80)';
+    statusEl.textContent = '✅ Publicado';
+  } catch(e){
+    estadoEl.textContent = '❌ ' + e.message;
+    statusEl.textContent = '❌ Error al publicar';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function msReset(){
+  document.getElementById('ms-brief').value = '';
+  document.getElementById('ms-output').style.display = 'none';
+  document.getElementById('ms-resultado').textContent = '';
+  document.getElementById('ms-caption').value = '';
+  document.getElementById('ms-fecha').value = '';
+  document.getElementById('ms-estado').textContent = 'Listo para publicar';
+  document.getElementById('ms-estado').style.color = '';
+  document.getElementById('ms-status').textContent = '';
+}
 </script>
 
 <!-- ═══════════════════════════════════════ PANEL: GOOGLE DRIVE ══════════════ -->
@@ -3324,6 +3420,91 @@ async function confirmarImportacion(){
   <div id="gdrive-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px">
     <div style="text-align:center;color:var(--muted);padding:40px;grid-column:1/-1;font-family:var(--font-mono)">Cargando...</div>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════ PANEL: MARKETING STUDIO ══════════ -->
+<div class="panel content" id="panel-marketing-studio" style="flex-direction:column;gap:20px;overflow-y:auto">
+
+  <!-- Header -->
+  <div class="section-header">
+    <span class="section-title">🎬 Marketing Studio</span>
+    <span class="section-count" id="ms-status"></span>
+  </div>
+
+  <!-- Form grid -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Plataforma</label>
+      <select id="ms-plataforma" style="padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
+        <option value="Facebook">Facebook</option>
+        <option value="Instagram">Instagram</option>
+        <option value="YouTube">YouTube</option>
+        <option value="LinkedIn">LinkedIn</option>
+        <option value="TikTok">TikTok</option>
+      </select>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Tipo de contenido</label>
+      <select id="ms-tipo" style="padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none;cursor:pointer">
+        <option value="Video">Video (Seedance)</option>
+        <option value="Post">Post con imagen</option>
+        <option value="Story">Story</option>
+        <option value="Carrusel">Carrusel</option>
+        <option value="Reel">Reel</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Brief -->
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Brief / Descripción</label>
+    <textarea id="ms-brief" rows="4" placeholder="Describe el contenido que quieres generar. Incluye tono, mensaje principal, llamada a la acción, audiencia objetivo..." style="padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-mono);font-size:13px;resize:vertical;outline:none;line-height:1.6;transition:border-color .2s" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+  </div>
+
+  <!-- Botón Generar -->
+  <button onclick="msGenerar()" id="ms-btn-generar" style="align-self:flex-start;padding:10px 24px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-family:var(--font-mono);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:opacity .2s">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+    Generar
+  </button>
+
+  <!-- Output -->
+  <div id="ms-output" style="display:none;flex-direction:column;gap:14px">
+    <div style="height:1px;background:var(--border)"></div>
+
+    <!-- Resultado del crew -->
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Contenido generado</label>
+      <div id="ms-resultado" style="padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-family:var(--font-mono);font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap;min-height:80px"></div>
+    </div>
+
+    <!-- Caption / Copy editable -->
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Caption / Copy (editable)</label>
+      <textarea id="ms-caption" rows="4" style="padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-mono);font-size:13px;resize:vertical;outline:none;line-height:1.6;transition:border-color .2s" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+    </div>
+
+    <!-- Programar publicación -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Fecha y hora</label>
+        <input type="datetime-local" id="ms-fecha" style="padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-mono);font-size:13px;outline:none"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Estado</label>
+        <div id="ms-estado" style="padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-family:var(--font-mono);font-size:13px;color:var(--muted)">Listo para publicar</div>
+      </div>
+    </div>
+
+    <!-- Botón Publicar -->
+    <div style="display:flex;gap:10px;align-items:center">
+      <button onclick="msPublicar()" id="ms-btn-publicar" style="padding:10px 24px;background:var(--green-dim,rgba(74,222,128,0.12));color:var(--green,#4ade80);border:1px solid rgba(74,222,128,0.3);border-radius:10px;font-family:var(--font-mono);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Publicar
+      </button>
+      <button onclick="msReset()" style="padding:10px 16px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:var(--font-mono);font-size:13px;cursor:pointer">Nuevo</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- ═══════════════════════════════════════ PANEL: GRABACIONES ═══════════════ -->
