@@ -244,6 +244,42 @@ app.get('/api/health', async (req, res) => {
   res.json(results);
 });
 
+app.get('/api/home-stats', async (req, res) => {
+  try {
+    const [leadsR, clientesR, actividadR] = await Promise.all([
+      sbFetch('/voice_leads?select=call_sid,call_status,ts_inicio&order=ts_inicio.desc&limit=200'),
+      sbFetch('/clientes?select=user_id,nombre&limit=100'),
+      sbFetch('/inbox_organizador?select=bot_destino,tipo,contenido,ts_creado&order=ts_creado.desc&limit=10'),
+    ]);
+    const leads     = await leadsR.json();
+    const clientes  = await clientesR.json();
+    const actividad = await actividadR.json();
+
+    const hace7d = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const leads7d = Array.isArray(leads)
+      ? leads.filter(l => l.ts_inicio && new Date(l.ts_inicio * 1000) > hace7d)
+      : [];
+    const cerrados = Array.isArray(leads)
+      ? leads.filter(l => (l.call_status || '').toLowerCase().includes('cerr') ||
+                          (l.call_status || '').toLowerCase().includes('sold') ||
+                          (l.call_status || '').toLowerCase().includes('complet'))
+      : [];
+
+    res.json({
+      ok: true,
+      leads_7d:       leads7d.length,
+      leads_total:    Array.isArray(leads) ? leads.length : 0,
+      clientes:       Array.isArray(clientes) ? clientes.filter(c => c.user_id !== 'ms_jobs_dashboard').length : 0,
+      clientes_names: Array.isArray(clientes) ? clientes.filter(c => c.nombre).map(c => c.nombre).slice(0, 3) : [],
+      cerrados:       cerrados.length,
+      revenue_est:    cerrados.length * 197,
+      actividad:      Array.isArray(actividad) ? actividad : [],
+    });
+  } catch(e) {
+    res.json({ ok: false, error: e.message });
+  }
+});
+
 
 app.post('/api/generar-bot', (req, res) => {
   const apiKey = process.env.ANTHROPIC_API_KEY;

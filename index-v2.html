@@ -1653,40 +1653,33 @@ input, textarea { font-family: inherit; }
     <section class="section active" id="section-home">
       <div class="home-greeting">
         <div class="home-hello">Hola Roberto <span class="wave">👋</span></div>
-        <div class="home-sub">Tu agencia tiene 11 agentes activos y 2 clientes en marcha.</div>
+        <div class="home-sub" id="homeSub">Tu agencia tiene — agentes activos y — clientes en marcha.</div>
       </div>
       <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-label"><span class="dot"></span>Agentes activos</div><div class="kpi-value">11</div><div class="kpi-trend">↑ Todos online</div></div>
-        <div class="kpi"><div class="kpi-label"><span class="dot"></span>Clientes</div><div class="kpi-value">2</div><div class="kpi-trend neutral">Arranca · Sofía</div></div>
-        <div class="kpi"><div class="kpi-label" style="color: var(--warning);"><span class="dot" style="background: var(--warning);"></span>Leads (7d)</div><div class="kpi-value">12</div><div class="kpi-trend">↑ 4 esta semana</div></div>
-        <div class="kpi"><div class="kpi-label" style="color: var(--accent);"><span class="dot" style="background: var(--accent);"></span>Revenue est.</div><div class="kpi-value">$394</div><div class="kpi-trend">2 cerrados × $197</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot"></span>Agentes activos</div><div class="kpi-value" id="kpiAgentes">—</div><div class="kpi-trend" id="kpiAgentesTrend">Cargando...</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="dot"></span>Clientes</div><div class="kpi-value" id="kpiClientes">—</div><div class="kpi-trend neutral" id="kpiClientesTrend">—</div></div>
+        <div class="kpi"><div class="kpi-label" style="color: var(--warning);"><span class="dot" style="background: var(--warning);"></span>Leads (7d)</div><div class="kpi-value" id="kpiLeads">—</div><div class="kpi-trend" id="kpiLeadsTrend">—</div></div>
+        <div class="kpi"><div class="kpi-label" style="color: var(--accent);"><span class="dot" style="background: var(--accent);"></span>Revenue est.</div><div class="kpi-value" id="kpiRevenue">—</div><div class="kpi-trend" id="kpiRevenueTrend">—</div></div>
       </div>
       <div class="home-grid">
         <div class="card">
           <div class="card-header"><div class="card-title">Actividad reciente</div><button class="card-link">Ver todo</button></div>
-          <div class="activity-item"><div class="activity-icon">🎬</div><div class="activity-text"><strong>Director</strong> entregó dirección musical para Arranca<div class="activity-time">hace 2 horas</div></div></div>
-          <div class="activity-item"><div class="activity-icon">📊</div><div class="activity-text"><strong>Estrategia</strong> completó plan de campaña 30 días<div class="activity-time">hoy · 10:24</div></div></div>
-          <div class="activity-item"><div class="activity-icon">🎨</div><div class="activity-text"><strong>Crew</strong> generó 3 videos para módulo Turo<div class="activity-time">ayer</div></div></div>
-          <div class="activity-item"><div class="activity-icon">🎯</div><div class="activity-text"><strong>Organizador</strong> delegó 3 tareas al Crew<div class="activity-time">ayer</div></div></div>
-          <div class="activity-item"><div class="activity-icon">🔍</div><div class="activity-text"><strong>Scraper</strong> analizó 2 competidores en nicho Turo<div class="activity-time">hace 2 días</div></div></div>
+          <div id="homeActividad"><div style="color:var(--text-dim);font-size:13px;padding:12px 0;">Cargando actividad...</div></div>
         </div>
         <div>
           <div class="card" style="margin-bottom: 12px;">
             <div class="card-header"><div class="card-title">Acciones rápidas</div></div>
             <div class="quick-actions">
-              <button class="quick-action" onclick="goSection('inbox')"><span class="quick-action-icon">📥</span><div><div class="quick-action-title">Ver inbox</div><div class="quick-action-sub">3 nuevos</div></div></button>
+              <button class="quick-action" onclick="goSection('inbox')"><span class="quick-action-icon">📥</span><div><div class="quick-action-title">Ver inbox</div><div class="quick-action-sub" id="qaInboxSub">—</div></div></button>
               <button class="quick-action" onclick="goSection('chat')"><span class="quick-action-icon">💬</span><div><div class="quick-action-title">Hablar con CEO</div><div class="quick-action-sub">Organizador</div></div></button>
-              <button class="quick-action" onclick="goSection('crm')"><span class="quick-action-icon">👥</span><div><div class="quick-action-title">Ver leads</div><div class="quick-action-sub">12 activos</div></div></button>
-              <button class="quick-action" onclick="goSection('grabaciones')"><span class="quick-action-icon">🎙️</span><div><div class="quick-action-title">Grabaciones</div><div class="quick-action-sub">6 hoy</div></div></button>
+              <button class="quick-action" onclick="goSection('crm')"><span class="quick-action-icon">👥</span><div><div class="quick-action-title">Ver leads</div><div class="quick-action-sub" id="qaLeadsSub">—</div></div></button>
+              <button class="quick-action" onclick="goSection('grabaciones')"><span class="quick-action-icon">🎙️</span><div><div class="quick-action-title">Grabaciones</div><div class="quick-action-sub">Ver todas</div></div></button>
             </div>
           </div>
           <div class="card">
             <div class="card-header"><div class="card-title">Estado del sistema</div></div>
-            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
-              <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Railway</span><span style="color: var(--success);">● Operacional</span></div>
-              <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Crew bot</span><span style="color: var(--danger);">● Crashing</span></div>
-              <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">WhatsApp Bot</span><span style="color: var(--success);">● Live</span></div>
-              <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Playwright</span><span style="color: var(--success);">● Operacional</span></div>
+            <div id="homeSistema" style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+              <div style="color:var(--text-dim);">Verificando...</div>
             </div>
           </div>
         </div>
@@ -2308,9 +2301,10 @@ function goSection(name) {
     b.classList.toggle('active', b.dataset.section === name);
   });
   document.querySelector('.main').scrollTop = 0;
-  if (name === 'drive') loadDriveFromAPI();
+  if (name === 'home')      loadHomeStats();
+  if (name === 'drive')     loadDriveFromAPI();
   if (name === 'marketing') { loadMSJobs(); renderRefSlots('ms'); }
-  if (name === 'inbox') loadInboxFromSupabase();
+  if (name === 'inbox')     loadInboxFromSupabase();
   if (name === 'scheduler') loadSchedulerPosts();
   closeAllDropdowns();
   if (document.getElementById('drawer').classList.contains('open')) toggleDrawer();
@@ -3014,18 +3008,39 @@ async function loadHealth() {
       web: 'Web Designer', motion: 'Motion', scraper: 'Scraper',
       seo: 'SEO', analytics: 'Analytics', b3: 'Estrategia'
     };
+    // Build status rows HTML (shared by Config panel + Home card)
+    const statusRowsHtml = Object.entries(data).map(([k, v]) => {
+      const label = labelMap[k] || k;
+      const ok = v && v.ok;
+      return `<div class="status-row">
+        <span class="status-label">${label}</span>
+        <span class="status-dot ${ok ? 'dot-green' : 'dot-red'}"></span>
+        <span class="status-text" style="color:${ok ? '#4ade80' : '#f87171'}">${ok ? 'Operacional' : 'Offline'}</span>
+      </div>`;
+    }).join('');
+
     // Update systemStatusList (Config panel)
     const container = document.getElementById('systemStatusList');
-    if (container) {
-      container.innerHTML = Object.entries(data).map(([k, v]) => {
-        const label = labelMap[k] || k;
-        const ok = v && v.ok;
-        return `<div class="status-row">
-          <span class="status-label">${label}</span>
-          <span class="status-dot ${ok ? 'dot-green' : 'dot-red'}"></span>
-          <span class="status-text" style="color:${ok ? '#4ade80' : '#f87171'}">${ok ? 'Operacional' : 'Offline'}</span>
-        </div>`;
-      }).join('');
+    if (container) container.innerHTML = statusRowsHtml;
+
+    // Update homeSistema (Home card)
+    const homeSis = document.getElementById('homeSistema');
+    if (homeSis) homeSis.innerHTML = statusRowsHtml;
+
+    // Update kpiAgentes
+    const onlineCount = Object.values(data).filter(v => v && v.ok).length;
+    const totalCount  = Object.keys(data).length;
+    const kpiAg = document.getElementById('kpiAgentes');
+    if (kpiAg) kpiAg.textContent = onlineCount;
+    const kpiAgTrend = document.getElementById('kpiAgentesTrend');
+    if (kpiAgTrend) kpiAgTrend.textContent = onlineCount + ' de ' + totalCount + ' en línea';
+
+    // Refresh homeSub now that agentes count is known
+    const homeSb = document.getElementById('homeSub');
+    if (homeSb && !homeSb.dataset.statsLoaded) {
+      const kpiCl = document.getElementById('kpiClientes');
+      const clVal = kpiCl ? kpiCl.textContent : '?';
+      homeSb.textContent = `Tu agencia tiene ${onlineCount} agentes activos y ${clVal} clientes en marcha.`;
     }
     // Update agent card badges in Equipo section
     Object.entries(data).forEach(([key, v]) => {
@@ -3047,6 +3062,61 @@ async function loadHealth() {
 loadHealth();
 setInterval(loadHealth, 30000);
 
+// ── HOME STATS ────────────────────────────────────────────────────
+async function loadHomeStats() {
+  try {
+    const res = await fetch('/api/home-stats');
+    const d = await res.json();
+    if (!d.ok) return;
+
+    document.getElementById('kpiClientes').textContent = d.clientes;
+    document.getElementById('kpiClientesTrend').textContent =
+      d.clientes_names.length ? d.clientes_names.join(', ') : '—';
+
+    document.getElementById('kpiLeads').textContent = d.leads_7d;
+    document.getElementById('kpiLeadsTrend').textContent = d.leads_total + ' total';
+
+    document.getElementById('kpiRevenue').textContent = '$' + d.revenue_est.toLocaleString();
+    document.getElementById('kpiRevenueTrend').textContent =
+      d.cerrados + ' cerrado' + (d.cerrados !== 1 ? 's' : '') + ' × $197';
+
+    // homeSub — mark as loaded so loadHealth() doesn't overwrite it
+    const homeSb = document.getElementById('homeSub');
+    if (homeSb) {
+      const agEl = document.getElementById('kpiAgentes');
+      const agVal = agEl && agEl.textContent !== '—' ? agEl.textContent : '?';
+      homeSb.textContent = `Tu agencia tiene ${agVal} agentes activos y ${d.clientes} clientes en marcha.`;
+      homeSb.dataset.statsLoaded = '1';
+    }
+
+    const qaLeads = document.getElementById('qaLeadsSub');
+    if (qaLeads) qaLeads.textContent = d.leads_7d + ' leads esta semana';
+
+    const actEl = document.getElementById('homeActividad');
+    if (actEl) {
+      if (!d.actividad || !d.actividad.length) {
+        actEl.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:12px 0;">Sin actividad reciente.</div>';
+      } else {
+        actEl.innerHTML = d.actividad.map(a => {
+          const ts = a.ts_creado
+            ? new Date(a.ts_creado).toLocaleString('es-MX', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+            : '';
+          const preview = (a.contenido || '').slice(0, 90);
+          const bot = a.bot_destino || a.tipo || 'Bot';
+          return `<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:18px;">🤖</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13px;font-weight:500;color:var(--text);">${bot}</div>
+              <div style="font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${preview}</div>
+            </div>
+            <span style="font-size:11px;color:var(--text-dim);white-space:nowrap;">${ts}</span>
+          </div>`;
+        }).join('');
+      }
+    }
+  } catch(e) { console.warn('loadHomeStats error:', e.message); }
+}
+loadHomeStats();
 
 // ── GDRIVE LIVE LOAD ──────────────────────────────────────────────
 async function loadDriveFromAPI() {
