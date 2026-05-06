@@ -2088,24 +2088,24 @@ const agents = [
 
 const leads = {
   new: [
-    { name: 'María González', source: 'Facebook', meta: 'hace 2h · interesada en Turo' },
-    { name: 'Carlos Ramírez', source: 'WhatsApp', meta: 'hace 4h · pidió info' },
-    { name: 'Ana Torres', source: 'Instagram', meta: 'hace 6h · DM directo' },
+    { name: 'María González', source: 'Facebook', meta: 'hace 2h · interesada en Turo', phone: '+1 (323) 555-0191', email: 'maria.g@gmail.com', notes: 'Vio el post del Turo en Facebook. Interesada en el programa de $197. Mejor hora de contacto: tardes después de las 4pm.' },
+    { name: 'Carlos Ramírez', source: 'WhatsApp', meta: 'hace 4h · pidió info', phone: '+1 (213) 555-0143', notes: 'Preguntó cuánto cuesta el curso y si hay planes de pago. Tiene un Toyota Camry 2022.' },
+    { name: 'Ana Torres', source: 'Instagram', meta: 'hace 6h · DM directo', email: 'ana.torres98@gmail.com', notes: 'DM: "¿El programa incluye soporte 1 a 1?" Perfil activo, buena presencia en IG.' },
     { name: 'Luis Pérez', source: 'Apollo', meta: 'ayer · cold outreach' }
   ],
   contacted: [
-    { name: 'Roberto Díaz', source: 'Facebook', meta: 'María llamó · sin respuesta' },
-    { name: 'Sofía Mendoza', source: 'Instagram', meta: 'SMS enviado · esperando' },
-    { name: 'Jorge Castro', source: 'Referido', meta: 'WhatsApp · leyó' }
+    { name: 'Roberto Díaz', source: 'Facebook', meta: 'María llamó · sin respuesta', phone: '+1 (714) 555-0177', notes: 'Llamada sin respuesta el lunes. Dejar voicemail y seguir por FB.' },
+    { name: 'Sofía Mendoza', source: 'Instagram', meta: 'SMS enviado · esperando', phone: '+1 (323) 555-0162', email: 'sofia.m@icloud.com', notes: 'SMS enviado con link de info. Leyó a los 5 min, sin respuesta aún.' },
+    { name: 'Jorge Castro', source: 'Referido', meta: 'WhatsApp · leyó', phone: '+1 (626) 555-0134', notes: 'Referido por Daniel Soto. Ya leyó el mensaje pero no ha respondido. Esperar 24h.' }
   ],
   interested: [
-    { name: 'Patricia Ruiz', source: 'Facebook', meta: 'agendó llamada mañana' },
-    { name: 'Miguel Ángel', source: 'WhatsApp', meta: 'pidió link de pago' },
-    { name: 'Elena Vargas', source: 'Instagram', meta: 'objeción precio · negociando' }
+    { name: 'Patricia Ruiz', source: 'Facebook', meta: 'agendó llamada mañana', phone: '+1 (818) 555-0189', email: 'patriruiz@yahoo.com', notes: 'Llamada agendada para mañana 10am. Tiene Subaru Outback 2021. Muy calificada.' },
+    { name: 'Miguel Ángel', source: 'WhatsApp', meta: 'pidió link de pago', phone: '+1 (562) 555-0155', notes: 'Listo para comprar. Enviar link de pago de $197. Prefiere Zelle o tarjeta.' },
+    { name: 'Elena Vargas', source: 'Instagram', meta: 'objeción precio · negociando', email: 'elena.v@gmail.com', notes: 'Objeción: "Es mucho para empezar." Ofrecer plan 2 pagos o mostrar ROI del primer mes.' }
   ],
   closed: [
-    { name: 'Daniel Soto', source: 'Facebook', meta: 'pagó $197 · onboarding' },
-    { name: 'Laura Núñez', source: 'Referido', meta: 'pagó $197 · módulo 1' }
+    { name: 'Daniel Soto', source: 'Facebook', meta: 'pagó $197 · onboarding', phone: '+1 (213) 555-0101', email: 'dsoto@gmail.com', notes: 'Cliente activo. Completó onboarding. Ya tiene su primer vehículo listado en Turo.' },
+    { name: 'Laura Núñez', source: 'Referido', meta: 'pagó $197 · módulo 1', phone: '+1 (323) 555-0118', email: 'laura.nunez@hotmail.com', notes: 'Referida por Patricia Ruiz. Muy motivada, terminó módulo 1 en 2 días.' }
   ]
 };
 
@@ -3034,7 +3034,19 @@ function openLeadModal(colId, idx) {
   const lead = leads[colId][idx];
   if (!lead) return;
   const overlay = document.getElementById('leadModalOverlay');
+  overlay.dataset.colId = colId;
+  overlay.dataset.idx = idx;
   const statusColor = { new: '#3b82f6', contacted: '#f59e0b', interested: '#8b5cf6', closed: '#10b981' };
+  const STATUS_STEPS = [
+    { id: 'new',       label: 'Nuevo',      icon: '🔵' },
+    { id: 'contacted', label: 'Contactado', icon: '🟡' },
+    { id: 'interested',label: 'Interesado', icon: '🟣' },
+    { id: 'closed',    label: 'Cerrado',    icon: '🟢' },
+  ];
+  const moveButtons = STATUS_STEPS
+    .filter(s => s.id !== colId)
+    .map(s => `<button onclick="moveLead('${colId}',${idx},'${s.id}')" style="background:${statusColor[s.id]}18;color:${statusColor[s.id]};border:1px solid ${statusColor[s.id]}40;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;">→ ${s.icon} ${s.label}</button>`)
+    .join('');
   document.getElementById('leadModalContent').innerHTML = `
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
       <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${LEAD_CHANNEL_ICON[lead.source] || '👤'}</div>
@@ -3053,15 +3065,27 @@ function openLeadModal(colId, idx) {
         <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Actividad</div>
         <div style="font-size:14px;font-weight:500;">${lead.meta}</div>
       </div>
-      ${lead.phone ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:12px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Teléfono</div><div style="font-size:14px;font-weight:500;">${lead.phone}</div></div>` : ''}
-      ${lead.email ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:12px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Email</div><div style="font-size:14px;font-weight:500;">${lead.email}</div></div>` : ''}
+      ${lead.phone ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:12px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Teléfono</div><div style="font-size:14px;font-weight:500;"><a href="tel:${lead.phone}" style="color:var(--success);text-decoration:none;">${lead.phone}</a></div></div>` : ''}
+      ${lead.email ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:12px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Email</div><div style="font-size:14px;font-weight:500;"><a href="mailto:${lead.email}" style="color:var(--info);text-decoration:none;">${lead.email}</a></div></div>` : ''}
     </div>
-    ${lead.notes ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:14px;margin-bottom:20px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Notas</div><div style="font-size:14px;line-height:1.6;">${lead.notes}</div></div>` : ''}
+    ${lead.notes ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:14px;margin-bottom:16px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Notas</div><div style="font-size:14px;line-height:1.6;">${lead.notes}</div></div>` : ''}
+    <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px;">
+      <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Mover a etapa</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">${moveButtons}</div>
+    </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button onclick="openChat('organizador');closeLeadModal()" style="flex:1;min-width:120px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;">💬 Consultar Organizador</button>
       <button onclick="closeLeadModal()" style="background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:13px;cursor:pointer;">Cerrar</button>
     </div>`;
   overlay.style.display = 'flex';
+}
+
+function moveLead(fromCol, idx, toCol) {
+  const lead = leads[fromCol].splice(idx, 1)[0];
+  leads[toCol].push(lead);
+  closeLeadModal();
+  renderCRM();
+  openLeadModal(toCol, leads[toCol].length - 1);
 }
 
 function closeLeadModal() {
