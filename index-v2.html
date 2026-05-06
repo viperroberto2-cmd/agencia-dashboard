@@ -1715,9 +1715,14 @@ input, textarea { font-family: inherit; }
             <span class="chat-agent-chevron">▼</span>
             <div class="dropdown" id="agentDropdown" style="left: 0; right: auto; min-width: 280px; max-height: 360px; overflow-y: auto;"></div>
           </button>
-          <div class="chat-actions">
-            <button class="icon-btn" aria-label="Llamar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></button>
-            <button class="icon-btn" aria-label="Más"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+          <div class="chat-actions" style="position:relative">
+            <button class="icon-btn" aria-label="Llamar al cliente" title="Llamar cliente vía Twilio" onclick="chatCallClient()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></button>
+            <button class="icon-btn" aria-label="Más opciones" onclick="toggleDropdown('chatMenu', event)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+            <div class="dropdown" id="chatMenu" style="right:0;left:auto;min-width:180px">
+              <div class="dropdown-item" onclick="chatClearHistory()">🗑️ Limpiar conversación</div>
+              <div class="dropdown-item" onclick="chatExport()">📋 Exportar chat</div>
+              <div class="dropdown-item" onclick="chatCallClient()">📞 Llamar al cliente</div>
+            </div>
           </div>
         </div>
         <div class="chat-messages" id="chatMessages">
@@ -1856,9 +1861,9 @@ input, textarea { font-family: inherit; }
           <div class="scraper-status-url">agencia-playwright-scraper-production.up.railway.app</div>
         </div>
         <div class="scraper-stats">
-          <div><div class="scraper-stat-value">214</div><div class="scraper-stat-label">Requests hoy</div></div>
-          <div><div class="scraper-stat-value">98%</div><div class="scraper-stat-label">Tasa de éxito</div></div>
-          <div><div class="scraper-stat-value">1.4s</div><div class="scraper-stat-label">Latencia avg</div></div>
+          <div><div class="scraper-stat-value" id="scraperTotal">—</div><div class="scraper-stat-label">Requests hoy</div></div>
+          <div><div class="scraper-stat-value" id="scraperRate">—</div><div class="scraper-stat-label">Tasa de éxito</div></div>
+          <div><div class="scraper-stat-value" id="scraperMs">—</div><div class="scraper-stat-label">Latencia avg</div></div>
         </div>
       </div>
       <div style="padding: 0 32px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Endpoints disponibles</div>
@@ -1880,9 +1885,11 @@ input, textarea { font-family: inherit; }
       </div>
       <div class="config-content">
         <div class="config-pane active" id="pane-clientes">
-          <div class="clients-list">
-            <div class="client-row"><div class="client-icon">💰</div><div class="client-info"><div class="client-name">Arranca Financial</div><div class="client-desc">Educación financiera hispana · Turo · curso $197</div><div class="client-tags"><span class="client-tag">Educación 70%</span><span class="client-tag">Turo 20%</span><span class="client-tag">Social proof 10%</span></div></div><span class="agent-status online"><span class="dot"></span>activo</span></div>
-            <div class="client-row"><div class="client-icon">💊</div><div class="client-info"><div class="client-name">Sofía</div><div class="client-desc">Clínica GLP-1 · leads por llamada · agente de voz</div><div class="client-tags"><span class="client-tag">Voz</span><span class="client-tag">SMS</span><span class="client-tag">A2P 10DLC</span></div></div><span class="agent-status online"><span class="dot"></span>activo</span></div>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+            <button class="btn btn-primary" onclick="goSection('onboarding')">＋ Nuevo cliente</button>
+          </div>
+          <div class="clients-list" id="configClientesList">
+            <div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Cargando clientes...</div>
           </div>
         </div>
         <div class="config-pane" id="pane-integraciones">
@@ -1915,8 +1922,8 @@ input, textarea { font-family: inherit; }
               <div class="user-stat"><div class="user-stat-icon red">🚫</div><div><div class="user-stat-value">1</div><div class="user-stat-label">Suspendido</div></div></div>
             </div>
             <div style="display: flex; gap: 8px;">
-              <button class="btn btn-ghost" onclick="alert('Crear cuenta manualmente:\n\nEmail + contraseña temporal\nEl cliente la cambia en su primer login.')">＋ Crear manualmente</button>
-              <button class="btn btn-primary" onclick="alert('Invitar por email:\n\nEnvía un magic link al email del cliente.\nEl cliente configura su propia contraseña al abrir el link.\nMás seguro y mejor UX.')">📧 Invitar usuario</button>
+              <button class="btn btn-ghost" onclick="createUserManual()">＋ Crear manualmente</button>
+              <button class="btn btn-primary" onclick="createUserManual()">📧 Invitar usuario</button>
             </div>
           </div>
           <div class="users-table" id="usersTable"></div>
@@ -1925,11 +1932,40 @@ input, textarea { font-family: inherit; }
           </div>
         </div>
         <div class="config-pane" id="pane-bots">
-          <div class="card" style="text-align: center; padding: 40px 20px;">
-            <div style="font-size: 36px; margin-bottom: 12px;">🤖</div>
-            <div style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">Generador de bots con Claude</div>
-            <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Define rol, canal, integraciones y skills — Claude genera el código y lo subes a Railway</div>
-            <button class="btn btn-primary">✨ Crear nuevo bot</button>
+          <div id="botGenForm">
+            <div style="font-size:15px;font-weight:600;margin-bottom:4px">🤖 Generador de bots con Claude</div>
+            <div style="color:var(--text-muted);font-size:13px;margin-bottom:20px">Define el bot — Claude genera el código Python listo para Railway</div>
+            <div class="field-group"><label class="field-label">Nombre del bot</label><input id="bg_nombre" class="field-input" placeholder="Ej: Asesor Inmobiliario" /></div>
+            <div class="field-group"><label class="field-label">Rol / función principal</label><textarea id="bg_rol" class="field-textarea" style="min-height:60px" placeholder="Ej: Responde preguntas de leads inmobiliarios en español, califica interés, agenda citas vía Twilio SMS"></textarea></div>
+            <div class="field-group"><label class="field-label">Canal principal</label>
+              <select id="bg_canal" class="field-select">
+                <option value="telegram">Telegram Bot</option>
+                <option value="twilio_sms">Twilio SMS</option>
+                <option value="twilio_voice">Twilio Voice (llamadas)</option>
+                <option value="whatsapp">WhatsApp (Respond.io)</option>
+                <option value="flask_api">Flask API (interno)</option>
+              </select></div>
+            <div class="field-group"><label class="field-label">Integraciones (separadas por coma)</label><input id="bg_integraciones" class="field-input" placeholder="Ej: Supabase, Claude API, Twilio, Google Calendar" /></div>
+            <div class="field-group"><label class="field-label">Skills especiales</label><input id="bg_skills" class="field-input" placeholder="Ej: memoria_clientes, web_scraping, generacion_imagenes" /></div>
+            <div class="field-group"><label class="field-label">Cliente destino</label><input id="bg_cliente" class="field-input" placeholder="Ej: arranca, sofia_clinica" /></div>
+            <div style="display:flex;gap:10px;margin-top:4px">
+              <button class="btn btn-primary" style="flex:1" onclick="generarBot()">✨ Generar código con Claude</button>
+            </div>
+            <div id="bg_status" style="font-size:12px;color:var(--text-muted);margin-top:8px;min-height:18px"></div>
+          </div>
+          <div id="botGenOutput" style="display:none;margin-top:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:13px;font-weight:600">Código generado</span>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost" style="font-size:12px" onclick="copiarCodigoBot()">📋 Copiar</button>
+                <button class="btn btn-ghost" style="font-size:12px" onclick="descargarCodigoBot()">⬇ Descargar .py</button>
+                <button class="btn btn-ghost" style="font-size:12px" onclick="document.getElementById('botGenOutput').style.display='none';document.getElementById('botGenForm').style.display='block'">← Nueva</button>
+              </div>
+            </div>
+            <pre id="bg_codigo" style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text);overflow-x:auto;max-height:400px;overflow-y:auto;white-space:pre-wrap"></pre>
+            <div style="margin-top:12px;padding:12px 14px;background:var(--accent-dim);border-radius:8px;font-size:12px;color:var(--text-muted)">
+              💡 <strong style="color:var(--text)">Siguiente paso:</strong> Sube este archivo a Railway como nuevo servicio Python. El bot ya incluye las variables de entorno necesarias.
+            </div>
           </div>
         </div>
       </div>
@@ -2270,6 +2306,10 @@ const clientIntegrations = {
     { name: 'Gmail / SendGrid', icon: '📧', status: 'pending', meta: 'Recepción de leads' },
     { name: 'Google Calendar', icon: '📅', status: 'disconnected', meta: 'Para agendar' },
     { name: 'YouTube', icon: '▶️', status: 'disconnected', meta: 'Canal de Arranca' },
+    { name: 'TikTok', icon: '🎵', status: 'disconnected', meta: 'Por configurar' },
+    { name: 'LinkedIn', icon: '💼', status: 'disconnected', meta: 'Por configurar' },
+    { name: 'Pinterest', icon: '📌', status: 'disconnected', meta: 'Por configurar' },
+    { name: 'Twitter / X', icon: '𝕏', status: 'disconnected', meta: 'Por configurar' },
     { name: 'Google Ads', icon: '📊', status: 'disconnected', meta: 'Ads de Arranca' }
   ],
   sofia: [
@@ -2277,6 +2317,9 @@ const clientIntegrations = {
     { name: 'A2P 10DLC', icon: '📜', status: 'pending', meta: 'Registro SMS USA' },
     { name: 'Facebook + Instagram', icon: '📘', status: 'pending', meta: 'Por configurar' },
     { name: 'WhatsApp Business', icon: '💚', status: 'disconnected', meta: 'Por configurar' },
+    { name: 'TikTok', icon: '🎵', status: 'disconnected', meta: 'Por configurar' },
+    { name: 'LinkedIn', icon: '💼', status: 'disconnected', meta: 'Por configurar' },
+    { name: 'YouTube', icon: '▶️', status: 'disconnected', meta: 'Por configurar' },
     { name: 'Stripe', icon: '💳', status: 'disconnected', meta: 'Pagos clínica GLP-1' },
     { name: 'Google Calendar', icon: '📅', status: 'disconnected', meta: 'Citas con la clínica' },
     { name: 'Gmail / SendGrid', icon: '📧', status: 'disconnected', meta: 'Bandeja de la clínica' }
@@ -2307,6 +2350,9 @@ function goSection(name) {
   if (name === 'marketing') { loadMSJobs(); renderRefSlots('ms'); }
   if (name === 'inbox')     loadInboxFromSupabase();
   if (name === 'scheduler') loadSchedulerPosts();
+  if (name === 'grabaciones') loadRecordingsFromAPI();
+  if (name === 'scraper')   { loadScraperStats(); loadScraperLogs(); }
+  if (name === 'config')    { loadConfigClientes(); loadPortalUsers(); }
   closeAllDropdowns();
   if (document.getElementById('drawer').classList.contains('open')) toggleDrawer();
 }
@@ -2709,21 +2755,24 @@ function renderEndpoints() {
   `).join('');
 }
 
-function renderRequests() {
+function renderRequests(data) {
+  const rows = data || playwrightRequests;
   document.getElementById('requestsTable').innerHTML = `
     <div class="req-row header">
       <div>Hora</div><div>Endpoint</div><div>Target</div><div>Status</div><div class="req-col-ms">ms</div><div class="req-col-bot">Bot</div>
     </div>
-    ${playwrightRequests.map(r => `
-      <div class="req-row">
-        <div class="req-time">${r.time}</div>
-        <div class="req-endpoint">${r.endpoint}</div>
-        <div class="req-target" title="${r.target}">${r.target}</div>
-        <div><span class="req-status ${r.status === 200 ? 'ok' : 'err'}">${r.status}</span></div>
-        <div class="req-ms req-col-ms">${r.ms}</div>
-        <div class="req-col-bot"><span class="req-bot">${r.bot}</span></div>
-      </div>
-    `).join('')}
+    ${rows.map(r => {
+      const time = r.time || (r.ts ? new Date(r.ts).toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' }) : '—');
+      const status = r.status || 0;
+      return `<div class="req-row">
+        <div class="req-time">${time}</div>
+        <div class="req-endpoint">${r.endpoint || '—'}</div>
+        <div class="req-target" title="${r.target}">${r.target || '—'}</div>
+        <div><span class="req-status ${status >= 200 && status < 400 ? 'ok' : 'err'}">${status}</span></div>
+        <div class="req-ms req-col-ms">${r.ms || '—'}</div>
+        <div class="req-col-bot"><span class="req-bot">${r.bot || '—'}</span></div>
+      </div>`;
+    }).join('')}
   `;
 }
 
@@ -2862,11 +2911,15 @@ function stopMic() {
 
 // ============ ONBOARDING ============
 const onboardingSteps = [
-  { id: 1, label: 'Info' }, { id: 2, label: 'Canales' }, { id: 3, label: 'Campaña' },
-  { id: 4, label: 'Agentes' }, { id: 5, label: 'Conexiones' }, { id: 6, label: 'Listo' }
+  { id: 1, label: 'Info' }, { id: 2, label: 'Canales' }, { id: 3, label: 'Redes' },
+  { id: 4, label: 'Campaña' }, { id: 5, label: 'Agentes' }, { id: 6, label: 'Conexiones' }, { id: 7, label: 'Listo' }
 ];
 let currentStep = 1;
-const onboardingData = { channels: [], agents: [], integrations: [] };
+const onboardingData = {
+  nombre: '', industria: '', email: '', telefono: '', precio_producto: 197, descripcion: '',
+  whatsapp_option: '', respond_io_key: '', whatsapp_number: '',
+  redes: [], channels: [], agents: [], integrations: []
+};
 
 function renderStepper() {
   const s = document.getElementById('stepper');
@@ -2885,40 +2938,99 @@ function renderStepContent() {
   if (currentStep === 1) c.innerHTML = `
     <div class="step-title">📋 Información del cliente</div>
     <div class="step-desc">Lo básico para arrancar.</div>
-    <div class="field-group"><label class="field-label">Nombre del cliente</label><input class="field-input" placeholder="Ej: Arranca Financial" /></div>
-    <div class="field-group"><label class="field-label">Sector</label><select class="field-select"><option>Educación financiera</option><option>Clínica médica</option><option>E-commerce</option><option>Servicios profesionales</option><option>Otro</option></select></div>
-    <div class="field-group"><label class="field-label">Descripción / pitch</label><textarea class="field-textarea" placeholder="¿Qué hace el cliente?"></textarea></div>`;
+    <div class="field-group"><label class="field-label">Nombre del cliente *</label><input id="ob_nombre" class="field-input" placeholder="Ej: Arranca Financial" value="${onboardingData.nombre}" oninput="onboardingData.nombre=this.value" /></div>
+    <div class="field-group"><label class="field-label">Sector</label>
+      <select id="ob_industria" class="field-select" onchange="onboardingData.industria=this.value">
+        <option value="educacion" ${onboardingData.industria==='educacion'?'selected':''}>Educación financiera</option>
+        <option value="salud" ${onboardingData.industria==='salud'?'selected':''}>Clínica / Salud</option>
+        <option value="restaurante" ${onboardingData.industria==='restaurante'?'selected':''}>Restaurante</option>
+        <option value="automotriz" ${onboardingData.industria==='automotriz'?'selected':''}>Automotriz / Turo</option>
+        <option value="bienes_raices" ${onboardingData.industria==='bienes_raices'?'selected':''}>Bienes raíces</option>
+        <option value="finanzas" ${onboardingData.industria==='finanzas'?'selected':''}>Finanzas</option>
+        <option value="legal" ${onboardingData.industria==='legal'?'selected':''}>Legal</option>
+        <option value="belleza" ${onboardingData.industria==='belleza'?'selected':''}>Belleza / Estética</option>
+        <option value="otro" ${onboardingData.industria==='otro'?'selected':''}>Otro</option>
+      </select></div>
+    <div class="field-group"><label class="field-label">Email</label><input id="ob_email" class="field-input" placeholder="cliente@empresa.com" value="${onboardingData.email}" oninput="onboardingData.email=this.value" /></div>
+    <div class="field-group"><label class="field-label">Teléfono</label><input id="ob_telefono" class="field-input" placeholder="+1 714 000 0000" value="${onboardingData.telefono}" oninput="onboardingData.telefono=this.value" /></div>
+    <div class="field-group"><label class="field-label">Precio de su producto / curso ($)</label><input id="ob_precio" class="field-input" type="number" placeholder="197" value="${onboardingData.precio_producto}" oninput="onboardingData.precio_producto=+this.value" /></div>`;
+
   if (currentStep === 2) c.innerHTML = `
-    <div class="step-title">📡 Canales de operación</div>
-    <div class="step-desc">¿Dónde habla con leads?</div>
-    <div class="choice-grid">${['Llamadas','SMS','WhatsApp','Email','Facebook','Instagram','Telegram','Web Chat'].map(ch => `<button class="choice" onclick="toggleChoice(this,'channel','${ch}')"><span class="choice-icon">${({Llamadas:'📞',SMS:'💬',WhatsApp:'💚',Email:'📧',Facebook:'📘',Instagram:'📸',Telegram:'✈️','Web Chat':'🌐'})[ch]}</span><span class="choice-label">${ch}</span></button>`).join('')}</div>`;
+    <div class="step-title">📡 Canal WhatsApp</div>
+    <div class="step-desc">¿Cómo conectará WhatsApp el cliente?</div>
+    <div class="choice-grid" style="grid-template-columns:1fr 1fr">
+      <button class="choice ${onboardingData.whatsapp_option==='respondio'?'selected':''}" onclick="onboardingData.whatsapp_option='respondio';renderStepContent()">
+        <span class="choice-icon">💼</span><span class="choice-label">Número vía Respond.io</span>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Agencia gestiona · cliente paga</div>
+      </button>
+      <button class="choice ${onboardingData.whatsapp_option==='propio'?'selected':''}" onclick="onboardingData.whatsapp_option='propio';renderStepContent()">
+        <span class="choice-icon">💚</span><span class="choice-label">WA Business propio</span>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Cliente trae su número</div>
+      </button>
+    </div>
+    ${onboardingData.whatsapp_option==='respondio' ? `
+      <div class="field-group" style="margin-top:16px"><label class="field-label">API Key de Respond.io</label><input class="field-input" placeholder="Pegar API key" value="${onboardingData.respond_io_key}" oninput="onboardingData.respond_io_key=this.value" /></div>
+      <div class="field-group"><label class="field-label">Número asignado</label><input class="field-input" placeholder="+1 657 000 0000" value="${onboardingData.whatsapp_number}" oninput="onboardingData.whatsapp_number=this.value" /></div>` : ''}
+    ${onboardingData.whatsapp_option==='propio' ? `
+      <div class="field-group" style="margin-top:16px"><label class="field-label">Número WA Business</label><input class="field-input" placeholder="+1 657 000 0000" value="${onboardingData.whatsapp_number}" oninput="onboardingData.whatsapp_number=this.value" /></div>
+      <div class="field-group"><label class="field-label">API Key Meta / Respond.io (opcional)</label><input class="field-input" placeholder="Pegar API key" value="${onboardingData.respond_io_key}" oninput="onboardingData.respond_io_key=this.value" /></div>` : ''}`;
+
   if (currentStep === 3) c.innerHTML = `
+    <div class="step-title">📱 Redes sociales</div>
+    <div class="step-desc">Selecciona las redes que tiene el cliente. Agrega sus tokens para que el Scheduler pueda publicar.</div>
+    ${[
+      { key:'tiktok', label:'TikTok', icon:'🎵', field:'tiktok_token' },
+      { key:'linkedin', label:'LinkedIn', icon:'💼', field:'linkedin_token' },
+      { key:'youtube', label:'YouTube', icon:'▶️', field:'youtube_token' },
+      { key:'pinterest', label:'Pinterest', icon:'📌', field:'pinterest_token' },
+      { key:'twitter', label:'Twitter / X', icon:'𝕏', field:'twitter_token' },
+      { key:'facebook', label:'Facebook', icon:'📘', field:null },
+      { key:'instagram', label:'Instagram', icon:'📸', field:null },
+    ].map(r => `
+      <div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+        <button class="choice ${onboardingData.redes.includes(r.key)?'selected':''}" style="width:auto;padding:8px 14px;flex-shrink:0" onclick="toggleRedSocial('${r.key}');renderStepContent()">
+          <span>${r.icon}</span> <span>${r.label}</span>
+        </button>
+        ${onboardingData.redes.includes(r.key) && r.field ? `<input class="field-input" style="flex:1" placeholder="Token / Page ID" value="${onboardingData[r.field]||''}" oninput="onboardingData.${r.field}=this.value" />` : '<div style="flex:1;font-size:12px;color:var(--text-dim)">Selecciona para agregar token</div>'}
+      </div>`).join('')}`;
+
+  if (currentStep === 4) c.innerHTML = `
     <div class="step-title">🎯 Primera campaña</div>
     <div class="step-desc">El primer objetivo del cliente.</div>
     <div class="field-group"><label class="field-label">Objetivo principal</label><select class="field-select"><option>Generar leads</option><option>Vender producto / curso</option><option>Agendar citas</option><option>Hacer follow-up</option></select></div>
-    <div class="field-group"><label class="field-label">Presupuesto mensual</label><input class="field-input" placeholder="$500" /></div>
-    <div class="field-group"><label class="field-label">Mensaje principal</label><textarea class="field-textarea" placeholder="Ej: Curso $197 para Turo"></textarea></div>`;
-  if (currentStep === 4) c.innerHTML = `
+    <div class="field-group"><label class="field-label">Presupuesto mensual ads</label><input class="field-input" placeholder="$500" /></div>
+    <div class="field-group"><label class="field-label">Mensaje principal</label><textarea class="field-textarea" placeholder="Ej: Curso $197 para aprender Turo"></textarea></div>`;
+
+  if (currentStep === 5) c.innerHTML = `
     <div class="step-title">🤖 Agentes asignados</div>
     <div class="step-desc">Selecciona los agentes que trabajan con este cliente.</div>
-    <div class="choice-grid">${agents.map(a => `<button class="choice" onclick="toggleChoice(this,'agent','${a.id}')"><span class="choice-icon">${a.emoji}</span><span class="choice-label">${a.name}</span></button>`).join('')}</div>`;
-  if (currentStep === 5) c.innerHTML = `
-    <div class="step-title">🔌 Conexiones del cliente</div>
-    <div class="step-desc">Estas son <strong>por cliente</strong>, cada uno con sus credenciales.</div>
-    <div class="choice-grid">${['Twilio','Stripe','Facebook Ads','WhatsApp Business','Gmail/SendGrid','Google Calendar','YouTube','HeyGen'].map(int => `<button class="choice" onclick="toggleChoice(this,'integration','${int}')"><span class="choice-icon">🔌</span><span class="choice-label">${int}</span></button>`).join('')}</div>
-    <div class="field-hint" style="margin-top:16px;">⚠️ Las credenciales se configuran después en Config → Integraciones</div>`;
+    <div class="choice-grid">${agents.map(a => `<button class="choice ${onboardingData.agents.includes(a.id)?'selected':''}" onclick="toggleChoice(this,'agent','${a.id}')"><span class="choice-icon">${a.emoji}</span><span class="choice-label">${a.name}</span></button>`).join('')}</div>`;
+
   if (currentStep === 6) c.innerHTML = `
+    <div class="step-title">🔌 Conexiones del cliente</div>
+    <div class="step-desc">Marca las que tiene el cliente. Credenciales se configuran después en Config → Integraciones.</div>
+    <div class="choice-grid">${['Twilio','Stripe','Facebook Ads','WhatsApp Business','Gmail/SendGrid','Google Calendar','HeyGen'].map(int => `<button class="choice ${onboardingData.integrations.includes(int)?'selected':''}" onclick="toggleChoice(this,'integration','${int}')"><span class="choice-icon">🔌</span><span class="choice-label">${int}</span></button>`).join('')}</div>`;
+
+  if (currentStep === 7) c.innerHTML = `
     <div class="step-title">✅ Todo listo</div>
-    <div class="step-desc">Revisa el resumen y lanza.</div>
+    <div class="step-desc">Revisa el resumen y lanza el cliente.</div>
     <div class="summary-grid">
-      <div class="summary-row"><span class="key">Cliente</span><span class="val">Por configurar</span></div>
-      <div class="summary-row"><span class="key">Canales</span><span class="val">${onboardingData.channels.length || '—'}</span></div>
-      <div class="summary-row"><span class="key">Agentes asignados</span><span class="val">${onboardingData.agents.length || '—'}</span></div>
-      <div class="summary-row"><span class="key">Integraciones</span><span class="val">${onboardingData.integrations.length || '—'}</span></div>
+      <div class="summary-row"><span class="key">Cliente</span><span class="val">${onboardingData.nombre || '—'}</span></div>
+      <div class="summary-row"><span class="key">Sector</span><span class="val">${onboardingData.industria || '—'}</span></div>
+      <div class="summary-row"><span class="key">Email</span><span class="val">${onboardingData.email || '—'}</span></div>
+      <div class="summary-row"><span class="key">WhatsApp</span><span class="val">${onboardingData.whatsapp_option || '—'} ${onboardingData.whatsapp_number ? '· ' + onboardingData.whatsapp_number : ''}</span></div>
+      <div class="summary-row"><span class="key">Redes sociales</span><span class="val">${onboardingData.redes.length ? onboardingData.redes.join(', ') : '—'}</span></div>
+      <div class="summary-row"><span class="key">Agentes</span><span class="val">${onboardingData.agents.length || '—'}</span></div>
+      <div class="summary-row"><span class="key">Precio producto</span><span class="val">$${onboardingData.precio_producto || 197}</span></div>
       <div class="summary-row"><span class="key">Estado</span><span class="val" style="color:var(--success);">● Listo para lanzar</span></div>
-    </div>`;
+    </div>
+    <div id="onboardingError" style="color:var(--danger);font-size:13px;margin-top:8px;display:none"></div>`;
 }
 
+function toggleRedSocial(key) {
+  const idx = onboardingData.redes.indexOf(key);
+  if (idx > -1) onboardingData.redes.splice(idx, 1); else onboardingData.redes.push(key);
+}
 function toggleChoice(el, type, value) {
   el.classList.toggle('selected');
   const key = type === 'channel' ? 'channels' : type === 'agent' ? 'agents' : 'integrations';
@@ -2926,9 +3038,43 @@ function toggleChoice(el, type, value) {
   if (idx > -1) onboardingData[key].splice(idx, 1); else onboardingData[key].push(value);
 }
 function goStep(n) { currentStep = n; renderStepper(); renderStepContent(); }
-function nextStep() { if (currentStep < onboardingSteps.length) { currentStep++; renderStepper(); renderStepContent(); } else { alert('🚀 Cliente lanzado.'); resetOnboarding(); } }
 function prevStep() { if (currentStep > 1) { currentStep--; renderStepper(); renderStepContent(); } }
-function resetOnboarding() { currentStep = 1; onboardingData.channels = []; onboardingData.agents = []; onboardingData.integrations = []; renderStepper(); renderStepContent(); }
+async function nextStep() {
+  if (currentStep === 1 && !onboardingData.nombre.trim()) {
+    alert('El nombre del cliente es obligatorio.'); return;
+  }
+  if (currentStep < onboardingSteps.length) {
+    currentStep++; renderStepper(); renderStepContent();
+  } else {
+    const btn = document.getElementById('nextBtn');
+    btn.textContent = 'Guardando...'; btn.disabled = true;
+    try {
+      const res = await fetch('/api/clientes/crear', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(onboardingData)
+      });
+      const d = await res.json();
+      if (d.ok) {
+        alert('🚀 Cliente ' + onboardingData.nombre + ' creado exitosamente.');
+        resetOnboarding();
+        loadConfigClientes();
+      } else {
+        const errEl = document.getElementById('onboardingError');
+        if (errEl) { errEl.textContent = d.error || 'Error al crear cliente.'; errEl.style.display = 'block'; }
+        btn.textContent = '🚀 Lanzar cliente'; btn.disabled = false;
+      }
+    } catch(e) {
+      const errEl = document.getElementById('onboardingError');
+      if (errEl) { errEl.textContent = 'Error de conexión.'; errEl.style.display = 'block'; }
+      btn.textContent = '🚀 Lanzar cliente'; btn.disabled = false;
+    }
+  }
+}
+function resetOnboarding() {
+  currentStep = 1;
+  Object.assign(onboardingData, { nombre:'', industria:'', email:'', telefono:'', precio_producto:197, descripcion:'', whatsapp_option:'', respond_io_key:'', whatsapp_number:'', redes:[], channels:[], agents:[], integrations:[] });
+  renderStepper(); renderStepContent();
+}
 
 // ============ USERS / ACCESS ============
 const portalUsers = [
@@ -3699,6 +3845,256 @@ async function submitSchedulePost() {
     errEl.textContent = 'Error de conexión.'; errEl.style.display = 'block';
     btn.textContent = 'Enviar para aprobación →'; btn.disabled = false;
   }
+}
+
+// ── GENERADOR DE BOTS ────────────────────────────────────────────
+async function generarBot() {
+  const nombre       = document.getElementById('bg_nombre').value.trim();
+  const rol          = document.getElementById('bg_rol').value.trim();
+  const canal        = document.getElementById('bg_canal').value;
+  const integraciones = document.getElementById('bg_integraciones').value.trim();
+  const skills       = document.getElementById('bg_skills').value.trim();
+  const cliente      = document.getElementById('bg_cliente').value.trim();
+  const statusEl     = document.getElementById('bg_status');
+
+  if (!nombre || !rol) { statusEl.textContent = '⚠ Nombre y rol son obligatorios.'; return; }
+
+  statusEl.textContent = '⏳ Claude está generando el código...';
+  document.querySelector('#pane-bots .btn.btn-primary').disabled = true;
+
+  try {
+    const res = await fetch('/api/generar-bot', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4096,
+        messages: [{
+          role: 'user',
+          content: `Genera un bot Python completo y listo para Railway con estas especificaciones:
+
+NOMBRE: ${nombre}
+ROL: ${rol}
+CANAL: ${canal}
+INTEGRACIONES: ${integraciones || 'Supabase, Claude API'}
+SKILLS: ${skills || 'memoria_clientes'}
+CLIENTE: ${cliente || 'generico'}
+
+El bot debe:
+- Ser un archivo Python standalone (bot_${nombre.toLowerCase().replace(/\s+/g,'_')}.py)
+- Incluir comentarios claros en español
+- Usar las mismas convenciones de la agencia (Flask + python-telegram-bot si es Telegram, etc.)
+- Incluir SUPABASE_URL, SUPABASE_SECRET_KEY, ANTHROPIC_API_KEY como variables de entorno
+- Incluir función de salud /health
+- Incluir sistema de memoria_clientes si aplica
+- Ser funcional y deployable inmediatamente en Railway
+
+Genera SOLO el código Python, sin explicaciones adicionales.`
+        }]
+      })
+    });
+    const d = await res.json();
+    const codigo = d.content?.[0]?.text || d.choices?.[0]?.message?.content || JSON.stringify(d, null, 2);
+    const limpio = codigo.replace(/^```python\n?/i, '').replace(/```\s*$/g, '').trim();
+
+    document.getElementById('bg_codigo').textContent = limpio;
+    document.getElementById('botGenForm').style.display = 'none';
+    document.getElementById('botGenOutput').style.display = 'block';
+    statusEl.textContent = '';
+  } catch(e) {
+    statusEl.textContent = '⚠ Error: ' + e.message;
+  }
+  document.querySelector('#pane-bots .btn.btn-primary') && (document.querySelector('#pane-bots .btn.btn-primary').disabled = false);
+}
+
+function copiarCodigoBot() {
+  const code = document.getElementById('bg_codigo').textContent;
+  navigator.clipboard.writeText(code).then(() => alert('✅ Código copiado al portapapeles.'));
+}
+
+function descargarCodigoBot() {
+  const nombre = document.getElementById('bg_nombre')?.value?.trim() || 'bot_nuevo';
+  const code   = document.getElementById('bg_codigo').textContent;
+  const blob   = new Blob([code], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bot_' + nombre.toLowerCase().replace(/\s+/g,'_') + '.py';
+  a.click();
+}
+
+// ── CHAT MENU ACTIONS ────────────────────────────────────────────
+function chatClearHistory() {
+  closeAllDropdowns();
+  const msgs = document.getElementById('chatMessages');
+  if (!msgs) return;
+  msgs.innerHTML = `<div class="message-group"><div class="message-meta">${activeAgent.name} · ahora</div><div class="message bot">${getAgentGreeting(activeAgent)}</div></div>`;
+}
+
+function chatExport() {
+  closeAllDropdowns();
+  const msgs = document.getElementById('chatMessages');
+  if (!msgs) return;
+  const lines = [];
+  msgs.querySelectorAll('.message').forEach(m => {
+    const isBot = m.classList.contains('bot');
+    lines.push((isBot ? activeAgent.name : 'Roberto') + ': ' + m.textContent.trim());
+  });
+  const blob = new Blob([lines.join('\n\n')], { type: 'text/plain' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'chat_' + activeAgent.id + '_' + new Date().toISOString().slice(0,10) + '.txt';
+  a.click();
+}
+
+async function chatCallClient() {
+  closeAllDropdowns();
+  const telefono = prompt('Número del cliente a llamar:', '+1 714 844 8860');
+  if (!telefono) return;
+  try {
+    const res = await fetch('/api/call/iniciar', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: telefono, cliente: currentClient })
+    });
+    const d = await res.json();
+    if (d.ok) alert('📞 Llamada iniciada a ' + telefono);
+    else alert('Error al iniciar llamada: ' + (d.error || 'desconocido'));
+  } catch(e) { alert('Error de conexión al iniciar llamada.'); }
+}
+
+// ── CONFIG CLIENTES ───────────────────────────────────────────────
+const SECTOR_EMOJI = {
+  'educacion': '📚', 'salud': '💊', 'restaurante': '🍽️', 'automotriz': '🚗',
+  'bienes_raices': '🏠', 'finanzas': '💰', 'legal': '⚖️', 'belleza': '💅', 'otro': '🏢'
+};
+async function loadConfigClientes() {
+  const el = document.getElementById('configClientesList');
+  if (!el) return;
+  try {
+    const res = await fetch('/api/clientes');
+    const d = await res.json();
+    if (!d.ok || !d.clientes.length) {
+      el.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">No hay clientes aún. Usa Onboarding para agregar uno.</div>';
+      return;
+    }
+    el.innerHTML = d.clientes.map(c => {
+      const emoji = SECTOR_EMOJI[c.industria] || '🏢';
+      const tags = [c.whatsapp_option, c.tiktok_token ? 'TikTok' : null, c.linkedin_token ? 'LinkedIn' : null,
+                    c.youtube_token ? 'YouTube' : null].filter(Boolean);
+      return `<div class="client-row">
+        <div class="client-icon">${emoji}</div>
+        <div class="client-info">
+          <div class="client-name">${c.nombre}</div>
+          <div class="client-desc">${c.industria || '—'} ${c.precio_producto ? '· $' + c.precio_producto : ''} ${c.email ? '· ' + c.email : ''}</div>
+          ${tags.length ? '<div class="client-tags">' + tags.map(t => `<span class="client-tag">${t}</span>`).join('') + '</div>' : ''}
+        </div>
+        <span class="agent-status online"><span class="dot"></span>activo</span>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<div style="color:var(--danger);font-size:13px;">Error cargando clientes.</div>'; }
+}
+
+// ── PORTAL USERS ──────────────────────────────────────────────────
+async function loadPortalUsers() {
+  const el = document.getElementById('usersTable');
+  if (!el) return;
+  try {
+    const res = await fetch('/api/portal-users');
+    const d = await res.json();
+    const users = d.ok ? d.users : [];
+    const activos   = users.filter(u => u.estado === 'activo').length;
+    const pendientes = users.filter(u => u.estado === 'pendiente').length;
+    const suspendidos = users.filter(u => u.estado === 'suspendido').length;
+    const stats = document.querySelector('#pane-usuarios .users-stats');
+    if (stats) stats.innerHTML = `
+      <div class="user-stat"><div class="user-stat-icon green">✓</div><div><div class="user-stat-value">${activos}</div><div class="user-stat-label">Activos</div></div></div>
+      <div class="user-stat"><div class="user-stat-icon amber">📧</div><div><div class="user-stat-value">${pendientes}</div><div class="user-stat-label">Invitaciones pendientes</div></div></div>
+      <div class="user-stat"><div class="user-stat-icon red">🚫</div><div><div class="user-stat-value">${suspendidos}</div><div class="user-stat-label">Suspendidos</div></div></div>`;
+    if (!users.length) { el.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">No hay usuarios aún.</div>'; return; }
+    el.innerHTML = `<div class="req-row header" style="grid-template-columns:2fr 1fr 1fr 1fr 80px 80px">
+      <div>Usuario</div><div>Cliente</div><div>Rol</div><div>Último login</div><div>Estado</div><div></div></div>` +
+    users.map(u => {
+      const initials = (u.nombre || u.email || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const loginStr = u.ultimo_login ? new Date(u.ultimo_login).toLocaleDateString('es-MX') : '—';
+      const estadoColor = u.estado === 'activo' ? 'var(--success)' : u.estado === 'suspendido' ? 'var(--danger)' : 'var(--warning)';
+      return `<div class="req-row" style="grid-template-columns:2fr 1fr 1fr 1fr 80px 80px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent)">${initials}</div>
+          <div><div style="font-size:13px;font-weight:500">${u.nombre || '—'}</div><div style="font-size:11px;color:var(--text-muted)">${u.email}</div></div>
+        </div>
+        <div style="font-size:12px">${u.cliente_id || '—'}</div>
+        <div><span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--bg-elevated);color:var(--text-muted)">${(u.rol||'staff').toUpperCase()}</span></div>
+        <div style="font-size:12px;color:var(--text-muted)">${loginStr}</div>
+        <div><span style="font-size:12px;color:${estadoColor}">${u.estado}</span></div>
+        <div style="display:flex;gap:6px">
+          ${u.estado !== 'suspendido' ? `<button onclick="patchUser('${u.id}','suspendido')" style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--danger);color:#fff;border:none;cursor:pointer">Suspender</button>` : `<button onclick="patchUser('${u.id}','activo')" style="font-size:10px;padding:2px 6px;border-radius:4px;background:var(--success);color:#000;border:none;cursor:pointer">Activar</button>`}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { console.warn('loadPortalUsers:', e.message); }
+}
+
+async function patchUser(id, estado) {
+  await fetch(`/api/portal-users/${id}`, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ estado }) });
+  loadPortalUsers();
+}
+
+async function createUserManual() {
+  const nombre = prompt('Nombre completo:');
+  if (!nombre) return;
+  const email = prompt('Email:');
+  if (!email) return;
+  const cliente_id = prompt('cliente_id (ej: arranca):');
+  const rol = prompt('Rol (owner / staff / read-only):', 'staff');
+  await fetch('/api/portal-users/crear', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ nombre, email, cliente_id, rol }) });
+  loadPortalUsers();
+}
+
+// ── RECORDINGS REAL ───────────────────────────────────────────────
+async function loadRecordingsFromAPI() {
+  const el = document.getElementById('recordingsList');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Cargando grabaciones...</div>';
+  try {
+    const res = await fetch('/api/recordings');
+    const d = await res.json();
+    if (!d.ok || !d.recordings.length) {
+      el.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Sin grabaciones aún. Se activarán cuando el voice agent inicie llamadas.</div>';
+      return;
+    }
+    el.innerHTML = d.recordings.map(r => {
+      const ts = r.ts_inicio ? new Date(r.ts_inicio * 1000).toLocaleString('es-MX', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+      return `<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:20px">🎙️</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500">${r.agent || 'Agente'} · ${r.cliente || '—'}</div>
+          <div style="font-size:11px;color:var(--text-muted)">${ts} · ${r.call_status || '—'}</div>
+          ${r.recording_url ? `<audio controls src="${r.recording_url}" style="margin-top:6px;width:100%;height:32px"></audio>` : '<div style="font-size:11px;color:var(--text-dim)">Grabación no disponible</div>'}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<div style="color:var(--danger);font-size:13px;">Error cargando grabaciones.</div>'; }
+}
+
+// ── SCRAPER STATS + LOGS ──────────────────────────────────────────
+async function loadScraperStats() {
+  try {
+    const res = await fetch('/api/scraper/stats');
+    const d = await res.json();
+    if (!d.ok) return;
+    const totalEl = document.getElementById('scraperTotal');
+    const rateEl  = document.getElementById('scraperRate');
+    const msEl    = document.getElementById('scraperMs');
+    if (totalEl) totalEl.textContent = d.total;
+    if (rateEl)  rateEl.textContent  = d.success_rate + '%';
+    if (msEl)    msEl.textContent    = (d.avg_ms / 1000).toFixed(1) + 's';
+  } catch(e) { console.warn('loadScraperStats:', e.message); }
+}
+
+async function loadScraperLogs() {
+  try {
+    const res = await fetch('/api/scraper/logs');
+    const d = await res.json();
+    if (!d.ok) return;
+    renderRequests(d.logs);
+  } catch(e) { console.warn('loadScraperLogs:', e.message); }
 }
 
 </script>

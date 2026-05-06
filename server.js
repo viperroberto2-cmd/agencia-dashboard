@@ -281,6 +281,150 @@ app.get('/api/home-stats', async (req, res) => {
 });
 
 
+// ── CLICK-TO-CALL ────────────────────────────────────────────────
+app.post('/api/call/iniciar', async (req, res) => {
+  const { to, cliente } = req.body;
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken  = process.env.TWILIO_AUTH_TOKEN;
+  const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+  if (!accountSid || !authToken || !fromNumber)
+    return res.json({ ok: false, error: 'Twilio no configurado en Railway' });
+  try {
+    const body = new URLSearchParams({ To: to, From: fromNumber, Url: `https://${req.hostname}/voice` });
+    const resp = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Basic ' + Buffer.from(accountSid + ':' + authToken).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    });
+    const data = await resp.json();
+    if (data.sid) res.json({ ok: true, sid: data.sid });
+    else res.json({ ok: false, error: data.message || 'Error Twilio' });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+// ── CLIENTES ─────────────────────────────────────────────────────
+app.get('/api/clientes', async (req, res) => {
+  try {
+    const r = await sbFetch('/clientes?select=*&order=nombre.asc');
+    const data = await r.json();
+    res.json({ ok: true, clientes: Array.isArray(data) ? data.filter(c => c.user_id !== 'ms_jobs_dashboard') : [] });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.post('/api/clientes/crear', async (req, res) => {
+  try {
+    const { nombre, industria, email, telefono, precio_producto, whatsapp_option,
+            respond_io_key, whatsapp_number, inbox_channel_id,
+            tiktok_token, linkedin_token, youtube_token, pinterest_token, twitter_token } = req.body;
+    if (!nombre) return res.status(400).json({ ok: false, error: 'nombre requerido' });
+    const user_id = nombre.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    const r = await sbFetch('/clientes', {
+      method: 'POST',
+      body: JSON.stringify({
+        user_id, nombre, industria, email, telefono,
+        precio_producto: precio_producto || 197,
+        whatsapp_option, respond_io_key, whatsapp_number, inbox_channel_id,
+        tiktok_token, linkedin_token, youtube_token, pinterest_token, twitter_token
+      }),
+      headers: { 'Prefer': 'return=representation' }
+    });
+    const data = await r.json();
+    res.json({ ok: true, cliente: Array.isArray(data) ? data[0] : data });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.patch('/api/clientes/:user_id', async (req, res) => {
+  try {
+    const r = await sbFetch(`/clientes?user_id=eq.${req.params.user_id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(req.body),
+      headers: { 'Prefer': 'return=representation' }
+    });
+    const data = await r.json();
+    res.json({ ok: true, cliente: Array.isArray(data) ? data[0] : data });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+// ── PORTAL USERS ─────────────────────────────────────────────────
+app.get('/api/portal-users', async (req, res) => {
+  try {
+    const r = await sbFetch('/portal_users?select=*&order=created_at.desc');
+    const data = await r.json();
+    res.json({ ok: true, users: Array.isArray(data) ? data : [] });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.post('/api/portal-users/crear', async (req, res) => {
+  try {
+    const { nombre, email, cliente_id, rol } = req.body;
+    if (!email) return res.status(400).json({ ok: false, error: 'email requerido' });
+    const r = await sbFetch('/portal_users', {
+      method: 'POST',
+      body: JSON.stringify({ nombre, email, cliente_id, rol: rol || 'staff', estado: 'pendiente' }),
+      headers: { 'Prefer': 'return=representation' }
+    });
+    const data = await r.json();
+    res.json({ ok: true, user: Array.isArray(data) ? data[0] : data });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.patch('/api/portal-users/:id', async (req, res) => {
+  try {
+    const r = await sbFetch(`/portal_users?id=eq.${req.params.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(req.body),
+      headers: { 'Prefer': 'return=representation' }
+    });
+    const data = await r.json();
+    res.json({ ok: true, user: Array.isArray(data) ? data[0] : data });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.delete('/api/portal-users/:id', async (req, res) => {
+  try {
+    await sbFetch(`/portal_users?id=eq.${req.params.id}`, { method: 'DELETE' });
+    res.json({ ok: true });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+// ── RECORDINGS ───────────────────────────────────────────────────
+app.get('/api/recordings', async (req, res) => {
+  try {
+    const cliente = req.query.cliente ? `&cliente=eq.${req.query.cliente}` : '';
+    const r = await sbFetch(`/voice_leads?select=call_sid,recording_url,agent,cliente,call_status,ts_inicio&recording_url=not.is.null${cliente}&order=ts_inicio.desc&limit=50`);
+    const data = await r.json();
+    res.json({ ok: true, recordings: Array.isArray(data) ? data : [] });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+// ── SCRAPER LOGS ─────────────────────────────────────────────────
+app.get('/api/scraper/logs', async (req, res) => {
+  try {
+    const r = await sbFetch('/scraper_logs?select=*&order=ts.desc&limit=50');
+    const data = await r.json();
+    res.json({ ok: true, logs: Array.isArray(data) ? data : [] });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.get('/api/scraper/stats', async (req, res) => {
+  try {
+    const r = await sbFetch('/scraper_logs?select=status,ms&limit=500');
+    const data = await r.json();
+    if (!Array.isArray(data) || !data.length) return res.json({ ok: true, total: 0, success_rate: 0, avg_ms: 0 });
+    const total = data.length;
+    const ok    = data.filter(d => d.status >= 200 && d.status < 400).length;
+    const avg_ms = Math.round(data.reduce((s, d) => s + (d.ms || 0), 0) / total);
+    res.json({ ok: true, total, success_rate: Math.round(ok / total * 100), avg_ms });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.post('/api/scraper/log', async (req, res) => {
+  try {
+    await sbFetch('/scraper_logs', { method: 'POST', body: JSON.stringify(req.body) });
+    res.json({ ok: true });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 app.post('/api/generar-bot', (req, res) => {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) { return res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurada en Railway' }); }
