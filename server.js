@@ -14,7 +14,7 @@ const BOTS = {
   motion:    'https://web-production-d67bad.up.railway.app/motion/health',
   scraper:   'https://agencia-ai-scraper-production.up.railway.app/health',
   seo:       'https://agencia-ai-seo-production.up.railway.app/health',
-  analytics: 'https://upbeat-endurance.up.railway.app/health',
+  analytics: 'https://agencia-ai-analytics-production.up.railway.app/health',
 };
 
 function checkUrl(url) {
