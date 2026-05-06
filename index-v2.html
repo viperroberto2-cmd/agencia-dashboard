@@ -1966,6 +1966,15 @@ input, textarea { font-family: inherit; }
         <button onclick="msGenerar()" style="width:100%;background:linear-gradient(135deg,#7c5cfc,#a78bfa);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;margin-bottom:8px">✦ Generar Video</button>
         <div id="ms-status" style="font-size:12px;color:#7c5cfc;min-height:16px;margin-bottom:12px"></div>
         <div id="ms-output" style="background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:14px;min-height:60px;font-size:12px;color:#9b8ec4;white-space:pre-wrap;display:none"></div>
+
+        <!-- Recent Jobs — synced across desktop & mobile via Supabase -->
+        <div style="margin-top:24px">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+            Trabajos recientes
+            <button onclick="loadMSJobs()" style="background:none;border:none;color:#7b6fa0;font-size:12px;cursor:pointer;padding:0">↻</button>
+          </div>
+          <div id="ms-jobs-list" style="font-size:12px;color:#7b6fa0">Cargando...</div>
+        </div>
       </div>
     </section>
 
@@ -2164,6 +2173,8 @@ function goSection(name) {
   });
   document.querySelector('.main').scrollTop = 0;
   if (name === 'drive') loadDriveFromAPI();
+  if (name === 'marketing') loadMSJobs();
+  if (name === 'inbox') loadInboxFromSupabase();
   closeAllDropdowns();
   if (document.getElementById('drawer').classList.contains('open')) toggleDrawer();
 }
@@ -2825,10 +2836,67 @@ async function msGenerar() {
     const out = document.getElementById('ms-output');
     out.textContent = d.prompt || d.message || JSON.stringify(d, null, 2);
     out.style.display = 'block';
-    document.getElementById('ms-status').textContent = d.job_id ? '✓ Job ID: ' + d.job_id : '✓ Completado';
+    const statusText = d.job_id ? '✓ Job ID: ' + d.job_id : '✓ Completado';
+    document.getElementById('ms-status').textContent = statusText;
+    // Persist job to Supabase so mobile can see it
+    const job = {
+      job_id: d.job_id || null, preset: msPreset, brief: brief.slice(0, 120),
+      client: currentClient, aspect_ratio: msAspectRatio, duration: msDuration,
+      status: d.job_id ? 'processing' : (d.error ? 'error' : 'ok'),
+      error: d.error || null, ts: new Date().toISOString()
+    };
+    fetch('/api/ms/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(job) })
+      .then(() => loadMSJobs()).catch(() => {});
   } catch(e) {
     document.getElementById('ms-status').textContent = '⚠ Error: ' + e.message;
   }
+}
+
+async function loadMSJobs() {
+  const el = document.getElementById('ms-jobs-list');
+  if (!el) return;
+  try {
+    const r = await fetch('/api/ms/jobs');
+    const d = await r.json();
+    const jobs = d.jobs || [];
+    if (!jobs.length) { el.textContent = 'Sin trabajos aún. ¡Genera tu primer video!'; return; }
+    el.innerHTML = jobs.map(j => {
+      const ts = j.ts ? new Date(j.ts).toLocaleString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+      const statusIcon = j.status === 'processing' ? '⏳' : j.status === 'error' ? '❌' : '✓';
+      const statusColor = j.status === 'processing' ? '#a78bfa' : j.status === 'error' ? '#f87171' : '#34d399';
+      return `<div style="background:#1a1730;border:.5px solid #2a2540;border-radius:8px;padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:16px">${{ugc:'👤',tutorial:'📋',tv_spot:'📺',hyper_motion:'⚡',review:'⭐',wild_card:'🃏'}[j.preset]||'🎬'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;color:#e8e0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.brief || '—'}</div>
+          <div style="font-size:10px;color:#7b6fa0;margin-top:2px">${j.preset} · ${j.aspect_ratio} · ${j.duration}s · ${ts}</div>
+          ${j.job_id ? `<div style="font-size:10px;color:#7b6fa0;margin-top:1px">ID: ${j.job_id}</div>` : ''}
+        </div>
+        <span style="color:${statusColor};font-size:13px">${statusIcon}</span>
+      </div>`;
+    }).join('');
+  } catch(e) { el.textContent = 'Error cargando jobs.'; }
+}
+
+async function loadInboxFromSupabase() {
+  try {
+    const r = await fetch(`/api/inbox?client=roberto_agencia&limit=30`);
+    const d = await r.json();
+    if (!d.ok || !d.items.length) return; // fallback to hardcoded if no real data
+    // Replace hardcoded inboxItems with Supabase data
+    inboxItems = d.items.map((item, idx) => ({
+      id: item.id || idx,
+      channel: 'telegram', icon: '✈️',
+      from: item.bot_destino || 'Agencia AI',
+      preview: (item.contenido || '').slice(0, 80),
+      time: item.ts_creado ? new Date(item.ts_creado).toLocaleString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—',
+      unread: !item.ts_procesado,
+      client: 'arranca', tipo: item.tipo, prioridad: item.prioridad
+    }));
+    renderInbox();
+    const unread = inboxItems.filter(i => i.unread).length;
+    document.getElementById('tabInboxCount').textContent = unread || '';
+    document.getElementById('navInboxCount').textContent = unread || '';
+  } catch(e) { /* keep hardcoded fallback */ }
 }
 
 </script>

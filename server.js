@@ -135,6 +135,60 @@ app.post('/api/onboard-cliente', async (req, res) => {
 
 app.get('/index.html', (req, res) => serveIndex(res));
 
+// ── Supabase helper (server-side, uses secret key) ───────────────────────────
+async function sbFetch(path, opts = {}) {
+  const url = `${process.env.SUPABASE_PROJECT_URL}/rest/v1${path}`;
+  const key  = process.env.SUPABASE_SECRET_KEY;
+  const headers = {
+    apikey: key, Authorization: `Bearer ${key}`,
+    'Content-Type': 'application/json',
+    Prefer: opts.prefer || 'return=representation',
+    ...opts.headers,
+  };
+  return fetch(url, { method: opts.method || 'GET', headers, body: opts.body });
+}
+
+// ── Inbox real desde Supabase ──────────────────────────────────────────────
+app.get('/api/inbox', async (req, res) => {
+  const client = req.query.client || 'roberto_agencia';
+  const limit  = parseInt(req.query.limit) || 50;
+  try {
+    const r = await sbFetch(
+      `/inbox_organizador?user_id=eq.${encodeURIComponent(client)}&order=ts_creado.desc&limit=${limit}`
+    );
+    const data = await r.json();
+    res.json({ ok: true, items: Array.isArray(data) ? data : [] });
+  } catch(e) { res.json({ ok: false, items: [], error: e.message }); }
+});
+
+// ── Marketing Studio jobs — guardar y leer desde Supabase ─────────────────
+app.get('/api/ms/jobs', async (req, res) => {
+  const uid = 'ms_jobs_dashboard';
+  try {
+    const r = await sbFetch(`/clientes?user_id=eq.${uid}&select=data`);
+    const rows = await r.json();
+    const jobs = rows[0]?.data?.jobs || [];
+    res.json({ ok: true, jobs });
+  } catch(e) { res.json({ ok: false, jobs: [], error: e.message }); }
+});
+
+app.post('/api/ms/jobs', async (req, res) => {
+  const uid  = 'ms_jobs_dashboard';
+  const job  = req.body;
+  try {
+    const r = await sbFetch(`/clientes?user_id=eq.${uid}&select=data`);
+    const rows = await r.json();
+    const current = rows[0]?.data || { jobs: [] };
+    current.jobs = [job, ...(current.jobs || [])].slice(0, 50); // keep last 50
+    await sbFetch('/clientes', {
+      method: 'POST',
+      prefer: 'resolution=merge-duplicates',
+      body: JSON.stringify({ user_id: uid, data: current }),
+    });
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 app.get('/api/health', async (req, res) => {
   const results = {};
   await Promise.all(
