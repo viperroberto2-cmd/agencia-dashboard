@@ -3079,11 +3079,11 @@ let refPickerFilter = null; // 'image' | 'video' | 'audio'
 
 // Slot definitions per context
 const REF_SLOTS_DEF = [
-  { key: 'first_frame',  label: '🎯 First Frame',          type: 'image', multi: false, color: '#f59e0b' },
-  { key: 'last_frame',   label: '🏁 Last Frame',           type: 'image', multi: false, color: '#10b981' },
-  { key: 'ref_images',   label: '🖼️ Imagen de referencia', type: 'image', multi: true,  color: 'var(--accent)' },
-  { key: 'ref_videos',   label: '🎬 Video de referencia',  type: 'video', multi: true,  color: 'var(--info)' },
-  { key: 'ref_audios',   label: '🎵 Audio de referencia',  type: 'audio', multi: true,  color: '#a78bfa' },
+  { key: 'first_frame',  label: '🎯 First Frame',          type: 'image', multi: false, max: 1, color: '#f59e0b' },
+  { key: 'last_frame',   label: '🏁 Last Frame',           type: 'image', multi: false, max: 1, color: '#10b981' },
+  { key: 'ref_images',   label: '🖼️ Imagen de referencia', type: 'image', multi: true,  max: 9, color: 'var(--accent)', tip: 'Recomendado: 3-4 ángulos (overhead, 45°, frontal, detalle)' },
+  { key: 'ref_videos',   label: '🎬 Video de referencia',  type: 'video', multi: true,  max: 3, color: 'var(--info)',    tip: 'Máx 3 videos · duración total ≤ 15 seg' },
+  { key: 'ref_audios',   label: '🎵 Audio de referencia',  type: 'audio', multi: true,  max: 3, color: '#a78bfa',       tip: 'Máx 3 audios · duración total ≤ 15 seg' },
 ];
 
 // Data: gen and ms each have their own slots
@@ -3104,21 +3104,26 @@ function renderRefSlots(ctx) {
   const rows = REF_SLOTS_DEF.map((slot, i) => {
     const val = refSlots[ctx][slot.key];
     const files = slot.multi ? (val || []) : (val ? [val] : []);
+    const atMax = slot.multi && files.length >= slot.max;
     const chips = files.map(f =>
       `<span style="display:inline-flex;align-items:center;gap:4px;background:${slot.color}18;border:1px solid ${slot.color}50;border-radius:20px;padding:3px 8px;font-size:11px;color:${slot.color}">
         <span style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span>
         <button onclick="removeRefSlot('${ctx}','${slot.key}','${f.id}')" style="background:none;border:none;color:${slot.color};cursor:pointer;font-size:12px;padding:0;line-height:1;">✕</button>
       </span>`).join('');
+    const counter = slot.multi ? `<span style="font-size:10px;color:${atMax?'#f87171':slot.color+'99'};flex-shrink:0;">${files.length}/${slot.max}</span>` : '';
+    const tipHtml = slot.tip ? `<span title="${slot.tip}" style="font-size:10px;color:#6b7280;cursor:help;flex-shrink:0;">ⓘ</span>` : '';
     const btnLabel = slot.type === 'image' ? '+ imagen' : slot.type === 'video' ? '+ video' : '+ audio';
-    const btn = `<button onclick="openRefPicker('${ctx}','${slot.key}','${slot.type}')"
+    const btn = atMax ? '' : `<button onclick="openRefPicker('${ctx}','${slot.key}','${slot.type}')"
       style="background:${isMs?'#1a1730':'var(--bg-elevated)'};border:${isMs?'.5px solid #2a2540':'1px solid var(--border)'};
       border-radius:8px;padding:4px 10px;font-size:11px;color:${isMs?'#9b8ec4':'var(--text-muted)'};cursor:pointer;white-space:nowrap;flex-shrink:0;">
       ${btnLabel}</button>`;
+    const showBtn = slot.multi ? !atMax : !files.length;
     const separator = i === 1 ? mutualNote : '';
     return `${separator}<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid ${isMs?'#1a1730':'var(--border)'};">
-      <span style="font-size:12px;font-weight:600;color:${slot.color};min-width:160px;flex-shrink:0;">${slot.label}</span>
+      <span style="font-size:12px;font-weight:600;color:${slot.color};min-width:160px;flex-shrink:0;">${slot.label} ${tipHtml}</span>
       <div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;">${chips || `<span style="font-size:11px;color:${isMs?'#7b6fa0':'var(--text-dim)'}">Sin archivo</span>`}</div>
-      ${(!slot.multi && files.length) ? '' : btn}
+      ${counter}
+      ${showBtn ? btn : ''}
     </div>`;
   }).join('');
   container.innerHTML = `<div style="display:flex;flex-direction:column;">${rows}</div>`;
@@ -3175,7 +3180,12 @@ function selectRefFile(ctx, slot, id, name, link, mime) {
   if (def.multi) {
     const arr = refSlots[ctx][slot] || [];
     const idx = arr.findIndex(f => f.id === id);
-    if (idx >= 0) arr.splice(idx, 1); else arr.push(file);
+    if (idx >= 0) {
+      arr.splice(idx, 1);
+    } else {
+      if (arr.length >= def.max) return; // límite API
+      arr.push(file);
+    }
     refSlots[ctx][slot] = arr;
   } else {
     refSlots[ctx][slot] = refSlots[ctx][slot]?.id === id ? null : file;
