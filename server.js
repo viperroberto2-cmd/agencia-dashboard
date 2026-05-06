@@ -224,8 +224,37 @@ const CHAT_TARGETS = {
 
 app.post('/api/chat/:agentId', (req, res) => {
   const target = CHAT_TARGETS[req.params.agentId];
-  if (!target) return res.status(404).json({ error: 'Agent not found: ' + req.params.agentId });
-  proxyPost(target, req, res);
+  if (!target) return res.status(404).json({ response: 'Agente no encontrado.' });
+  const body = JSON.stringify(req.body);
+  const u = new URL(target);
+  const opts = {
+    hostname: u.hostname, path: u.pathname, method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+    timeout: 15000,
+  };
+  const pr = https.request(opts, (r) => {
+    let d = '';
+    r.on('data', c => d += c);
+    r.on('end', () => {
+      try {
+        const json = JSON.parse(d);
+        // Normalize: bots may return respuesta/reply/content instead of response
+        const normalized = json.response || json.respuesta || json.reply || json.message || json.content;
+        if (normalized !== undefined) json.response = normalized;
+        res.status(r.statusCode < 400 ? 200 : r.statusCode).json(json);
+      } catch(e) {
+        if (r.statusCode === 404 || r.statusCode === 405) {
+          res.json({ response: 'El agente está en línea pero aún no tiene endpoint de chat. Contáctalo vía Telegram.' });
+        } else {
+          res.status(500).json({ response: 'Error del agente: ' + d.slice(0, 200) });
+        }
+      }
+    });
+  });
+  pr.on('error', e => res.json({ response: 'Agente no disponible: ' + e.message }));
+  pr.on('timeout', () => { pr.destroy(); res.json({ response: 'El agente tardó demasiado en responder. Intenta de nuevo.' }); });
+  pr.write(body);
+  pr.end();
 });
 
 // ── Google Drive ─────────────────────────────────────────────────────

@@ -2473,7 +2473,7 @@ function sendMessage() {
   })
   .then(r => r.json())
   .then(d => {
-    const reply = d.response || d.message || d.reply || d.content || JSON.stringify(d);
+    const reply = d.response || d.respuesta || d.message || d.reply || d.content || JSON.stringify(d);
     document.getElementById(loadId).querySelector('.message').style.opacity = '1';
     document.getElementById(loadId).querySelector('.message').textContent = reply;
     msgs.scrollTop = msgs.scrollHeight;
