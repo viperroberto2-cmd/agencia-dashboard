@@ -87,18 +87,7 @@ input, textarea, select { font-family: inherit; }
 
 /* DEMO NAV (dev only) */
 .demo-nav {
-  position: fixed;
-  bottom: 12px; left: 50%;
-  transform: translateX(-50%);
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 100px;
-  padding: 4px;
-  display: flex;
-  gap: 2px;
-  z-index: 200;
-  box-shadow: var(--shadow-lg);
+  display: none !important;
 }
 .demo-nav-btn {
   padding: 6px 12px;
@@ -2375,14 +2364,21 @@ function sendMagicLink() {
   .then(r => r.json())
   .then(d => {
     btn.textContent = 'Enviar link de acceso →'; btn.disabled = false;
-    if (!d.ok) { errEl.textContent = d.error || 'Error. Intenta de nuevo.'; errEl.style.display = 'block'; return; }
+    if (!d.ok) {
+      errEl.textContent = d.error || 'Error enviando el link. Intenta de nuevo.';
+      errEl.style.display = 'block';
+      console.error('[portal] magic-link error:', d);
+      return;
+    }
     document.getElementById('rg-sent-email').textContent = email;
     document.getElementById('login-step-form').style.display = 'none';
     document.getElementById('login-step-check').style.display = '';
   })
-  .catch(() => {
+  .catch(err => {
     btn.textContent = 'Enviar link de acceso →'; btn.disabled = false;
-    errEl.textContent = 'Error de conexión. Intenta de nuevo.'; errEl.style.display = 'block';
+    errEl.textContent = 'No se pudo conectar al servidor. Verifica tu conexión.';
+    errEl.style.display = 'block';
+    console.error('[portal] fetch error:', err);
   });
 }
 
