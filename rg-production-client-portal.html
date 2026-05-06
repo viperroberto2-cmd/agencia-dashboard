@@ -2019,7 +2019,35 @@ const wizardData = { goals: [], step: 0 };
 
 function resetWizard() { currentStep = 1; renderWizardStep(); }
 
+function captureStepData() {
+  const get = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  if (currentStep === 1) {
+    const inputs = document.querySelectorAll('#wizardContent input, #wizardContent select, #wizardContent textarea');
+    wizardData.negocio   = inputs[0]?.value.trim() || '';
+    wizardData.nombre    = inputs[1]?.value.trim() || '';
+    wizardData.industria = inputs[2]?.value || '';
+    wizardData.email     = inputs[3]?.value.trim() || '';
+    wizardData.telefono  = inputs[4]?.value.trim() || '';
+    wizardData.ciudad    = inputs[5]?.value.trim() || '';
+    wizardData.notas     = inputs[7]?.value.trim() || '';
+  }
+  if (currentStep === 3) {
+    const inputs = document.querySelectorAll('#wizardContent input');
+    wizardData.whatsapp  = inputs[0]?.value.trim() || '';
+    wizardData.asistente = inputs[1]?.value.trim() || 'Sofía';
+  }
+  if (currentStep === 4) {
+    const inputs = document.querySelectorAll('#wizardContent input');
+    wizardData.facebook  = inputs[0]?.value.trim() || '';
+    wizardData.instagram = inputs[1]?.value.trim() || '';
+    wizardData.youtube   = inputs[2]?.value.trim() || '';
+    wizardData.tiktok    = inputs[3]?.value.trim() || '';
+    wizardData.website   = inputs[4]?.value.trim() || '';
+  }
+}
+
 function nextStep() {
+  captureStepData();
   if (currentStep < wizardSteps.length) {
     currentStep++;
     renderWizardStep();
@@ -2230,13 +2258,14 @@ function stepContent(step) {
     <p class="wizard-desc">${es ? '¿Todo se ve correcto? Una vez enviado, nuestro equipo te contacta en 24 horas.' : 'Everything look correct? Once submitted our team will be in touch within 24 hours.'}</p>
     <div class="wizard-card">
       <div class="summary-list">
-        <div class="summary-row"><span class="key">${es ? 'Negocio' : 'Business'}</span><span class="val">Clínica Médica Ramírez</span></div>
-        <div class="summary-row"><span class="key">${es ? 'Industria' : 'Industry'}</span><span class="val">${es ? 'Clínica médica / GLP-1' : 'Medical / GLP-1'}</span></div>
-        <div class="summary-row"><span class="key">${es ? 'Contacto' : 'Contact'}</span><span class="val">Dra. Ramírez</span></div>
-        <div class="summary-row"><span class="key">Email</span><span class="val">cliente@ejemplo.com</span></div>
-        <div class="summary-row"><span class="key">${es ? 'Teléfono' : 'Phone'}</span><span class="val">+1 (213) 555-0142</span></div>
-        <div class="summary-row"><span class="key">${es ? 'Metas seleccionadas' : 'Goals selected'}</span><span class="val">${wizardData.goals.length || 0}</span></div>
-        <div class="summary-row"><span class="key">${es ? 'Asistente' : 'Assistant'}</span><span class="val">Sofía · ${es ? 'Bilingüe · 24/7' : 'Bilingual · 24/7'}</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Negocio' : 'Business'}</span><span class="val">${wizardData.negocio || '—'}</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Industria' : 'Industry'}</span><span class="val">${wizardData.industria || '—'}</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Contacto' : 'Contact'}</span><span class="val">${wizardData.nombre || '—'}</span></div>
+        <div class="summary-row"><span class="key">Email</span><span class="val">${wizardData.email || '—'}</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Teléfono' : 'Phone'}</span><span class="val">${wizardData.telefono || '—'}</span></div>
+        <div class="summary-row"><span class="key">WhatsApp</span><span class="val">${wizardData.whatsapp || '—'}</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Asistente' : 'Assistant'}</span><span class="val">${wizardData.asistente || 'Sofía'}</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Metas' : 'Goals'}</span><span class="val">${wizardData.goals.length ? wizardData.goals.join(', ') : '—'}</span></div>
         <div class="summary-row"><span class="key">${es ? 'Estado' : 'Status'}</span><span class="val ok">● ${es ? 'Listo para enviar' : 'Ready to submit'}</span></div>
       </div>
     </div>`;
