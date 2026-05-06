@@ -1751,7 +1751,7 @@ input, textarea { font-family: inherit; }
     <section class="section" id="section-scheduler">
       <div class="section-header">
         <div><div class="section-title">Scheduler · Posts</div><div class="section-subtitle">Calendario y publicaciones programadas</div></div>
-        <button class="btn btn-primary">＋ Programar post</button>
+        <button class="btn btn-primary" onclick="openScheduleModal()">＋ Programar post</button>
       </div>
       <div class="scheduler-grid">
         <div class="calendar">
@@ -1988,6 +1988,56 @@ input, textarea { font-family: inherit; }
     <button class="tab-btn" onclick="toggleDrawer()"><span class="tab-icon">⋯</span>Más</button>
   </nav>
 
+</div>
+
+<!-- ── LEAD MODAL ────────────────────────────────────────────────── -->
+<div id="leadModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;" onclick="if(event.target===this)closeLeadModal()">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;padding:28px;position:relative;">
+    <button onclick="closeLeadModal()" style="position:absolute;top:16px;right:16px;background:var(--bg-elevated);border:none;border-radius:8px;width:32px;height:32px;font-size:16px;color:var(--text-muted);cursor:pointer;">✕</button>
+    <div id="leadModalContent"></div>
+  </div>
+</div>
+
+<!-- ── SCHEDULE POST MODAL ───────────────────────────────────────── -->
+<div id="scheduleModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;" onclick="if(event.target===this)closeScheduleModal()">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;width:min(480px,95vw);max-height:90vh;overflow-y:auto;padding:28px;position:relative;">
+    <button onclick="closeScheduleModal()" style="position:absolute;top:16px;right:16px;background:var(--bg-elevated);border:none;border-radius:8px;width:32px;height:32px;font-size:16px;color:var(--text-muted);cursor:pointer;">✕</button>
+    <div style="font-size:17px;font-weight:700;margin-bottom:4px;">📅 Programar post</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">El Scheduler pide aprobación vía Telegram antes de publicar.</div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Copy / contenido</div>
+      <textarea id="sp-contenido" rows="4" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;color:var(--text);font-family:inherit;resize:vertical;outline:none;" placeholder="Escribe el texto del post…"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Plataforma</div>
+        <select id="sp-plataforma" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;outline:none;">
+          <option value="facebook">📘 Facebook</option>
+          <option value="instagram">📸 Instagram</option>
+          <option value="ambos">📘📸 Ambos</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Cliente</div>
+        <select id="sp-cliente" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;outline:none;">
+          <option value="arranca">Arranca Financial</option>
+          <option value="sofia">Sofía (clínica)</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Fecha</div>
+        <input id="sp-fecha" type="date" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;outline:none;">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Hora</div>
+        <input id="sp-hora" type="time" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;outline:none;">
+      </div>
+    </div>
+    <div id="sp-error" style="display:none;font-size:13px;color:#f87171;margin-bottom:12px;"></div>
+    <button id="sp-btn" onclick="submitSchedulePost()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;">Enviar para aprobación →</button>
+  </div>
 </div>
 
 <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
@@ -2279,8 +2329,8 @@ function renderCRM() {
         <div class="crm-col-title ${col.id}"><span class="dot"></span>${col.label}</div>
         <span class="crm-col-count">${col.items.length}</span>
       </div>
-      ${col.items.map(l => `
-        <div class="lead-card">
+      ${col.items.map((l, idx) => `
+        <div class="lead-card" style="cursor:pointer;" onclick="openLeadModal('${col.id}', ${idx})">
           <div class="lead-name">${l.name}</div>
           <div class="lead-meta"><span class="lead-channel">${l.source}</span><span>${l.meta}</span></div>
         </div>
@@ -2920,6 +2970,93 @@ async function loadInboxFromSupabase() {
     document.getElementById('tabInboxCount').textContent = unread || '';
     document.getElementById('navInboxCount').textContent = unread || '';
   } catch(e) { /* keep hardcoded fallback */ }
+}
+
+// ============ LEAD MODAL ============
+const statusLabel = { new: '🆕 Nuevo', contacted: '📞 Contactado', interested: '🔥 Interesado', closed: '✅ Cerrado' };
+const channelIcon = { Facebook: '📘', Instagram: '📸', WhatsApp: '💚', SMS: '💬', Referido: '🤝', Apollo: '🔍' };
+
+function openLeadModal(colId, idx) {
+  const lead = leads[colId][idx];
+  if (!lead) return;
+  const overlay = document.getElementById('leadModalOverlay');
+  const statusColor = { new: '#3b82f6', contacted: '#f59e0b', interested: '#8b5cf6', closed: '#10b981' };
+  document.getElementById('leadModalContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${channelIcon[lead.source] || '👤'}</div>
+      <div>
+        <div style="font-size:18px;font-weight:700;">${lead.name}</div>
+        <div style="font-size:13px;color:var(--text-muted);">${lead.source} · ${lead.meta}</div>
+      </div>
+      <span style="margin-left:auto;background:${statusColor[colId]}20;color:${statusColor[colId]};font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;">${statusLabel[colId]}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+      <div style="background:var(--bg-elevated);border-radius:10px;padding:12px;">
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Canal origen</div>
+        <div style="font-size:14px;font-weight:500;">${channelIcon[lead.source] || ''} ${lead.source}</div>
+      </div>
+      <div style="background:var(--bg-elevated);border-radius:10px;padding:12px;">
+        <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Actividad</div>
+        <div style="font-size:14px;font-weight:500;">${lead.meta}</div>
+      </div>
+      ${lead.phone ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:12px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Teléfono</div><div style="font-size:14px;font-weight:500;">${lead.phone}</div></div>` : ''}
+      ${lead.email ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:12px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Email</div><div style="font-size:14px;font-weight:500;">${lead.email}</div></div>` : ''}
+    </div>
+    ${lead.notes ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:14px;margin-bottom:20px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Notas</div><div style="font-size:14px;line-height:1.6;">${lead.notes}</div></div>` : ''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="openChat('organizador');closeLeadModal()" style="flex:1;min-width:120px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;">💬 Consultar Organizador</button>
+      <button onclick="closeLeadModal()" style="background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:13px;cursor:pointer;">Cerrar</button>
+    </div>`;
+  overlay.style.display = 'flex';
+}
+
+function closeLeadModal() {
+  document.getElementById('leadModalOverlay').style.display = 'none';
+}
+
+// ============ SCHEDULE POST MODAL ============
+function openScheduleModal() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('sp-fecha').value = today;
+  document.getElementById('sp-hora').value = '10:00';
+  document.getElementById('sp-contenido').value = '';
+  document.getElementById('sp-error').style.display = 'none';
+  document.getElementById('sp-btn').textContent = 'Enviar para aprobación →';
+  document.getElementById('sp-btn').disabled = false;
+  document.getElementById('scheduleModalOverlay').style.display = 'flex';
+}
+
+function closeScheduleModal() {
+  document.getElementById('scheduleModalOverlay').style.display = 'none';
+}
+
+async function submitSchedulePost() {
+  const contenido  = document.getElementById('sp-contenido').value.trim();
+  const plataforma = document.getElementById('sp-plataforma').value;
+  const cliente    = document.getElementById('sp-cliente').value;
+  const fecha      = document.getElementById('sp-fecha').value;
+  const hora       = document.getElementById('sp-hora').value;
+  const errEl      = document.getElementById('sp-error');
+  const btn        = document.getElementById('sp-btn');
+  if (!contenido) { errEl.textContent = 'El contenido no puede estar vacío.'; errEl.style.display = 'block'; return; }
+  btn.textContent = 'Enviando...'; btn.disabled = true; errEl.style.display = 'none';
+  try {
+    const r = await fetch('/api/scheduler/post', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contenido, plataforma, cliente, fecha_publicacion: `${fecha}T${hora}:00` })
+    });
+    const d = await r.json();
+    if (d.status === 'ok' || d.post_id) {
+      closeScheduleModal();
+      alert('✅ Post enviado al Scheduler. Recibirás aprobación vía Telegram antes de publicar.');
+    } else {
+      errEl.textContent = d.error || 'Error del servidor.'; errEl.style.display = 'block';
+      btn.textContent = 'Enviar para aprobación →'; btn.disabled = false;
+    }
+  } catch(e) {
+    errEl.textContent = 'Error de conexión.'; errEl.style.display = 'block';
+    btn.textContent = 'Enviar para aprobación →'; btn.disabled = false;
+  }
 }
 
 </script>

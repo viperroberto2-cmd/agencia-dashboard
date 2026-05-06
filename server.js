@@ -306,6 +306,22 @@ app.post('/api/scheduler/publicar', (req, res) => {
   proxyPost('https://worker-production-aa53.up.railway.app/scheduler/publicar', req, res);
 });
 
+// ── Programar post manual (inyecta secret server-side) ───────────────────────
+app.post('/api/scheduler/post', async (req, res) => {
+  try {
+    const payload = {
+      ...req.body,
+      secret: process.env.SCHEDULER_SECRET || 'agencia-scheduler-2025'
+    };
+    const r = await fetch('https://worker-production-aa53.up.railway.app/scheduler/post', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    res.status(r.status).json(d);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── Chat proxy — all agent chats go through here (avoids CORS) ───────────────
 const CHAT_TARGETS = {
   organizador: 'https://web-production-77871.up.railway.app/organizador/chat',
