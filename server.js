@@ -14,7 +14,8 @@ const BOTS = {
   motion:    'https://web-production-d67bad.up.railway.app/motion/health',
   scraper:   'https://agencia-ai-scraper-production.up.railway.app/health',
   seo:       'https://agencia-ai-seo-production.up.railway.app/health',
-  analytics: 'https://agencia-ai-analytics-production.up.railway.app/health',
+  analytics:   'https://agencia-ai-analytics-production.up.railway.app/health',
+  compositor:  'https://compositorbot-production.up.railway.app/compositor/health',
 };
 
 function checkUrl(url) {
@@ -318,6 +319,7 @@ const CHAT_TARGETS = {
   seo:         'https://agencia-ai-seo-production.up.railway.app/seo/task',
   web:         'https://agencia-ai-web-designer-production.up.railway.app/web/chat',
   motion:      'https://web-production-d67bad.up.railway.app/motion/chat',
+  compositor:  'https://compositorbot-production.up.railway.app/compositor/chat',
 };
 
 app.post('/api/chat/:agentId', (req, res) => {

@@ -2737,7 +2737,8 @@ async function loadHealth() {
   const HEALTH_TO_AGENT = {
     b2: 'crew', b3: 'estrategia', b5: 'scheduler',
     org: 'organizador', web: 'web', motion: 'motion',
-    scraper: 'scraper', seo: 'seo', analytics: 'analytics'
+    scraper: 'scraper', seo: 'seo', analytics: 'analytics',
+    compositor: 'compositor'
   };
   try {
     const res = await fetch('/api/health');
