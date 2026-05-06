@@ -451,6 +451,35 @@ app.get('/gdrive/listar', async (req, res) => {
     }
 });
 
+// ── Google Drive — carpeta de referencias ────────────────────────────────────
+app.get('/gdrive/referencias', async (req, res) => {
+  try {
+    const token = await getGoogleAccessToken();
+    const folder = process.env.GDRIVE_REF_FOLDER || process.env.GDRIVE_ROOT_FOLDER || 'root';
+    const q = `'${folder}' in parents and trashed=false`;
+    const params = new URLSearchParams({
+      q,
+      fields: 'files(id,name,mimeType,size,webViewLink,thumbnailLink)',
+      pageSize: '100',
+      orderBy: 'name asc'
+    });
+    const driveRes = await new Promise((resolve, reject) => {
+      const r = https.get(`https://www.googleapis.com/drive/v3/files?${params}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }, response => {
+        let d = '';
+        response.on('data', c => d += c);
+        response.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { reject(e); } });
+      });
+      r.on('error', reject);
+    });
+    res.json({ ok: true, archivos: driveRes.files || [] });
+  } catch(e) {
+    console.error('GDrive referencias error:', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Dashboard running on port ${PORT}`));
 

@@ -2004,7 +2004,21 @@ input, textarea { font-family: inherit; }
         </div>
 
         <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Brief</div>
-        <textarea id="ms-brief" placeholder="Describe el contenido: tono, audiencia, mensaje, CTA..." style="width:100%;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;color:#e8e0ff;resize:vertical;min-height:90px;box-sizing:border-box;outline:none;margin-bottom:16px"></textarea>
+        <textarea id="ms-brief" placeholder="Describe el contenido: tono, audiencia, mensaje, CTA..." style="width:100%;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;color:#e8e0ff;resize:vertical;min-height:90px;box-sizing:border-box;outline:none;margin-bottom:12px"></textarea>
+
+        <!-- Referencias desde Drive -->
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;">Referencias desde Drive</div>
+            <button onclick="toggleRefPicker('ms')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:8px;padding:5px 10px;font-size:12px;color:#9b8ec4;cursor:pointer;">📎 Adjuntar</button>
+          </div>
+          <div id="ms-ref-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:0;"></div>
+          <div id="ms-ref-picker" style="display:none;background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:12px;margin-top:8px;max-height:180px;overflow-y:auto;">
+            <div id="ms-ref-list" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <div style="color:#7b6fa0;font-size:12px;grid-column:1/-1;">Cargando archivos de Drive…</div>
+            </div>
+          </div>
+        </div>
 
         <button onclick="msGenerar()" style="width:100%;background:linear-gradient(135deg,#7c5cfc,#a78bfa);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;margin-bottom:8px">✦ Generar Video</button>
         <div id="ms-status" style="font-size:12px;color:#7c5cfc;min-height:16px;margin-bottom:12px"></div>
@@ -2036,7 +2050,7 @@ input, textarea { font-family: inherit; }
 <!-- ── LEAD MODAL ────────────────────────────────────────────────── -->
 <!-- ── DRIVE GENERAR MODAL ───────────────────────────────────────── -->
 <div id="driveGenerarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;" onclick="if(event.target===this)closeDriveGenerar()">
-  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;width:min(520px,95vw);padding:28px;position:relative;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;width:min(560px,95vw);max-height:92vh;overflow-y:auto;padding:28px;position:relative;">
     <button onclick="closeDriveGenerar()" style="position:absolute;top:16px;right:16px;background:var(--bg-elevated);border:none;border-radius:8px;width:32px;height:32px;font-size:16px;color:var(--text-muted);cursor:pointer;">✕</button>
     <div style="font-size:17px;font-weight:700;margin-bottom:4px;">✨ Generar contenido</div>
     <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Describe lo que necesitas y el Crew lo genera y lo guarda en Drive.</div>
@@ -2048,9 +2062,22 @@ input, textarea { font-family: inherit; }
         <button id="gtype-audio" onclick="selectGenType('audio')" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;">🎵 Audio</button>
       </div>
     </div>
-    <div style="margin-bottom:20px;">
+    <div style="margin-bottom:14px;">
       <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Prompt / descripción</div>
-      <textarea id="gen-prompt" rows="4" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;color:var(--text);font-family:inherit;resize:vertical;outline:none;" placeholder="Ej: Reel de 30 segundos mostrando los beneficios de rentar un Tesla en Turo, tono aspiracional, música upbeat…"></textarea>
+      <textarea id="gen-prompt" rows="3" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;color:var(--text);font-family:inherit;resize:vertical;outline:none;" placeholder="Ej: Reel de 30s con los beneficios de rentar un Tesla en Turo, tono aspiracional, música upbeat…"></textarea>
+    </div>
+    <!-- Referencias desde Drive -->
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;">Referencias desde Drive</div>
+        <button onclick="toggleRefPicker('gen')" style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--text-muted);cursor:pointer;">📎 Adjuntar</button>
+      </div>
+      <div id="gen-ref-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:0;"></div>
+      <div id="gen-ref-picker" style="display:none;background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:8px;max-height:180px;overflow-y:auto;">
+        <div id="gen-ref-list" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div style="color:var(--text-muted);font-size:12px;grid-column:1/-1;">Cargando archivos de Drive…</div>
+        </div>
+      </div>
     </div>
     <div style="display:flex;gap:8px;">
       <button id="gen-btn" onclick="submitGenerar()" style="flex:1;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;">✨ Enviar al Crew →</button>
@@ -3050,6 +3077,87 @@ async function loadDriveFromAPI() {
 }
 
 
+// ── REFERENCIAS DESDE DRIVE (compartido: Generar modal + Marketing Studio) ───
+let refCache = null;
+const refSelected = { gen: new Map(), ms: new Map() }; // id → {name, link}
+
+async function loadRefFiles() {
+  if (refCache) return refCache;
+  try {
+    const r = await fetch('/gdrive/referencias');
+    const d = await r.json();
+    const iconFor = m => m.includes('video') ? '🎬' : m.includes('audio') ? '🎵' : m.includes('image') ? '🖼️' : '📄';
+    refCache = (d.archivos || []).map(f => ({
+      id: f.id, name: f.name, link: f.webViewLink,
+      icon: iconFor(f.mimeType || ''), mime: f.mimeType || ''
+    }));
+  } catch(e) { refCache = []; }
+  return refCache;
+}
+
+async function toggleRefPicker(ctx) {
+  const picker = document.getElementById(ctx + '-ref-picker');
+  const list   = document.getElementById(ctx + '-ref-list');
+  if (picker.style.display !== 'none') { picker.style.display = 'none'; return; }
+  picker.style.display = 'block';
+  list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;grid-column:1/-1;">Cargando…</div>';
+  const files = await loadRefFiles();
+  if (!files.length) {
+    list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;grid-column:1/-1;">No hay archivos en la carpeta de referencias.<br>Agrega archivos a tu folder Referencias en Drive.</div>';
+    return;
+  }
+  list.innerHTML = files.map(f => {
+    const sel = refSelected[ctx].has(f.id);
+    return `<button onclick="toggleRefFile('${ctx}','${f.id}','${f.name.replace(/'/g,"\\'")}','${f.link}')"
+      style="display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:8px;
+      border:1px solid ${sel ? 'var(--accent)' : 'var(--border)'};
+      background:${sel ? 'var(--accent-dim)' : 'var(--bg-card)'};
+      color:${sel ? 'var(--accent)' : 'var(--text)'};font-size:12px;cursor:pointer;text-align:left;width:100%;"
+      id="ref-btn-${ctx}-${f.id}">
+      <span>${f.icon}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span>
+    </button>`;
+  }).join('');
+}
+
+function toggleRefFile(ctx, id, name, link) {
+  if (refSelected[ctx].has(id)) refSelected[ctx].delete(id);
+  else refSelected[ctx].set(id, { name, link });
+  renderRefChips(ctx);
+  // update button style in picker
+  const btn = document.getElementById(`ref-btn-${ctx}-${id}`);
+  if (btn) {
+    const sel = refSelected[ctx].has(id);
+    btn.style.border = sel ? '1px solid var(--accent)' : '1px solid var(--border)';
+    btn.style.background = sel ? 'var(--accent-dim)' : 'var(--bg-card)';
+    btn.style.color = sel ? 'var(--accent)' : 'var(--text)';
+  }
+}
+
+function renderRefChips(ctx) {
+  const chips = document.getElementById(ctx + '-ref-chips');
+  chips.innerHTML = [...refSelected[ctx].entries()].map(([id, f]) =>
+    `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--accent-dim);color:var(--accent);
+      border:1px solid var(--accent);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:500;">
+      ${f.name}
+      <button onclick="toggleRefFile('${ctx}','${id}','','');document.getElementById('ref-btn-${ctx}-${id}') && toggleRefFile('${ctx}','${id}','','')"
+        onclick="removeRef('${ctx}','${id}')"
+        style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;padding:0;line-height:1;">✕</button>
+    </span>`
+  ).join('');
+}
+
+function removeRef(ctx, id) {
+  refSelected[ctx].delete(id);
+  renderRefChips(ctx);
+}
+
+function buildRefText(ctx) {
+  if (!refSelected[ctx].size) return '';
+  const links = [...refSelected[ctx].values()].map(f => `- ${f.name}: ${f.link}`).join('\n');
+  return `\n\nArchivos de referencia (Drive):\n${links}`;
+}
+
 // ── DRIVE GENERAR MODAL ───────────────────────────────────────────
 let genType = 'video';
 
@@ -3060,6 +3168,9 @@ function openDriveGenerar() {
   document.getElementById('gen-result').style.display = 'none';
   document.getElementById('gen-btn').textContent = '✨ Enviar al Crew →';
   document.getElementById('gen-btn').disabled = false;
+  document.getElementById('gen-ref-picker').style.display = 'none';
+  refSelected.gen.clear();
+  renderRefChips('gen');
   document.getElementById('driveGenerarOverlay').style.display = 'flex';
 }
 
@@ -3083,21 +3194,20 @@ async function submitGenerar() {
   if (!prompt) { document.getElementById('gen-prompt').focus(); return; }
   const btn = document.getElementById('gen-btn');
   btn.textContent = 'Enviando…'; btn.disabled = true;
+  const fullMsg = `[GENERAR ${genType.toUpperCase()}] ${prompt}${buildRefText('gen')}`;
   try {
     const r = await fetch('/api/chat/crew', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: `[GENERAR ${genType.toUpperCase()}] ${prompt}`, agent: 'crew' })
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: fullMsg, agent: 'crew' })
     });
     const d = await r.json();
     const result = document.getElementById('gen-result');
-    result.style.display = 'block';
+    result.style.display = 'block'; result.style.color = 'var(--success)';
     result.textContent = '✅ ' + (d.response || 'Solicitud enviada al Crew. Revisa Drive en unos minutos.');
     btn.textContent = 'Enviado ✓';
   } catch(e) {
     const result = document.getElementById('gen-result');
-    result.style.display = 'block';
-    result.style.color = 'var(--danger)';
+    result.style.display = 'block'; result.style.color = 'var(--danger)';
     result.textContent = 'Error: ' + e.message;
     btn.textContent = '✨ Enviar al Crew →'; btn.disabled = false;
   }
@@ -3147,11 +3257,13 @@ async function msGenerar() {
   if (!brief) { document.getElementById('ms-status').textContent = '⚠ Escribe un brief primero'; return; }
   document.getElementById('ms-status').textContent = '⏳ Enviando al Crew bot...';
   document.getElementById('ms-output').style.display = 'none';
+  document.getElementById('ms-ref-picker').style.display = 'none';
+  const briefConRef = brief + buildRefText('ms');
   try {
     const r = await fetch('/api/crew/seedance', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        preset: msPreset, brief, client: currentClient,
+        preset: msPreset, brief: briefConRef, client: currentClient,
         aspect_ratio: msAspectRatio, duration: msDuration,
         generate_audio: msAudioOn, use_avatar: msAvatarOn
       })
