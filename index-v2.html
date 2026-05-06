@@ -3108,7 +3108,7 @@ async function toggleRefPicker(ctx) {
   }
   list.innerHTML = files.map(f => {
     const sel = refSelected[ctx].has(f.id);
-    return `<button onclick="toggleRefFile('${ctx}','${f.id}','${f.name.replace(/'/g,"\\'")}','${f.link}')"
+    return `<button onclick="toggleRefFile('${ctx}','${f.id}','${f.name.replace(/'/g,"\\'")}','${f.link}','${f.mime}')"
       style="display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:8px;
       border:1px solid ${sel ? 'var(--accent)' : 'var(--border)'};
       background:${sel ? 'var(--accent-dim)' : 'var(--bg-card)'};
@@ -3120,11 +3120,14 @@ async function toggleRefPicker(ctx) {
   }).join('');
 }
 
-function toggleRefFile(ctx, id, name, link) {
-  if (refSelected[ctx].has(id)) refSelected[ctx].delete(id);
-  else refSelected[ctx].set(id, { name, link });
+function toggleRefFile(ctx, id, name, link, mime) {
+  if (refSelected[ctx].has(id)) {
+    refSelected[ctx].delete(id);
+  } else {
+    const isImg = mime && mime.includes('image');
+    refSelected[ctx].set(id, { name, link, mime: mime || '', role: isImg ? 'ref' : 'media' });
+  }
   renderRefChips(ctx);
-  // update button style in picker
   const btn = document.getElementById(`ref-btn-${ctx}-${id}`);
   if (btn) {
     const sel = refSelected[ctx].has(id);
@@ -3134,28 +3137,71 @@ function toggleRefFile(ctx, id, name, link) {
   }
 }
 
+const IMAGE_ROLES = ['ref', 'first', 'last'];
+const IMAGE_ROLE_LABEL = { ref: '🖼️ Ref', first: '🎯 1er frame', last: '🏁 Últ. frame' };
+const IMAGE_ROLE_COLOR = { ref: 'var(--accent)', first: '#f59e0b', last: '#10b981' };
+
+function cycleImageRole(ctx, id) {
+  const f = refSelected[ctx].get(id);
+  if (!f || !f.mime.includes('image')) return;
+  const idx = IMAGE_ROLES.indexOf(f.role);
+  f.role = IMAGE_ROLES[(idx + 1) % IMAGE_ROLES.length];
+  refSelected[ctx].set(id, f);
+  renderRefChips(ctx);
+}
+
 function renderRefChips(ctx) {
   const chips = document.getElementById(ctx + '-ref-chips');
-  chips.innerHTML = [...refSelected[ctx].entries()].map(([id, f]) =>
-    `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--accent-dim);color:var(--accent);
-      border:1px solid var(--accent);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:500;">
-      ${f.name}
-      <button onclick="toggleRefFile('${ctx}','${id}','','');document.getElementById('ref-btn-${ctx}-${id}') && toggleRefFile('${ctx}','${id}','','')"
-        onclick="removeRef('${ctx}','${id}')"
-        style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;padding:0;line-height:1;">✕</button>
-    </span>`
-  ).join('');
+  if (!chips) return;
+  chips.innerHTML = [...refSelected[ctx].entries()].map(([id, f]) => {
+    const isImg = f.mime && f.mime.includes('image');
+    const color = isImg ? IMAGE_ROLE_COLOR[f.role] : 'var(--info)';
+    const label = isImg ? IMAGE_ROLE_LABEL[f.role] : (f.mime.includes('video') ? '🎬' : '🎵');
+    const roleBtn = isImg ? `<button onclick="cycleImageRole('${ctx}','${id}')" title="Cambiar rol"
+      style="background:none;border:none;color:${color};cursor:pointer;font-size:10px;padding:0 2px;font-weight:700;">${label}</button>` : `<span style="font-size:10px">${label}</span>`;
+    return `<span style="display:inline-flex;align-items:center;gap:4px;background:${color}18;
+      border:1px solid ${color}50;border-radius:20px;padding:4px 8px;font-size:11px;font-weight:500;color:${color}">
+      ${roleBtn}
+      <span style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">${f.name}</span>
+      <button onclick="removeRef('${ctx}','${id}')"
+        style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;padding:0;line-height:1;">✕</button>
+    </span>`;
+  }).join('');
 }
 
 function removeRef(ctx, id) {
   refSelected[ctx].delete(id);
   renderRefChips(ctx);
+  const btn = document.getElementById(`ref-btn-${ctx}-${id}`);
+  if (btn) { btn.style.border='1px solid var(--border)'; btn.style.background='var(--bg-card)'; btn.style.color='var(--text)'; }
 }
 
 function buildRefText(ctx) {
   if (!refSelected[ctx].size) return '';
   const links = [...refSelected[ctx].values()].map(f => `- ${f.name}: ${f.link}`).join('\n');
   return `\n\nArchivos de referencia (Drive):\n${links}`;
+}
+
+function buildRefPayload(ctx) {
+  // Classify selected files by mime type for kie.ai API
+  const files = [...refSelected[ctx].values()];
+  const isImage = f => f.mime && f.mime.includes('image');
+  const isVideo = f => f.mime && f.mime.includes('video');
+  const isAudio = f => f.mime && f.mime.includes('audio');
+  const images = files.filter(isImage);
+  const videos = files.filter(isVideo).map(f => f.link);
+  const audios = files.filter(isAudio).map(f => f.link);
+  // First image → first_frame_url if tagged, rest → reference_image_urls
+  const firstFrame = files.find(f => f.role === 'first');
+  const lastFrame  = files.find(f => f.role === 'last');
+  const refImages  = images.filter(f => f.role !== 'first' && f.role !== 'last').map(f => f.link);
+  return {
+    first_frame_url:      firstFrame ? firstFrame.link : undefined,
+    last_frame_url:       lastFrame  ? lastFrame.link  : undefined,
+    reference_image_urls: refImages.length ? refImages : undefined,
+    reference_video_urls: videos.length ? videos : undefined,
+    reference_audio_urls: audios.length ? audios : undefined,
+  };
 }
 
 // ── DRIVE GENERAR MODAL ───────────────────────────────────────────
@@ -3258,14 +3304,15 @@ async function msGenerar() {
   document.getElementById('ms-status').textContent = '⏳ Enviando al Crew bot...';
   document.getElementById('ms-output').style.display = 'none';
   document.getElementById('ms-ref-picker').style.display = 'none';
-  const briefConRef = brief + buildRefText('ms');
+  const refs = buildRefPayload('ms');
   try {
     const r = await fetch('/api/crew/seedance', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        preset: msPreset, brief: briefConRef, client: currentClient,
-        aspect_ratio: msAspectRatio, duration: msDuration,
-        generate_audio: msAudioOn, use_avatar: msAvatarOn
+        preset: msPreset, brief, client: currentClient,
+        aspect_ratio: msAspectRatio, duration: parseInt(msDuration),
+        generate_audio: msAudioOn, use_avatar: msAvatarOn,
+        ...refs
       })
     });
     const d = await r.json();
