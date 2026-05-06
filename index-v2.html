@@ -1728,9 +1728,9 @@ input, textarea { font-family: inherit; }
           <div style="position: relative;">
             <button class="btn btn-ghost" onclick="toggleDropdown('exportDropdown', event)">📤 Exportar <span style="font-size:9px;margin-left:2px;">▼</span></button>
             <div class="dropdown" id="exportDropdown" style="min-width: 240px;">
-              <button class="dropdown-item" onclick="alert('Generando PDF de los 12 leads...')"><span style="font-size:18px;">📄</span><div><div style="font-weight:600;font-size:13px;">PDF</div><div style="font-size:11px;color:var(--text-muted);">Reporte imprimible</div></div></button>
-              <button class="dropdown-item" onclick="alert('Descargando leads.xlsx...')"><span style="font-size:18px;">📊</span><div><div style="font-weight:600;font-size:13px;">Excel (.xlsx)</div><div style="font-size:11px;color:var(--text-muted);">Tabla completa</div></div></button>
-              <button class="dropdown-item" onclick="alert('Sincronizando con Google Sheets...')"><span style="font-size:18px;">📗</span><div><div style="font-weight:600;font-size:13px;">Google Sheets</div><div style="font-size:11px;color:var(--text-muted);">Vivo en Drive</div></div></button>
+              <button class="dropdown-item" onclick="exportLeadsPDF()"><span style="font-size:18px;">📄</span><div><div style="font-weight:600;font-size:13px;">PDF</div><div style="font-size:11px;color:var(--text-muted);">Reporte imprimible</div></div></button>
+              <button class="dropdown-item" onclick="exportLeadsCSV()"><span style="font-size:18px;">📊</span><div><div style="font-weight:600;font-size:13px;">CSV / Excel</div><div style="font-size:11px;color:var(--text-muted);">Abrir con Excel o Sheets</div></div></button>
+              <button class="dropdown-item" onclick="alert('Google Sheets requiere OAuth — próximamente.')"><span style="font-size:18px;">📗</span><div><div style="font-weight:600;font-size:13px;">Google Sheets</div><div style="font-size:11px;color:var(--text-muted);">Próximamente</div></div></button>
             </div>
           </div>
           <div style="position: relative;">
@@ -2970,6 +2970,60 @@ async function loadInboxFromSupabase() {
     document.getElementById('tabInboxCount').textContent = unread || '';
     document.getElementById('navInboxCount').textContent = unread || '';
   } catch(e) { /* keep hardcoded fallback */ }
+}
+
+// ============ CRM EXPORT ============
+function leadsToCSV() {
+  const cols = ['Nombre', 'Canal', 'Estado', 'Detalle', 'Teléfono', 'Email'];
+  const rows = [cols.join(',')];
+  const statusMap = { new: 'Nuevo', contacted: 'Contactado', interested: 'Interesado', closed: 'Cerrado' };
+  Object.entries(leads).forEach(([colId, items]) => {
+    items.forEach(l => {
+      rows.push([
+        `"${l.name}"`, `"${l.source}"`, `"${statusMap[colId]}"`,
+        `"${l.meta}"`, `"${l.phone || ''}"`, `"${l.email || ''}"`
+      ].join(','));
+    });
+  });
+  return rows.join('\n');
+}
+
+async function exportLeadsCSV() {
+  const csv  = leadsToCSV();
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const name = `leads-${currentClient}-${new Date().toISOString().slice(0,10)}.csv`;
+  if (window.showSaveFilePicker) {
+    try {
+      const fh = await window.showSaveFilePicker({
+        suggestedName: name,
+        types: [{ description: 'CSV / Excel', accept: { 'text/csv': ['.csv'] } }]
+      });
+      const w = await fh.createWritable();
+      await w.write(blob); await w.close(); return;
+    } catch(e) { if (e.name === 'AbortError') return; }
+  }
+  // Fallback: auto-descarga directa
+  const url = URL.createObjectURL(blob);
+  Object.assign(document.createElement('a'), { href: url, download: name }).click();
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+}
+
+function exportLeadsPDF() {
+  const statusMap = { new: 'Nuevo', contacted: 'Contactado', interested: 'Interesado', closed: 'Cerrado' };
+  const rows = Object.entries(leads).flatMap(([colId, items]) =>
+    items.map(l => `<tr><td>${l.name}</td><td>${l.source}</td><td>${statusMap[colId]}</td><td>${l.meta}</td><td>${l.phone||'-'}</td><td>${l.email||'-'}</td></tr>`)
+  ).join('');
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Leads · ${currentClient}</title>
+  <style>body{font-family:Arial,sans-serif;padding:32px;color:#111}h1{font-size:20px;margin-bottom:4px}p{color:#666;font-size:13px;margin-bottom:20px}
+  table{width:100%;border-collapse:collapse;font-size:13px}th{background:#f1f5f9;text-align:left;padding:8px 12px;border-bottom:2px solid #e2e8f0;font-weight:600}
+  td{padding:8px 12px;border-bottom:1px solid #e2e8f0}tr:hover td{background:#f8fafc}@media print{body{padding:16px}}</style></head>
+  <body><h1>Leads · ${currentClient}</h1><p>Exportado el ${new Date().toLocaleDateString('es-US',{year:'numeric',month:'long',day:'numeric'})}</p>
+  <table><thead><tr><th>Nombre</th><th>Canal</th><th>Estado</th><th>Detalle</th><th>Teléfono</th><th>Email</th></tr></thead>
+  <tbody>${rows}</tbody></table></body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 400);
 }
 
 // ============ LEAD MODAL ============
