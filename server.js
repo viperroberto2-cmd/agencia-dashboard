@@ -225,7 +225,11 @@ const CHAT_TARGETS = {
 app.post('/api/chat/:agentId', (req, res) => {
   const target = CHAT_TARGETS[req.params.agentId];
   if (!target) return res.status(404).json({ response: 'Agente no encontrado.' });
-  const body = JSON.stringify(req.body);
+  // Send both message and mensaje so bots using either field name work
+  const payload = Object.assign({}, req.body);
+  if (payload.message && !payload.mensaje) payload.mensaje = payload.message;
+  if (payload.client && !payload.cliente) payload.cliente = payload.client;
+  const body = JSON.stringify(payload);
   const u = new URL(target);
   const opts = {
     hostname: u.hostname, path: u.pathname, method: 'POST',
