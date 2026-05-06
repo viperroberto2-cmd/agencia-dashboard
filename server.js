@@ -298,8 +298,37 @@ function proxyPost(targetUrl, req, res) {
   proxyReq.end();
 }
 
+function proxyGet(targetUrl, res) {
+  const u = new URL(targetUrl);
+  const options = { hostname: u.hostname, path: u.pathname + u.search, method: 'GET' };
+  const proxyReq = require('https').request(options, (proxyRes) => {
+    let data = '';
+    proxyRes.on('data', chunk => data += chunk);
+    proxyRes.on('end', () => {
+      try { res.status(proxyRes.statusCode).json(JSON.parse(data)); }
+      catch(e) { res.status(500).json({ error: 'Parse error', raw: data.slice(0, 500) }); }
+    });
+  });
+  proxyReq.on('error', e => res.status(500).json({ error: e.message }));
+  proxyReq.end();
+}
+
+const CREW_URL = 'https://worker-production-34f9.up.railway.app';
+
 app.post('/api/crew/seedance', (req, res) => {
-  proxyPost('https://worker-production-34f9.up.railway.app/crew/seedance', req, res);
+  proxyPost(`${CREW_URL}/crew/seedance`, req, res);
+});
+
+app.get('/api/crew/seedance/:jobId', (req, res) => {
+  proxyGet(`${CREW_URL}/api/crew/seedance/${req.params.jobId}`, res);
+});
+
+app.post('/api/crew/imagen', (req, res) => {
+  proxyPost(`${CREW_URL}/api/crew/imagen`, req, res);
+});
+
+app.get('/api/crew/imagen/:jobId', (req, res) => {
+  proxyGet(`${CREW_URL}/api/crew/imagen/${req.params.jobId}`, res);
 });
 
 app.post('/api/scheduler/publicar', (req, res) => {

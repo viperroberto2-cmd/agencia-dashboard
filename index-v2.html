@@ -3255,26 +3255,80 @@ function selectGenType(type) {
   });
 }
 
+async function pollKieJob(jobId, type) {
+  for (let i = 0; i < 48; i++) {
+    await new Promise(r => setTimeout(r, 5000));
+    const btn = document.getElementById('gen-btn');
+    if (btn) btn.textContent = `⏳ Procesando… ${Math.round((i+1)*5/60*10)/10} min`;
+    try {
+      const r = await fetch(`/api/crew/${type}/${jobId}`);
+      const d = await r.json();
+      const info = d.data || d;
+      const status = (info.status || info.task_status || '').toLowerCase();
+      if (status === 'completed' || status === 'success') {
+        const out = info.output || info;
+        return out.imageUrl || out.image_url || out.videoUrl || out.video_url || out.url || '';
+      }
+      if (status === 'failed' || status === 'error') throw new Error('La generación falló en kie.ai');
+    } catch(e) {
+      if (e.message.includes('falló')) throw e;
+    }
+  }
+  throw new Error('Timeout: generación tardó más de 4 minutos');
+}
+
 async function submitGenerar() {
   const prompt = document.getElementById('gen-prompt').value.trim();
   if (!prompt) { document.getElementById('gen-prompt').focus(); return; }
   const btn = document.getElementById('gen-btn');
+  const result = document.getElementById('gen-result');
   btn.textContent = 'Enviando…'; btn.disabled = true;
-  const fullMsg = `[GENERAR ${genType.toUpperCase()}] ${prompt}${buildRefText('gen')}`;
+  result.style.display = 'none';
+
   try {
-    const r = await fetch('/api/chat/crew', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: fullMsg, agent: 'crew' })
-    });
-    const d = await r.json();
-    const result = document.getElementById('gen-result');
-    result.style.display = 'block'; result.style.color = 'var(--success)';
-    result.textContent = '✅ ' + (d.response || 'Solicitud enviada al Crew. Revisa Drive en unos minutos.');
-    btn.textContent = 'Enviado ✓';
+    if (genType === 'image') {
+      const r = await fetch('/api/crew/imagen', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brief: prompt, aspect_ratio: '1:1', resolution: '1K' })
+      });
+      const d = await r.json();
+      if (!d.job_id) throw new Error(d.error || 'No job_id recibido');
+      result.style.display = 'block'; result.style.color = 'var(--text-muted)';
+      result.textContent = `⏳ Modelo: ${d.model} — generando imagen...`;
+      const imageUrl = await pollKieJob(d.job_id, 'imagen');
+      result.innerHTML = `<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">✅ ${d.model} · <a href="${imageUrl}" target="_blank" style="color:var(--accent)">Abrir imagen →</a></div>
+        <img src="${imageUrl}" style="width:100%;border-radius:8px;cursor:pointer;" onclick="window.open('${imageUrl}','_blank')" />`;
+      btn.textContent = '✨ Generar otro'; btn.disabled = false;
+
+    } else if (genType === 'video') {
+      const refs = buildRefPayload('gen');
+      const r = await fetch('/api/crew/seedance', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brief: prompt, aspect_ratio: '9:16', ...refs })
+      });
+      const d = await r.json();
+      if (!d.job_id) throw new Error(d.error || 'No job_id recibido');
+      result.style.display = 'block'; result.style.color = 'var(--text-muted)';
+      result.textContent = `⏳ Modelo: ${d.model} — generando video (~5 min)...`;
+      const videoUrl = await pollKieJob(d.job_id, 'seedance');
+      result.innerHTML = `<div style="font-size:11px;color:var(--success);margin-bottom:6px;">✅ Video listo · <a href="${videoUrl}" target="_blank" style="color:var(--accent)">Ver video →</a></div>
+        <video src="${videoUrl}" controls style="width:100%;border-radius:8px;"></video>`;
+      btn.textContent = '✨ Generar otro'; btn.disabled = false;
+
+    } else {
+      // audio: via chat por ahora
+      const r = await fetch('/api/chat/crew', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `[GENERAR AUDIO] ${prompt}`, agent: 'crew' })
+      });
+      const d = await r.json();
+      result.style.display = 'block'; result.style.color = 'var(--success)';
+      result.textContent = '✅ ' + (d.response || 'Solicitud de audio enviada al Crew.');
+      btn.textContent = '✨ Enviar al Crew →'; btn.disabled = false;
+    }
   } catch(e) {
-    const result = document.getElementById('gen-result');
     result.style.display = 'block'; result.style.color = 'var(--danger)';
-    result.textContent = 'Error: ' + e.message;
+    result.textContent = '❌ Error: ' + e.message;
     btn.textContent = '✨ Enviar al Crew →'; btn.disabled = false;
   }
 }
