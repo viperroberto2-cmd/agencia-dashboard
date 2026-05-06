@@ -1915,6 +1915,51 @@ input, textarea { font-family: inherit; }
           <div class="ms-preset-card" onclick="msSelect(this,'wild_card')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">🃏</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Wild Card</div><div style="font-size:11px;color:#7b6fa0">Formato libre</div></div>
         </div>
 
+        <!-- Controls row: Aspect Ratio + Duration + Avatar -->
+        <div style="display:flex;gap:10px;margin-bottom:20px;align-items:stretch;flex-wrap:wrap">
+
+          <!-- Aspect Ratio -->
+          <div style="flex:1;min-width:140px;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px;position:relative">
+            <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Aspect Ratio</div>
+            <div id="ms-ar-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+              <button class="ms-ar-btn ms-ar-active" onclick="msAR(this,'9:16')" style="background:#1e1a3a;border:.5px solid #7c5cfc;border-radius:6px;padding:5px 4px;font-size:11px;color:#e8e0ff;cursor:pointer">9:16</button>
+              <button class="ms-ar-btn" onclick="msAR(this,'16:9')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:5px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">16:9</button>
+              <button class="ms-ar-btn" onclick="msAR(this,'1:1')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:5px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">1:1</button>
+              <button class="ms-ar-btn" onclick="msAR(this,'4:3')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:5px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">4:3</button>
+              <button class="ms-ar-btn" onclick="msAR(this,'3:4')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:5px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">3:4</button>
+              <button class="ms-ar-btn" onclick="msAR(this,'21:9')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:5px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">21:9</button>
+            </div>
+          </div>
+
+          <!-- Duration -->
+          <div style="flex:0 0 110px;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px">
+            <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Duration</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <button class="ms-dur-btn ms-dur-active" onclick="msDur(this,'5')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:6px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">5s</button>
+              <button class="ms-dur-btn ms-dur-active" onclick="msDur(this,'8')" style="background:#1e1a3a;border:.5px solid #7c5cfc;border-radius:6px;padding:6px 4px;font-size:11px;color:#e8e0ff;cursor:pointer">8s</button>
+              <button class="ms-dur-btn" onclick="msDur(this,'10')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:6px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">10s</button>
+            </div>
+          </div>
+
+          <!-- Avatar + Audio -->
+          <div style="flex:0 0 110px;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px">
+            <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Extras</div>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;margin-bottom:8px">
+              <div id="ms-avatar-toggle" onclick="msToggle('avatar')" style="width:28px;height:16px;background:#2a2540;border-radius:8px;position:relative;cursor:pointer;transition:background .18s">
+                <div id="ms-avatar-knob" style="width:12px;height:12px;background:#7b6fa0;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .18s"></div>
+              </div>
+              <span style="font-size:11px;color:#9b8ec4">Avatar</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer">
+              <div id="ms-audio-toggle" onclick="msToggle('audio')" style="width:28px;height:16px;background:#7c5cfc;border-radius:8px;position:relative;cursor:pointer;transition:background .18s">
+                <div id="ms-audio-knob" style="width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:2px;left:14px;transition:left .18s"></div>
+              </div>
+              <span style="font-size:11px;color:#9b8ec4">Audio</span>
+            </label>
+          </div>
+
+        </div>
+
         <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Brief</div>
         <textarea id="ms-brief" placeholder="Describe el contenido: tono, audiencia, mensaje, CTA..." style="width:100%;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;color:#e8e0ff;resize:vertical;min-height:90px;box-sizing:border-box;outline:none;margin-bottom:16px"></textarea>
 
@@ -2725,10 +2770,42 @@ async function loadDriveFromAPI() {
 
 // ── MARKETING STUDIO ──────────────────────────────────────────────
 let msPreset = 'ugc';
+let msAspectRatio = '9:16';
+let msDuration = '8';
+let msAvatarOn = false;
+let msAudioOn = true;
+
 function msSelect(el, id) {
   document.querySelectorAll('.ms-preset-card').forEach(c => { c.style.borderColor='#2a2540'; c.style.background='#1a1730'; });
   el.style.borderColor = '#7c5cfc'; el.style.background = '#1e1a3a';
   msPreset = id;
+}
+function msAR(el, val) {
+  document.querySelectorAll('.ms-ar-btn').forEach(b => { b.style.borderColor='#2a2540'; b.style.background='#150f25'; b.style.color='#9b8ec4'; });
+  el.style.borderColor = '#7c5cfc'; el.style.background = '#1e1a3a'; el.style.color = '#e8e0ff';
+  msAspectRatio = val;
+}
+function msDur(el, val) {
+  document.querySelectorAll('.ms-dur-btn').forEach(b => { b.style.borderColor='#2a2540'; b.style.background='#150f25'; b.style.color='#9b8ec4'; });
+  el.style.borderColor = '#7c5cfc'; el.style.background = '#1e1a3a'; el.style.color = '#e8e0ff';
+  msDuration = val;
+}
+function msToggle(type) {
+  if (type === 'avatar') {
+    msAvatarOn = !msAvatarOn;
+    const t = document.getElementById('ms-avatar-toggle');
+    const k = document.getElementById('ms-avatar-knob');
+    t.style.background = msAvatarOn ? '#7c5cfc' : '#2a2540';
+    k.style.left = msAvatarOn ? '14px' : '2px';
+    k.style.background = msAvatarOn ? '#fff' : '#7b6fa0';
+  } else {
+    msAudioOn = !msAudioOn;
+    const t = document.getElementById('ms-audio-toggle');
+    const k = document.getElementById('ms-audio-knob');
+    t.style.background = msAudioOn ? '#7c5cfc' : '#2a2540';
+    k.style.left = msAudioOn ? '14px' : '2px';
+    k.style.background = msAudioOn ? '#fff' : '#7b6fa0';
+  }
 }
 async function msGenerar() {
   const brief = document.getElementById('ms-brief').value.trim();
@@ -2738,7 +2815,11 @@ async function msGenerar() {
   try {
     const r = await fetch('/api/crew/seedance', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ preset: msPreset, brief, client: currentClient })
+      body: JSON.stringify({
+        preset: msPreset, brief, client: currentClient,
+        aspect_ratio: msAspectRatio, duration: msDuration,
+        generate_audio: msAudioOn, use_avatar: msAvatarOn
+      })
     });
     const d = await r.json();
     const out = document.getElementById('ms-output');
