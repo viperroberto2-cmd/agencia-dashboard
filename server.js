@@ -195,6 +195,49 @@ app.post('/api/auth/user-info', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+// ── Portal cliente — datos reales filtrados por user_id ──────────────────────
+app.get('/api/portal/leads', async (req, res) => {
+  const { user_id } = req.query;
+  if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
+  try {
+    const r = await sbFetch(`/voice_leads?cliente=eq.${user_id}&select=*&order=created_at.desc&limit=100`);
+    const data = await r.json();
+    const rows = Array.isArray(data) ? data : [];
+    const cols = { new: [], contacted: [], interested: [], closed: [] };
+    rows.forEach(l => {
+      const col = ['new','contacted','interested','closed'].includes(l.status) ? l.status : 'new';
+      cols[col].push({ id: l.id, name: l.nombre || l.from_number || 'Lead',
+        phone: l.from_number || '', source: l.fuente || 'Llamada',
+        meta: l.created_at ? new Date(l.created_at).toLocaleDateString('es-MX') : '',
+        notes: l.notas || '', status: col });
+    });
+    res.json({ ok: true, leads: cols, total: rows.length });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.get('/api/portal/recordings', async (req, res) => {
+  const { user_id } = req.query;
+  if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
+  try {
+    const r = await sbFetch(`/voice_leads?cliente=eq.${user_id}&recording_url=not.is.null&select=call_sid,recording_url,agent,call_status,created_at&order=created_at.desc&limit=50`);
+    const data = await r.json();
+    res.json({ ok: true, recordings: Array.isArray(data) ? data : [] });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.get('/api/portal/stats', async (req, res) => {
+  const { user_id } = req.query;
+  if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
+  try {
+    const r = await sbFetch(`/voice_leads?cliente=eq.${user_id}&select=status,created_at`);
+    const raw = await r.json();
+    const data = Array.isArray(raw) ? raw : [];
+    const total = data.length;
+    const closed = data.filter(l => l.status === 'closed').length;
+    res.json({ ok: true, total_leads: total, cerrados: closed, revenue: closed * 197 });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 // ── Supabase helper (server-side, uses secret key) ───────────────────────────
 async function sbFetch(path, opts = {}) {
   const url = `${process.env.SUPABASE_PROJECT_URL}/rest/v1${path}`;

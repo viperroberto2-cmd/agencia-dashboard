@@ -1528,26 +1528,26 @@ input, textarea, select { font-family: inherit; }
         <div class="kpi">
           <div class="kpi-icon-bg green">💚</div>
           <div class="kpi-label" data-i18n="kpi.leads">Nuevos leads</div>
-          <div class="kpi-value">12</div>
-          <div class="kpi-trend">↑ 4 esta semana</div>
+          <div class="kpi-value kpi-leads-val">—</div>
+          <div class="kpi-trend">Total acumulado</div>
         </div>
         <div class="kpi">
           <div class="kpi-icon-bg blue">📞</div>
           <div class="kpi-label" data-i18n="kpi.calls">Llamadas atendidas</div>
-          <div class="kpi-value">38</div>
-          <div class="kpi-trend">↑ 100% atendidas</div>
+          <div class="kpi-value kpi-calls-val">—</div>
+          <div class="kpi-trend">↑ voz activa 24/7</div>
         </div>
         <div class="kpi">
           <div class="kpi-icon-bg amber">📅</div>
-          <div class="kpi-label" data-i18n="kpi.appts">Citas agendadas</div>
-          <div class="kpi-value">7</div>
-          <div class="kpi-trend">↑ 3 esta semana</div>
+          <div class="kpi-label" data-i18n="kpi.appts">Cerrados</div>
+          <div class="kpi-value kpi-closed-val">—</div>
+          <div class="kpi-trend">Clientes ganados</div>
         </div>
         <div class="kpi">
           <div class="kpi-icon-bg purple">💵</div>
           <div class="kpi-label" data-i18n="kpi.revenue">Revenue estimado</div>
-          <div class="kpi-value">$2,400</div>
-          <div class="kpi-trend neutral">3 cerrados</div>
+          <div class="kpi-value kpi-revenue-val">—</div>
+          <div class="kpi-trend neutral">basado en cerrados</div>
         </div>
       </div>
 
@@ -1629,17 +1629,22 @@ input, textarea, select { font-family: inherit; }
       <div class="section-header">
         <div>
           <div class="section-title" data-i18n="leads.title">Mis leads</div>
-          <div class="section-subtitle" data-i18n="leads.sub">12 leads esta semana · 8 sin contactar</div>
+          <div class="section-subtitle" id="portalLeadsSub">Cargando…</div>
         </div>
-        <button class="btn btn-primary" data-i18n="leads.add">＋ Agregar lead</button>
       </div>
       <div class="leads-stats">
-        <div class="lead-stat"><div class="lead-stat-dot new"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.new">Nuevos</div><div class="lead-stat-count">8</div></div></div>
-        <div class="lead-stat"><div class="lead-stat-dot contacted"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.contacted">Contactados</div><div class="lead-stat-count">5</div></div></div>
-        <div class="lead-stat"><div class="lead-stat-dot qualified"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.qualified">Calificados</div><div class="lead-stat-count">4</div></div></div>
-        <div class="lead-stat"><div class="lead-stat-dot converted"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.converted">Convertidos</div><div class="lead-stat-count">3</div></div></div>
+        <div class="lead-stat"><div class="lead-stat-dot new"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.new">Nuevos</div><div class="lead-stat-count" id="psNew">—</div></div></div>
+        <div class="lead-stat"><div class="lead-stat-dot contacted"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.contacted">Contactados</div><div class="lead-stat-count" id="psContacted">—</div></div></div>
+        <div class="lead-stat"><div class="lead-stat-dot qualified"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.qualified">Calificados</div><div class="lead-stat-count" id="psInterested">—</div></div></div>
+        <div class="lead-stat"><div class="lead-stat-dot converted"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.converted">Convertidos</div><div class="lead-stat-count" id="psClosed">—</div></div></div>
       </div>
       <div class="leads-list" id="leadsList"></div>
+
+      <!-- Grabaciones del cliente -->
+      <div style="margin-top:24px;">
+        <div style="font-size:15px;font-weight:700;margin-bottom:12px;">🎙️ Grabaciones de llamadas</div>
+        <div id="portalRecordingsList" style="color:var(--text-muted);font-size:13px;">Cargando…</div>
+      </div>
     </section>
 
     <!-- APPOINTMENTS -->
@@ -2411,7 +2416,11 @@ function sendMagicLink() {
   });
 }
 
+// Cliente logueado — fuente de verdad para toda la sesión del portal
+let portalClient = null;
+
 function populatePortal(d) {
+  portalClient = d;
   const firstName = (d.owner || d.nombre || '').split(' ')[0] || 'Cliente';
   const greetEl   = document.querySelector('.greeting-hello');
   const subEl     = document.querySelector('.greeting-sub');
@@ -2421,6 +2430,77 @@ function populatePortal(d) {
   const sidebarRole = document.querySelector('.profile-role');
   if (sidebarName) sidebarName.textContent = d.owner || d.nombre;
   if (sidebarRole) sidebarRole.textContent = d.industria || 'Cliente';
+  // Cargar datos reales del cliente
+  loadPortalStats();
+  loadPortalLeads();
+  loadPortalRecordings();
+}
+
+async function loadPortalStats() {
+  if (!portalClient?.user_id) return;
+  try {
+    const r = await fetch(`/api/portal/stats?user_id=${encodeURIComponent(portalClient.user_id)}`);
+    const d = await r.json();
+    if (!d.ok) return;
+    const set = (sel, val) => { const el = document.querySelector(sel); if (el) el.textContent = val; };
+    set('.kpi-leads-val',   d.total_leads ?? '—');
+    set('.kpi-calls-val',   d.total_leads ?? '—');
+    set('.kpi-closed-val',  d.cerrados ?? '—');
+    set('.kpi-revenue-val', `$${(d.revenue || 0).toLocaleString()}`);
+  } catch(e) {}
+}
+
+async function loadPortalLeads() {
+  if (!portalClient?.user_id) return;
+  try {
+    const r = await fetch(`/api/portal/leads?user_id=${encodeURIComponent(portalClient.user_id)}`);
+    const d = await r.json();
+    if (!d.ok) return;
+    const hasData = Object.values(d.leads).some(col => col.length > 0);
+    if (!hasData) return; // si no hay leads reales, mantiene demo
+    // Reemplazar datos demo con datos reales
+    leadsData.length = 0;
+    Object.entries(d.leads).forEach(([status, items]) => {
+      items.forEach(l => leadsData.push({
+        name: l.name, initials: (l.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+        meta: l.meta, stage: l.status || status,
+        stageLabel: { es: { new:'Nuevo', contacted:'Contactado', interested:'Interesado', closed:'Cerrado' }[status] || status,
+                      en: { new:'New', contacted:'Contacted', interested:'Interested', closed:'Closed' }[status] || status },
+        time: l.meta
+      }));
+    });
+    renderLeads();
+    // Actualizar contadores y subtitle
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set('psNew',       d.leads.new.length);
+    set('psContacted', d.leads.contacted.length);
+    set('psInterested',d.leads.interested.length);
+    set('psClosed',    d.leads.closed.length);
+    set('portalLeadsSub', `${d.total} leads · ${d.leads.new.length} nuevos`);
+  } catch(e) {}
+}
+
+async function loadPortalRecordings() {
+  if (!portalClient?.user_id) return;
+  const el = document.getElementById('portalRecordingsList');
+  if (!el) return;
+  try {
+    const r = await fetch(`/api/portal/recordings?user_id=${encodeURIComponent(portalClient.user_id)}`);
+    const d = await r.json();
+    if (!d.ok || !d.recordings.length) {
+      el.innerHTML = '<div style="color:#94a3b8;font-size:13px;padding:16px 0;">No hay grabaciones aún.</div>';
+      return;
+    }
+    el.innerHTML = d.recordings.map(rec => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+        <div style="font-size:22px;">🎙️</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;">${rec.agent || 'Agente'}</div>
+          <div style="font-size:12px;color:var(--text-muted);">${rec.created_at ? new Date(rec.created_at).toLocaleString('es-MX') : '—'}</div>
+        </div>
+        ${rec.recording_url ? `<audio controls src="${rec.recording_url}" style="height:32px;"></audio>` : '<span style="font-size:12px;color:var(--text-dim);">Sin audio</span>'}
+      </div>`).join('');
+  } catch(e) {}
 }
 
 // Al cargar la página: detectar token del magic link en el hash de la URL
