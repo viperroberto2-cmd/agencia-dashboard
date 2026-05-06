@@ -2025,7 +2025,7 @@ input, textarea { font-family: inherit; }
 const agents = [
   { id: 'organizador', emoji: '🎯', name: 'Organizador', role: 'CEO · Delega y coordina', status: 'online', skills: ['Razona', 'Delega', 'Evalúa', 'Memoria'] },
   { id: 'director', emoji: '🎬', name: 'Director', role: 'Creativo · Copy y guiones', status: 'online', skills: ['Copy', 'Guiones', 'Audio AI'] },
-  { id: 'crew', emoji: '🎨', name: 'Crew', role: 'Producción · Video, imagen', status: 'crashing', skills: ['Veo 3.1', 'Flux', 'Suno', 'Runway'] },
+  { id: 'crew', emoji: '🎨', name: 'Crew', role: 'Producción · Video, imagen', status: 'checking', skills: ['Veo 3.1', 'Flux', 'Suno', 'Runway'] },
   { id: 'estrategia', emoji: '📊', name: 'Estrategia', role: 'Marketing · Campañas', status: 'online', skills: ['FB Ads', 'SEO', 'Funnels'] },
   { id: 'scheduler', emoji: '📅', name: 'Scheduler', role: 'Publicación automática', status: 'online', skills: ['Facebook', 'Instagram', 'Auto-post'] },
   { id: 'analytics', emoji: '📈', name: 'Analytics', role: 'Reportes y métricas', status: 'online', skills: ['Reportes', 'Métricas', 'ROAS'] },
@@ -2220,7 +2220,7 @@ function renderTeam() {
         <div class="agent-info"><div class="agent-name">${a.name}</div><div class="agent-role">${a.role}</div></div>
       </div>
       <div style="display: flex; align-items: center; justify-content: space-between;">
-        <span class="agent-status ${a.status}"><span class="dot"></span>${a.status === 'online' ? 'online' : a.status === 'crashing' ? 'crashing' : 'chequeando'}</span>
+        <span id="agent-status-${a.id}" class="agent-status ${a.status}"><span class="dot"></span>${a.status === 'online' ? 'online' : a.status === 'crashing' ? 'crashing' : 'chequeando'}</span>
       </div>
       <div class="agent-skills">${a.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}</div>
     </button>
@@ -2734,25 +2734,47 @@ renderUsers();
 
 // ── HEALTH CHECK ──────────────────────────────────────────────────
 async function loadHealth() {
+  const HEALTH_TO_AGENT = {
+    b2: 'crew', b3: 'estrategia', b5: 'scheduler',
+    org: 'organizador', web: 'web', motion: 'motion',
+    scraper: 'scraper', seo: 'seo', analytics: 'analytics'
+  };
   try {
     const res = await fetch('/api/health');
     const data = await res.json();
-    const map = {
+    const labelMap = {
       b2: 'Crew bot', b1: 'Bot 1', org: 'Organizador', b5: 'Scheduler',
       web: 'Web Designer', motion: 'Motion', scraper: 'Scraper',
       seo: 'SEO', analytics: 'Analytics', b3: 'Estrategia'
     };
+    // Update systemStatusList (Config panel)
     const container = document.getElementById('systemStatusList');
-    if (!container) return;
-    container.innerHTML = Object.entries(data).map(([k, v]) => {
-      const label = map[k] || k;
+    if (container) {
+      container.innerHTML = Object.entries(data).map(([k, v]) => {
+        const label = labelMap[k] || k;
+        const ok = v && v.ok;
+        return `<div class="status-row">
+          <span class="status-label">${label}</span>
+          <span class="status-dot ${ok ? 'dot-green' : 'dot-red'}"></span>
+          <span class="status-text" style="color:${ok ? '#4ade80' : '#f87171'}">${ok ? 'Operacional' : 'Offline'}</span>
+        </div>`;
+      }).join('');
+    }
+    // Update agent card badges in Equipo section
+    Object.entries(data).forEach(([key, v]) => {
+      const agentId = HEALTH_TO_AGENT[key];
+      if (!agentId) return;
+      const el = document.getElementById('agent-status-' + agentId);
+      if (!el) return;
       const ok = v && v.ok;
-      return `<div class="status-row">
-        <span class="status-label">${label}</span>
-        <span class="status-dot ${ok ? 'dot-green' : 'dot-red'}"></span>
-        <span class="status-text" style="color:${ok ? '#4ade80' : '#f87171'}">${ok ? 'Operacional' : 'Offline'}</span>
-      </div>`;
-    }).join('');
+      const status = ok ? 'online' : 'crashing';
+      const label  = ok ? 'online' : 'crashing';
+      el.className = 'agent-status ' + status;
+      el.innerHTML = '<span class="dot"></span>' + label;
+      // Keep agents array in sync for chat header
+      const agent = agents.find(a => a.id === agentId);
+      if (agent) agent.status = status;
+    });
   } catch(e) { console.warn('Health check failed:', e.message); }
 }
 loadHealth();
