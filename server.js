@@ -306,6 +306,18 @@ app.post('/api/scheduler/publicar', (req, res) => {
   proxyPost('https://worker-production-aa53.up.railway.app/scheduler/publicar', req, res);
 });
 
+// ── Lista posts de Supabase (todos o filtrados por estado) ────────────────────
+app.get('/api/scheduler/posts', async (req, res) => {
+  try {
+    const { estado } = req.query;
+    let path = '/contenidos_programados?order=fecha_publicacion.asc,hora_publicacion.asc&limit=100';
+    if (estado) path += `&estado=eq.${encodeURIComponent(estado)}`;
+    const r = await sbFetch(path);
+    const d = await r.json();
+    res.json(Array.isArray(d) ? d : []);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── Programar post manual (inyecta secret server-side) ───────────────────────
 app.post('/api/scheduler/post', async (req, res) => {
   try {

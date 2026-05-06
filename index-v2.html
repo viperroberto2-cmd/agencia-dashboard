@@ -1756,8 +1756,8 @@ input, textarea { font-family: inherit; }
       <div class="scheduler-grid">
         <div class="calendar">
           <div class="cal-header">
-            <div class="cal-month">Mayo 2026</div>
-            <div class="cal-nav"><button class="icon-btn" style="width:28px;height:28px;">‹</button><button class="icon-btn" style="width:28px;height:28px;">›</button></div>
+            <div class="cal-month" id="calMonthLabel">—</div>
+            <div class="cal-nav"><button class="icon-btn" style="width:28px;height:28px;" onclick="changeCalMonth(-1)">‹</button><button class="icon-btn" style="width:28px;height:28px;" onclick="changeCalMonth(1)">›</button></div>
           </div>
           <div class="cal-grid" id="calendarGrid"></div>
         </div>
@@ -2199,13 +2199,9 @@ const clientIntegrations = {
   ]
 };
 
-const posts = [
-  { thumb: '📘', title: 'Cómo los hispanos están ganando $2,000/mes con Turo', channels: ['📘', '📸'], status: 'scheduled', meta: 'Hoy · 14:00' },
-  { thumb: '📸', title: 'Reel: 3 errores al rentar tu carro en EE.UU.', channels: ['📸'], status: 'scheduled', meta: 'Hoy · 18:30' },
-  { thumb: '📘', title: 'Testimonio: Daniel pasó de $0 a $1,400 en 30 días', channels: ['📘', '📸'], status: 'draft', meta: 'Mañana · 10:00' },
-  { thumb: '📸', title: 'Carrusel: Cómo construir crédito en EE.UU.', channels: ['📸'], status: 'scheduled', meta: 'Mié · 12:00' },
-  { thumb: '📘', title: 'Live: Sesión Q&A con la comunidad', channels: ['📘'], status: 'draft', meta: 'Vie · 19:00' }
-];
+let schedulerPosts = [];
+let calendarMonth = new Date(); calendarMonth.setDate(1);
+let calendarDayFilter = null;
 
 let activeAgent = agents[0];
 let currentClient = 'arranca';
@@ -2225,6 +2221,7 @@ function goSection(name) {
   if (name === 'drive') loadDriveFromAPI();
   if (name === 'marketing') loadMSJobs();
   if (name === 'inbox') loadInboxFromSupabase();
+  if (name === 'scheduler') loadSchedulerPosts();
   closeAllDropdowns();
   if (document.getElementById('drawer').classList.contains('open')) toggleDrawer();
 }
@@ -2340,36 +2337,110 @@ function renderCRM() {
 }
 
 // ============ CALENDAR ============
+const PLATAFORMA_ICON = { facebook:'📘', instagram:'📸', tiktok:'🎵', youtube:'▶️', twitter:'🐦', linkedin:'💼', x:'🐦' };
+const ESTADO_CSS   = { pendiente:'draft', aprobado:'scheduled', publicado:'published', rechazado:'draft' };
+const ESTADO_LABEL_MAP = { pendiente:'Borrador', aprobado:'Programado', publicado:'Publicado', rechazado:'Rechazado' };
+const MES_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DIA_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+async function loadSchedulerPosts() {
+  const panel = document.getElementById('postsPanel');
+  if (panel) panel.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:14px;">Cargando posts…</div>';
+  try {
+    const r = await fetch('/api/scheduler/posts');
+    schedulerPosts = await r.json();
+    if (!Array.isArray(schedulerPosts)) schedulerPosts = [];
+  } catch(e) { schedulerPosts = []; }
+  calendarDayFilter = null;
+  renderCalendar();
+  renderPosts();
+}
+
+function changeCalMonth(delta) {
+  calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + delta, 1);
+  calendarDayFilter = null;
+  renderCalendar();
+  renderPosts();
+}
+
 function renderCalendar() {
   const grid = document.getElementById('calendarGrid');
-  const days = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
-  let html = days.map(d => `<div class="cal-day-name">${d}</div>`).join('');
-  const startOffset = 5, daysInMonth = 31, today = 4;
-  const postDays = [4, 5, 6, 8, 11, 14, 18, 22, 27];
-  for (let i = 0; i < startOffset; i++) html += `<div class="cal-day dim"></div>`;
+  const label = document.getElementById('calMonthLabel');
+  if (!grid) return;
+  const year = calendarMonth.getFullYear(), month = calendarMonth.getMonth();
+  if (label) label.textContent = `${MES_NAMES[month]} ${year}`;
+  const today = new Date();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const postDaySet = new Set(
+    schedulerPosts
+      .filter(p => { if (!p.fecha_publicacion) return false;
+        const d = new Date(p.fecha_publicacion + 'T00:00:00');
+        return d.getFullYear() === year && d.getMonth() === month; })
+      .map(p => new Date(p.fecha_publicacion + 'T00:00:00').getDate())
+  );
+  let html = ['D','L','M','X','J','V','S'].map(d => `<div class="cal-day-name">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day dim"></div>`;
   for (let d = 1; d <= daysInMonth; d++) {
     const cls = ['cal-day'];
-    if (d === today) cls.push('today', 'selected');
-    if (postDays.includes(d)) cls.push('has-post');
-    html += `<div class="${cls.join(' ')}">${d}</div>`;
+    const isToday = today.getFullYear()===year && today.getMonth()===month && today.getDate()===d;
+    const isSelected = calendarDayFilter && calendarDayFilter.day===d;
+    if (isToday) cls.push('today');
+    if (isToday && !isSelected) cls.push('selected');
+    if (isSelected) cls.push('selected');
+    if (postDaySet.has(d)) cls.push('has-post');
+    html += `<div class="${cls.join(' ')}" onclick="filterCalDay(${year},${month},${d},this)">${d}</div>`;
   }
   grid.innerHTML = html;
 }
 
+function filterCalDay(year, month, day, el) {
+  if (calendarDayFilter && calendarDayFilter.day === day) {
+    calendarDayFilter = null;
+  } else {
+    calendarDayFilter = { year, month, day };
+  }
+  renderCalendar();
+  renderPosts();
+}
+
 function renderPosts() {
-  document.getElementById('postsPanel').innerHTML = `
-    <div style="font-size: 13px; font-weight: 600; padding: 4px 4px 0; color: var(--text-muted);">Posts próximos · ${posts.length}</div>
-    ${posts.map(p => `
-      <div class="post-item">
-        <div class="post-thumb">${p.thumb}</div>
+  const year = calendarMonth.getFullYear(), month = calendarMonth.getMonth();
+  let filtered = schedulerPosts.filter(p => {
+    if (!p.fecha_publicacion) return false;
+    const d = new Date(p.fecha_publicacion + 'T00:00:00');
+    if (calendarDayFilter) return d.getFullYear()===calendarDayFilter.year && d.getMonth()===calendarDayFilter.month && d.getDate()===calendarDayFilter.day;
+    return d.getFullYear()===year && d.getMonth()===month;
+  });
+  const panel = document.getElementById('postsPanel');
+  if (!panel) return;
+  if (!filtered.length) {
+    panel.innerHTML = `<div style="padding:20px;color:var(--text-muted);font-size:14px;">${schedulerPosts.length ? 'Sin posts para este período.' : 'No hay posts programados aún. Usa "+ Programar post" para crear el primero.'}</div>`;
+    return;
+  }
+  const today = new Date();
+  panel.innerHTML = `
+    <div style="font-size:13px;font-weight:600;padding:4px 4px 0;color:var(--text-muted);">Posts · ${filtered.length}</div>
+    ${filtered.map(p => {
+      const dateObj = new Date(p.fecha_publicacion + 'T00:00:00');
+      let dateLabel;
+      if (dateObj.toDateString()===today.toDateString()) dateLabel = 'Hoy';
+      else { const tom = new Date(today); tom.setDate(today.getDate()+1);
+        dateLabel = dateObj.toDateString()===tom.toDateString() ? 'Mañana' : `${DIA_NAMES[dateObj.getDay()]} ${dateObj.getDate()}`; }
+      const icon = PLATAFORMA_ICON[p.plataforma] || '📄';
+      const statusCss = ESTADO_CSS[p.estado] || 'draft';
+      const statusLbl = ESTADO_LABEL_MAP[p.estado] || p.estado;
+      const snippet = p.contenido ? (p.contenido.length>70 ? p.contenido.slice(0,70)+'…' : p.contenido) : '(sin contenido)';
+      return `<div class="post-item">
+        <div class="post-thumb">${icon}</div>
         <div class="post-content">
-          <div class="post-channels">${p.channels.map(c => `<span class="post-channel">${c}</span>`).join('')}</div>
-          <div class="post-title">${p.title}</div>
-          <div class="post-meta"><span>${p.meta}</span></div>
+          <div class="post-channels"><span class="post-channel">${icon} ${p.plataforma}</span>${p.cliente ? `<span class="post-channel" style="opacity:.6">${p.cliente}</span>` : ''}</div>
+          <div class="post-title">${snippet}</div>
+          <div class="post-meta"><span>${dateLabel} · ${p.hora_publicacion || ''}</span></div>
         </div>
-        <span class="post-status ${p.status}">${p.status === 'scheduled' ? 'Programado' : p.status === 'draft' ? 'Borrador' : 'Publicado'}</span>
-      </div>
-    `).join('')}
+        <span class="post-status ${statusCss}">${statusLbl}</span>
+      </div>`;
+    }).join('')}
   `;
 }
 
@@ -2765,8 +2836,8 @@ function renderUsers() {
 // ============ INIT ============
 renderTeam();
 renderCRM();
-renderCalendar();
-renderPosts();
+renderCalendar(); // draws empty shell with current month
+renderPosts();    // shows empty state until loadSchedulerPosts() fires
 renderInboxFilters();
 renderInbox();
 renderRecordingFilters();
