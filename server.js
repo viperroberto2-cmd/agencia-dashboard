@@ -136,24 +136,7 @@ app.post('/api/onboard-cliente', async (req, res) => {
 
 app.get('/index.html', (req, res) => serveIndex(res));
 
-// ── Listar clientes onboarded (para el dashboard de Roberto) ──────────────
-app.get('/api/clientes', async (req, res) => {
-  try {
-    const r = await sbFetch('/clientes?user_id=eq.roberto_agencia&select=data');
-    const rows = await r.json();
-    const data = rows[0]?.data || {};
-    const clientes = data.clientes || {};
-    const lista = Object.entries(clientes).map(([nombre, info]) => ({
-      nombre, email: info.email, owner: info.owner, industria: info.industria,
-      ciudad: info.ciudad, telefono: info.telefono, objetivos: info.objetivos,
-      presupuesto: info.presupuesto, redes_sociales: info.redes_sociales,
-      onboarding_completo: info.onboarding_completo,
-      fecha_onboarding: info.fecha_onboarding, notas: info.notas,
-      fuente: info.fuente
-    }));
-    res.json({ ok: true, clientes: lista });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
-});
+// (ruta /api/clientes movida abajo — sección CLIENTES)
 
 // ── Portal del cliente ─────────────────────────────────────────────────────
 function servePortal(res) {
@@ -174,12 +157,6 @@ app.post('/api/auth/magic-link', async (req, res) => {
   const SB_URL = process.env.SUPABASE_PROJECT_URL;
   const SB_KEY = process.env.SUPABASE_SECRET_KEY;
   try {
-    // Verificar que el email existe en clientes antes de enviar el link
-    const r = await sbFetch(`/clientes?email=eq.${encodeURIComponent(email)}&select=id`);
-    const rows = await r.json();
-    if (!rows || rows.length === 0)
-      return res.status(404).json({ ok: false, error: 'No encontramos tu email. Contacta a tu agencia.' });
-
     const siteUrl = process.env.SITE_URL || 'https://web-production-3d2c.up.railway.app';
     const authRes = await fetch(`${SB_URL}/auth/v1/otp`, {
       method: 'POST',
@@ -187,11 +164,15 @@ app.post('/api/auth/magic-link', async (req, res) => {
       body: JSON.stringify({ email, create_user: true, options: { emailRedirectTo: `${siteUrl}/portal` } })
     });
     if (!authRes.ok) {
-      const err = await authRes.text();
-      return res.status(500).json({ ok: false, error: err });
+      const errText = await authRes.text();
+      console.error('[magic-link] Supabase error:', authRes.status, errText);
+      return res.status(500).json({ ok: false, error: 'Error enviando el link. Intenta de nuevo.' });
     }
     res.json({ ok: true });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) {
+    console.error('[magic-link] Exception:', e.message);
+    res.status(500).json({ ok: false, error: e.message });
+  }
 });
 
 app.post('/api/auth/user-info', async (req, res) => {
