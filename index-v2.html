@@ -3027,8 +3027,8 @@ function exportLeadsPDF() {
 }
 
 // ============ LEAD MODAL ============
-const statusLabel = { new: '🆕 Nuevo', contacted: '📞 Contactado', interested: '🔥 Interesado', closed: '✅ Cerrado' };
-const channelIcon = { Facebook: '📘', Instagram: '📸', WhatsApp: '💚', SMS: '💬', Referido: '🤝', Apollo: '🔍' };
+const LEAD_STATUS_LABEL = { new: '🆕 Nuevo', contacted: '📞 Contactado', interested: '🔥 Interesado', closed: '✅ Cerrado' };
+const LEAD_CHANNEL_ICON = { Facebook: '📘', Instagram: '📸', WhatsApp: '💚', SMS: '💬', Referido: '🤝', Apollo: '🔍' };
 
 function openLeadModal(colId, idx) {
   const lead = leads[colId][idx];
@@ -3037,17 +3037,17 @@ function openLeadModal(colId, idx) {
   const statusColor = { new: '#3b82f6', contacted: '#f59e0b', interested: '#8b5cf6', closed: '#10b981' };
   document.getElementById('leadModalContent').innerHTML = `
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
-      <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${channelIcon[lead.source] || '👤'}</div>
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${LEAD_CHANNEL_ICON[lead.source] || '👤'}</div>
       <div>
         <div style="font-size:18px;font-weight:700;">${lead.name}</div>
         <div style="font-size:13px;color:var(--text-muted);">${lead.source} · ${lead.meta}</div>
       </div>
-      <span style="margin-left:auto;background:${statusColor[colId]}20;color:${statusColor[colId]};font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;">${statusLabel[colId]}</span>
+      <span style="margin-left:auto;background:${statusColor[colId]}20;color:${statusColor[colId]};font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;">${LEAD_STATUS_LABEL[colId]}</span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
       <div style="background:var(--bg-elevated);border-radius:10px;padding:12px;">
         <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Canal origen</div>
-        <div style="font-size:14px;font-weight:500;">${channelIcon[lead.source] || ''} ${lead.source}</div>
+        <div style="font-size:14px;font-weight:500;">${LEAD_CHANNEL_ICON[lead.source] || ''} ${lead.source}</div>
       </div>
       <div style="background:var(--bg-elevated);border-radius:10px;padding:12px;">
         <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Actividad</div>
