@@ -1351,7 +1351,9 @@ input, textarea, select { font-family: inherit; }
 <!-- ============ LOGIN ============ -->
 <div class="screen active" id="screen-login">
   <div class="login-wrap">
-    <div class="login-card">
+
+    <!-- Paso 1: formulario de email -->
+    <div class="login-card" id="login-step-form">
       <div class="login-brand">
         <div class="brand-mark">RG</div>
         <div>
@@ -1359,24 +1361,37 @@ input, textarea, select { font-family: inherit; }
           <div class="brand-tag" data-i18n="login.tag">Tu socio en marketing y AI</div>
         </div>
       </div>
-
       <div class="login-title" data-i18n="login.title">Bienvenido de regreso</div>
-      <div class="login-sub" data-i18n="login.sub">Accede al portal de tu negocio para ver tus leads, citas y mensajes.</div>
-
+      <div class="login-sub">Ingresa tu email y te mandamos un link de acceso instantáneo. Sin contraseña.</div>
       <div class="field-group">
         <label class="field-label" data-i18n="login.email">Email</label>
-        <input class="field-input" type="email" id="rg-login-email" placeholder="tu@negocio.com" onkeydown="if(event.key==='Enter')doRealLogin()" />
+        <input class="field-input" type="email" id="rg-login-email" placeholder="tu@negocio.com" onkeydown="if(event.key==='Enter')sendMagicLink()" />
       </div>
-
-      <button class="btn btn-primary btn-block" id="rg-login-btn" onclick="doRealLogin()" data-i18n="login.submit">Iniciar sesión →</button>
-
+      <button class="btn btn-primary btn-block" id="rg-login-btn" onclick="sendMagicLink()">Enviar link de acceso →</button>
       <div id="rg-login-error" style="display:none;margin-top:10px;font-size:13px;color:#ef4444;text-align:center;"></div>
-
       <div class="login-footer">
         <span data-i18n="login.noAccount">¿Aún no tienes cuenta?</span>
         <a onclick="goScreen('wizard'); resetWizard();" data-i18n="login.signup">Empieza tu onboarding →</a>
       </div>
     </div>
+
+    <!-- Paso 2: "Revisa tu correo" -->
+    <div class="login-card" id="login-step-check" style="display:none;text-align:center;">
+      <div style="font-size:48px;margin-bottom:16px;">📬</div>
+      <div class="login-title">Revisa tu correo</div>
+      <div class="login-sub" style="margin-top:8px;">Te mandamos un link a <strong id="rg-sent-email"></strong>. Haz click en él para entrar — expira en 1 hora.</div>
+      <div style="margin-top:24px;font-size:13px;color:var(--text-muted);">¿No lo ves? Revisa tu carpeta de spam o
+        <a href="#" onclick="showLoginForm();return false;" style="color:var(--primary);text-decoration:none;">vuelve a intentar</a>.
+      </div>
+    </div>
+
+    <!-- Paso 3: verificando token (auto, al regresar del link) -->
+    <div class="login-card" id="login-step-verifying" style="display:none;text-align:center;">
+      <div style="font-size:40px;margin-bottom:16px;">🔐</div>
+      <div class="login-title">Verificando acceso…</div>
+      <div class="login-sub" style="margin-top:8px;">Un momento por favor.</div>
+    </div>
+
   </div>
 </div>
 
@@ -2339,27 +2354,34 @@ renderLeads();
 renderAppts();
 renderMessages();
 
-// ============ REAL LOGIN ============
-function doRealLogin() {
+// ============ MAGIC LINK AUTH ============
+function showLoginForm() {
+  document.getElementById('login-step-form').style.display = '';
+  document.getElementById('login-step-check').style.display = 'none';
+  document.getElementById('login-step-verifying').style.display = 'none';
+}
+
+function sendMagicLink() {
   const emailEl = document.getElementById('rg-login-email');
   const btn     = document.getElementById('rg-login-btn');
   const errEl   = document.getElementById('rg-login-error');
   const email   = (emailEl?.value || '').trim();
   if (!email) { errEl.textContent = 'Ingresa tu email.'; errEl.style.display = 'block'; return; }
-  btn.textContent = 'Verificando...'; btn.disabled = true; errEl.style.display = 'none';
-  fetch('/api/cliente-login', {
+  btn.textContent = 'Enviando…'; btn.disabled = true; errEl.style.display = 'none';
+  fetch('/api/auth/magic-link', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email })
   })
   .then(r => r.json())
   .then(d => {
-    btn.textContent = 'Iniciar sesión →'; btn.disabled = false;
+    btn.textContent = 'Enviar link de acceso →'; btn.disabled = false;
     if (!d.ok) { errEl.textContent = d.error || 'Error. Intenta de nuevo.'; errEl.style.display = 'block'; return; }
-    populatePortal(d);
-    goScreen('portal');
+    document.getElementById('rg-sent-email').textContent = email;
+    document.getElementById('login-step-form').style.display = 'none';
+    document.getElementById('login-step-check').style.display = '';
   })
   .catch(() => {
-    btn.textContent = 'Iniciar sesión →'; btn.disabled = false;
+    btn.textContent = 'Enviar link de acceso →'; btn.disabled = false;
     errEl.textContent = 'Error de conexión. Intenta de nuevo.'; errEl.style.display = 'block';
   });
 }
@@ -2370,20 +2392,46 @@ function populatePortal(d) {
   const subEl     = document.querySelector('.greeting-sub');
   if (greetEl) greetEl.textContent = `Hola, ${firstName} 👋`;
   if (subEl)   subEl.textContent   = `${d.nombre}${d.industria ? ' · ' + d.industria : ''}`;
-  // Sidebar profile
   const sidebarName = document.querySelector('.profile-name');
   const sidebarRole = document.querySelector('.profile-role');
   if (sidebarName) sidebarName.textContent = d.owner || d.nombre;
   if (sidebarRole) sidebarRole.textContent = d.industria || 'Cliente';
 }
 
-// Auto-login si viene ?email= en la URL
+// Al cargar la página: detectar token del magic link en el hash de la URL
 (function() {
-  const urlEmail = new URLSearchParams(location.search).get('email');
-  if (urlEmail) {
-    const emailEl = document.getElementById('rg-login-email');
-    if (emailEl) emailEl.value = urlEmail;
-    doRealLogin();
+  const hash   = new URLSearchParams(location.hash.slice(1));
+  const token  = hash.get('access_token');
+  const type   = hash.get('type');
+  if (token && type === 'magiclink') {
+    // Limpiar hash de la URL sin recargar
+    history.replaceState(null, '', location.pathname);
+    document.getElementById('login-step-form').style.display = 'none';
+    document.getElementById('login-step-verifying').style.display = '';
+    fetch('/api/auth/user-info', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ access_token: token })
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (!d.ok) {
+        document.getElementById('login-step-verifying').style.display = 'none';
+        document.getElementById('login-step-form').style.display = '';
+        const errEl = document.getElementById('rg-login-error');
+        errEl.textContent = d.error || 'Link inválido. Solicita uno nuevo.';
+        errEl.style.display = 'block';
+        return;
+      }
+      populatePortal(d);
+      goScreen('portal');
+    })
+    .catch(() => {
+      document.getElementById('login-step-verifying').style.display = 'none';
+      document.getElementById('login-step-form').style.display = '';
+      const errEl = document.getElementById('rg-login-error');
+      errEl.textContent = 'Error de conexión. Intenta de nuevo.';
+      errEl.style.display = 'block';
+    });
   }
 })();
 </script>

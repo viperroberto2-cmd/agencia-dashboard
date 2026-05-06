@@ -155,29 +155,63 @@ app.get('/api/clientes', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-// ── Client login por email — para portal del cliente ──────────────────────
-app.post('/api/cliente-login', async (req, res) => {
+// ── Portal del cliente ─────────────────────────────────────────────────────
+function servePortal(res) {
+  const html = fs.readFileSync(path.join(__dirname, 'rg-production-client-portal.html'), 'utf8')
+    .replace(/__SUPABASE_URL__/g, process.env.SUPABASE_PROJECT_URL || '')
+    .replace(/__SUPABASE_ANON_KEY__/g, process.env.SUPABASE_ANON_KEY || '');
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.send(html);
+}
+app.get('/portal', (req, res) => servePortal(res));
+app.get('/client-portal', (req, res) => servePortal(res));
+
+// ── Magic Link Auth ────────────────────────────────────────────────────────
+app.post('/api/auth/magic-link', async (req, res) => {
   const { email } = req.body || {};
   if (!email) return res.status(400).json({ ok: false, error: 'email requerido' });
+  const SB_URL = process.env.SUPABASE_PROJECT_URL;
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY;
   try {
-    const r = await sbFetch('/clientes?user_id=eq.roberto_agencia&select=data');
+    // Verificar que el email existe en clientes antes de enviar el link
+    const r = await sbFetch(`/clientes?email=eq.${encodeURIComponent(email)}&select=id`);
     const rows = await r.json();
-    const clientes = rows[0]?.data?.clientes || {};
-    const match = Object.entries(clientes).find(
-      ([, info]) => (info.email || '').toLowerCase() === email.toLowerCase()
-    );
-    if (!match) return res.status(404).json({ ok: false, error: 'No encontramos tu email. Verifica o contacta a tu agencia.' });
-    const [nombre, info] = match;
-    res.json({ ok: true, nombre, ...info });
+    if (!rows || rows.length === 0)
+      return res.status(404).json({ ok: false, error: 'No encontramos tu email. Contacta a tu agencia.' });
+
+    const siteUrl = process.env.SITE_URL || 'https://web-production-3d2c.up.railway.app';
+    const authRes = await fetch(`${SB_URL}/auth/v1/otp`, {
+      method: 'POST',
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, create_user: true, options: { emailRedirectTo: `${siteUrl}/portal` } })
+    });
+    if (!authRes.ok) {
+      const err = await authRes.text();
+      return res.status(500).json({ ok: false, error: err });
+    }
+    res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-// ── Portal del cliente ─────────────────────────────────────────────────────
-app.get('/portal', (req, res) => {
-  res.sendFile(require('path').join(__dirname, 'rg-production-client-portal.html'));
-});
-app.get('/client-portal', (req, res) => {
-  res.sendFile(require('path').join(__dirname, 'rg-production-client-portal.html'));
+app.post('/api/auth/user-info', async (req, res) => {
+  const { access_token } = req.body || {};
+  if (!access_token) return res.status(400).json({ ok: false, error: 'token requerido' });
+  const SB_URL = process.env.SUPABASE_PROJECT_URL;
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY;
+  try {
+    const userRes = await fetch(`${SB_URL}/auth/v1/user`, {
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${access_token}` }
+    });
+    if (!userRes.ok) return res.status(401).json({ ok: false, error: 'Link inválido o expirado. Solicita uno nuevo.' });
+    const userData = await userRes.json();
+    const email = userData.email;
+    const r = await sbFetch(`/clientes?email=eq.${encodeURIComponent(email)}&select=*`);
+    const rows = await r.json();
+    if (!rows || rows.length === 0)
+      return res.status(404).json({ ok: false, error: 'No encontramos tu cuenta. Contacta a tu agencia.' });
+    res.json({ ok: true, ...rows[0] });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 // ── Supabase helper (server-side, uses secret key) ───────────────────────────
