@@ -1105,6 +1105,47 @@ input, textarea { font-family: inherit; }
   margin-top: 6px;
   display: inline-block;
 }
+/* ── Drive folder view ───────────────────────────── */
+.drive-folders { display: flex; flex-direction: column; gap: 12px; padding: 0 32px 32px; }
+.drive-folder-row {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.drive-folder-row:hover { border-color: var(--accent); background: var(--bg-elevated); }
+.drive-folder-icon { font-size: 32px; flex-shrink: 0; }
+.drive-folder-info { flex: 1; }
+.drive-folder-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.drive-folder-meta { font-size: 12px; color: var(--text-muted); }
+.drive-folder-thumbs {
+  display: flex; gap: 6px; align-items: center;
+}
+.drive-folder-mini {
+  width: 52px; height: 36px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.drive-folder-mini.video { background: linear-gradient(135deg,#7c3aed,#4c1d95); }
+.drive-folder-mini.audio { background: linear-gradient(135deg,#f59e0b,#b45309); }
+.drive-folder-mini.image { background: linear-gradient(135deg,#10b981,#047857); }
+.drive-folder-arrow { font-size: 18px; color: var(--text-dim); flex-shrink: 0; }
+.drive-back-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 32px 16px;
+  font-size: 13px; color: var(--text-muted);
+}
+.drive-back-btn {
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 12px; font-size: 13px;
+  color: var(--text); cursor: pointer;
+}
+.drive-back-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 /* SCRAPER */
 .scraper-status-card {
@@ -1778,14 +1819,16 @@ input, textarea { font-family: inherit; }
     <!-- DRIVE -->
     <section class="section" id="section-drive">
       <div class="section-header">
-        <div><div class="section-title">📂 Drive</div><div class="section-subtitle">Videos, audios e imágenes generadas por tu equipo</div></div>
+        <div>
+          <div class="section-title">📂 Drive</div>
+          <div class="section-subtitle" id="driveBreadcrumb">Videos, audios e imágenes generadas por tu equipo</div>
+        </div>
         <div style="display: flex; gap: 8px;">
-          <button class="btn btn-ghost">⬆ Subir archivo</button>
+          <button class="btn btn-ghost" id="driveBtnSubir" onclick="alert('Sube un archivo desde tu computadora')">⬆ Subir archivo</button>
           <button class="btn btn-primary">＋ Generar</button>
         </div>
       </div>
-      <div class="filter-bar" id="driveFilters"></div>
-      <div class="drive-grid" id="driveGrid"></div>
+      <div id="driveContent"></div>
     </section>
 
     <!-- ONBOARDING -->
@@ -2536,36 +2579,80 @@ function renderRecordings() {
 }
 
 // ============ DRIVE ============
-function renderDriveFilters() {
-  const filters = [
-    { id: 'all', label: '📁 Todos', count: driveItems.length },
-    { id: 'video', label: '🎬 Videos', count: driveItems.filter(d => d.type === 'video').length },
-    { id: 'audio', label: '🎵 Audios', count: driveItems.filter(d => d.type === 'audio').length },
-    { id: 'image', label: '🖼️ Imágenes', count: driveItems.filter(d => d.type === 'image').length }
-  ];
-  document.getElementById('driveFilters').innerHTML = filters.map(f => `
-    <button class="filter-pill ${f.id === driveFilter ? 'active' : ''}" onclick="setDriveFilter('${f.id}')">${f.label} <span style="opacity:0.6;margin-left:4px;">${f.count}</span></button>
-  `).join('');
+let driveFolderOpen = null; // null = root folders, 'video'|'audio'|'image' = inside folder
+
+const DRIVE_FOLDERS = [
+  { id: 'video', label: 'Video', icon: '🎬', color: 'video', gdLabel: 'Videos' },
+  { id: 'audio', label: 'Audio', icon: '🎵', color: 'audio', gdLabel: 'Audios' },
+  { id: 'image', label: 'Imagen', icon: '🖼️', color: 'image', gdLabel: 'Imágenes' },
+];
+
+function renderDriveFilters() { renderDrive(); } // compat alias
+function setDriveFilter(id) { driveFolderOpen = id === 'all' ? null : id; renderDrive(); }
+
+function openDriveFolder(folderId) {
+  driveFolderOpen = folderId;
+  renderDrive();
 }
 
-function setDriveFilter(id) { driveFilter = id; renderDriveFilters(); renderDrive(); }
+function closeDriveFolder() {
+  driveFolderOpen = null;
+  renderDrive();
+}
 
 function renderDrive() {
-  let items = window._driveAPIItems || driveItems;
-  if (driveFilter !== 'all') items = items.filter(d => d.type === driveFilter);
-  document.getElementById('driveGrid').innerHTML = items.map(d => `
-    <button class="drive-card" onclick="alert('Abriendo ${d.name}...')">
-      <div class="drive-thumb ${d.type}">
-        ${d.icon}
-        <span class="drive-type-badge">${d.type}</span>
+  const allItems = window._driveAPIItems || driveItems;
+  const content = document.getElementById('driveContent');
+  const breadcrumb = document.getElementById('driveBreadcrumb');
+  if (!content) return;
+
+  if (!driveFolderOpen) {
+    // ── ROOT: mostrar carpetas ────────────────────────────────────
+    if (breadcrumb) breadcrumb.textContent = 'Videos, audios e imágenes generadas por tu equipo';
+    const rows = DRIVE_FOLDERS.map(f => {
+      const items = allItems.filter(d => d.type === f.id);
+      const thumbs = items.slice(0, 3).map(d =>
+        `<div class="drive-folder-mini ${f.id}">${d.icon}</div>`).join('');
+      const sizes = items.reduce((acc, d) => {
+        const mb = parseFloat(d.size);
+        return acc + (isNaN(mb) ? 0 : mb);
+      }, 0);
+      return `
+        <div class="drive-folder-row" onclick="openDriveFolder('${f.id}')">
+          <div class="drive-folder-icon">${f.icon}</div>
+          <div class="drive-folder-info">
+            <div class="drive-folder-name">${f.label}</div>
+            <div class="drive-folder-meta">${items.length} archivos · ${sizes.toFixed(1)} MB</div>
+          </div>
+          <div class="drive-folder-thumbs">${thumbs}</div>
+          <div class="drive-folder-arrow">›</div>
+        </div>`;
+    }).join('');
+    content.innerHTML = `<div class="drive-folders">${rows}</div>`;
+  } else {
+    // ── INSIDE FOLDER: mostrar archivos ──────────────────────────
+    const folder = DRIVE_FOLDERS.find(f => f.id === driveFolderOpen);
+    const items = allItems.filter(d => d.type === driveFolderOpen);
+    if (breadcrumb) breadcrumb.innerHTML = `<span style="cursor:pointer;color:var(--accent)" onclick="closeDriveFolder()">Drive</span> › ${folder.label}`;
+    const grid = items.map(d => `
+      <button class="drive-card" onclick="alert('Abriendo ${d.name}...')">
+        <div class="drive-thumb ${d.type}">
+          ${d.icon}
+          <span class="drive-type-badge">${d.type === 'image' ? 'IMAGE' : d.type.toUpperCase()}</span>
+        </div>
+        <div class="drive-info">
+          <div class="drive-name" title="${d.name}">${d.name}</div>
+          <div class="drive-meta"><span>${d.date}</span><span>${d.size}</span></div>
+          <div class="drive-source">${d.source}</div>
+        </div>
+      </button>`).join('');
+    content.innerHTML = `
+      <div class="drive-back-bar">
+        <button class="drive-back-btn" onclick="closeDriveFolder()">← Volver</button>
+        <span>${folder.icon} ${folder.label} · ${items.length} archivos</span>
       </div>
-      <div class="drive-info">
-        <div class="drive-name" title="${d.name}">${d.name}</div>
-        <div class="drive-meta"><span>${d.date}</span><span>${d.size}</span></div>
-        <div class="drive-source">${d.source}</div>
-      </div>
-    </button>
-  `).join('');
+      <div class="drive-grid">${grid || '<div style="padding:32px;color:var(--text-muted)">Esta carpeta está vacía.</div>'}</div>`;
+  }
 }
 
 // ============ SCRAPER ============
@@ -2854,7 +2941,6 @@ renderInboxFilters();
 renderInbox();
 renderRecordingFilters();
 renderRecordings();
-renderDriveFilters();
 renderDrive();
 renderEndpoints();
 renderRequests();
