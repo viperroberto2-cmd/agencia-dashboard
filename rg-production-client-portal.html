@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>RG Production · Portal del Cliente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f8fafb;
+  --bg-card: #ffffff;
+  --bg-elevated: #f1f5f9;
+  --bg-hover: #e2e8f0;
+  --border: #e5e9ee;
+  --border-bright: #cbd5e1;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --primary: #059669;
+  --primary-bright: #10b981;
+  --primary-dark: #047857;
+  --primary-dim: rgba(16, 185, 129, 0.08);
+  --primary-glow: rgba(16, 185, 129, 0.18);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --topbar-h: 60px;
+  --bottombar-h: 68px;
+  --sidebar-w: 240px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg-soft);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  height: 100vh;
+  overflow: hidden;
+}
+
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, textarea, select { font-family: inherit; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 4px; }
+
+/* SCREENS */
+.screen { display: none; height: 100vh; overflow: hidden; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* LANG TOGGLE */
+.lang-toggle {
+  position: fixed;
+  top: 16px; right: 16px;
+  z-index: 60;
+  display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 3px;
+  box-shadow: var(--shadow-sm);
+}
+.lang-btn {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-radius: 100px;
+  letter-spacing: 0.04em;
+}
+.lang-btn.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* DEMO NAV (dev only) */
+.demo-nav {
+  position: fixed;
+  bottom: 12px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  padding: 4px;
+  display: flex;
+  gap: 2px;
+  z-index: 200;
+  box-shadow: var(--shadow-lg);
+}
+.demo-nav-btn {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.demo-nav-btn:hover { color: white; }
+.demo-nav-btn.active { background: rgba(255,255,255,0.15); color: white; }
+
+/* BRAND */
+.brand-mark {
+  width: 40px; height: 40px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--primary-bright), var(--primary-dark));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  color: white;
+  letter-spacing: -0.02em;
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+
+/* LOGIN */
+#screen-login {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 50%, #f0f9ff 100%);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.login-wrap { width: 100%; max-width: 400px; }
+
+.login-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 36px 28px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.login-brand .brand-mark { width: 44px; height: 44px; font-size: 16px; }
+.brand-name {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+.brand-tag {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: -1px;
+}
+
+.login-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.login-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.field-group { margin-bottom: 14px; }
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.field-input, .field-textarea, .field-select {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--border-bright);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+  transition: all 0.15s;
+}
+.field-input:focus, .field-textarea:focus, .field-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.field-textarea { resize: vertical; min-height: 80px; }
+.field-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+.field-required { color: var(--danger); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+  min-height: 46px;
+}
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.btn-ghost {
+  background: var(--bg-card);
+  border-color: var(--border-bright);
+  color: var(--text);
+}
+.btn-ghost:hover { background: var(--bg-elevated); }
+.btn-google {
+  background: white;
+  border: 1.5px solid var(--border-bright);
+  color: var(--text);
+  font-weight: 500;
+}
+.btn-google:hover { background: var(--bg-elevated); }
+.btn-block { width: 100%; }
+.btn-link {
+  background: none;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 4px 8px;
+  min-height: auto;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-dim);
+  font-size: 12px;
+  margin: 14px 0;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.login-footer a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.demo-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 10px;
+  font-size: 12px;
+  color: #92400e;
+}
+
+/* WIZARD */
+#screen-wizard { background: var(--bg-soft); }
+
+.wizard-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+}
+.wizard-brand-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+.wizard-brand-mini .brand-mark { width: 32px; height: 32px; font-size: 12px; }
+.wizard-brand-mini .brand-name { font-size: 14px; }
+.wizard-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  max-width: 360px;
+}
+.wizard-step-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.wizard-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-elevated);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.wizard-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-bright), var(--primary));
+  border-radius: 100px;
+  transition: width 0.4s ease;
+}
+
+.wizard-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 24px 120px;
+  display: flex;
+  justify-content: center;
+}
+.wizard-content { width: 100%; max-width: 560px; }
+
+.wizard-icon {
+  width: 64px; height: 64px;
+  border-radius: 18px;
+  background: var(--primary-dim);
+  border: 1px solid var(--primary-glow);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  margin: 0 auto 20px;
+}
+.wizard-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: 8px;
+  line-height: 1.25;
+}
+.wizard-desc {
+  font-size: 15px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.wizard-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+.choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 10px;
+  background: var(--bg);
+  border: 1.5px solid var(--border-bright);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  min-height: 84px;
+}
+.choice:hover { border-color: var(--primary); }
+.choice.selected {
+  border-color: var(--primary);
+  background: var(--primary-dim);
+  color: var(--primary-dark);
+}
+.choice-icon { font-size: 22px; }
+.choice-label { font-size: 13px; font-weight: 600; }
+
+.radio-list { display: flex; flex-direction: column; gap: 8px; }
+.radio-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1.5px solid var(--border-bright);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  width: 100%;
+}
+.radio-item:hover { border-color: var(--primary); }
+.radio-item.selected {
+  border-color: var(--primary);
+  background: var(--primary-dim);
+}
+.radio-circle {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-bright);
+  flex-shrink: 0;
+  transition: all 0.15s;
+  position: relative;
+}
+.radio-item.selected .radio-circle {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+.radio-item.selected .radio-circle::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: white;
+}
+.radio-content { flex: 1; }
+.radio-label { font-size: 14px; font-weight: 600; }
+.radio-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.input-prefix-wrap {
+  display: flex;
+  align-items: stretch;
+  background: var(--bg);
+  border: 1.5px solid var(--border-bright);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.15s;
+}
+.input-prefix-wrap:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.input-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: var(--bg-elevated);
+  font-size: 13px;
+  color: var(--text-muted);
+  border-right: 1px solid var(--border);
+  font-weight: 500;
+}
+.input-prefix-wrap input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 11px 12px;
+  font-size: 15px;
+  background: transparent;
+}
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.wizard-footer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  z-index: 50;
+  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.04);
+}
+.wizard-footer-spacer { flex: 1; }
+.wizard-footer .btn { flex: 0 0 auto; min-width: 120px; }
+.wizard-footer .btn-primary { min-width: 160px; }
+
+/* Summary (final step) */
+.summary-list { display: flex; flex-direction: column; }
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  gap: 16px;
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-row .key { color: var(--text-muted); flex-shrink: 0; }
+.summary-row .val { font-weight: 600; text-align: right; }
+
+/* WELCOME */
+#screen-welcome {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 50%, #f0f9ff 100%);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+}
+.welcome-card {
+  background: var(--bg);
+  border-radius: 20px;
+  padding: 40px 28px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.welcome-check {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  color: white;
+  box-shadow: 0 8px 24px var(--primary-glow);
+  animation: bounce 0.6s ease;
+}
+@keyframes bounce {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+.welcome-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.welcome-sub {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.timeline {
+  text-align: left;
+  background: var(--bg-soft);
+  border-radius: 14px;
+  padding: 8px 4px;
+  margin-bottom: 24px;
+}
+.timeline-item {
+  display: flex;
+  gap: 14px;
+  padding: 12px 16px;
+  position: relative;
+}
+.timeline-marker {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--primary);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+.timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 31px;
+  top: 44px;
+  bottom: -8px;
+  width: 2px;
+  background: var(--border);
+}
+.timeline-content { flex: 1; }
+.timeline-when { font-size: 12px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.04em; }
+.timeline-what { font-size: 14px; font-weight: 500; margin-top: 2px; line-height: 1.4; }
+
+.welcome-actions { display: flex; flex-direction: column; gap: 8px; }
+
+/* APP SHELL (PORTAL) */
+#screen-portal {
+  display: none;
+  background: var(--bg-soft);
+}
+#screen-portal.active {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-rows: var(--topbar-h) 1fr;
+  height: 100vh;
+}
+
+.topbar {
+  grid-column: 1 / -1; grid-row: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  z-index: 40;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.menu-btn {
+  display: none;
+  width: 40px; height: 40px;
+  align-items: center; justify-content: center;
+  border-radius: 8px;
+  color: var(--text-muted);
+}
+.menu-btn:hover { background: var(--bg-elevated); color: var(--text); }
+.topbar-brand { display: flex; align-items: center; gap: 10px; }
+.topbar-brand .brand-mark { width: 32px; height: 32px; font-size: 12px; box-shadow: none; }
+.topbar-brand-text { font-weight: 700; font-size: 14px; }
+
+.topbar-right { display: flex; align-items: center; gap: 6px; }
+.icon-btn {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  color: var(--text-muted);
+  position: relative;
+  transition: all 0.15s;
+}
+.icon-btn:hover { background: var(--bg-elevated); color: var(--text); }
+.icon-btn .badge {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: var(--danger);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+  border: 2px solid var(--bg);
+}
+.profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  transition: all 0.15s;
+}
+.profile-btn:hover { background: var(--bg-elevated); }
+.profile-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+}
+.profile-name { font-size: 13px; font-weight: 600; }
+
+/* SIDEBAR */
+.sidebar {
+  grid-column: 1; grid-row: 2;
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+.nav-section { margin-bottom: 20px; }
+.nav-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  font-weight: 700;
+  padding: 0 12px 8px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+  transition: all 0.12s;
+  margin-bottom: 2px;
+}
+.nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+.nav-item.active {
+  background: var(--primary-dim);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+.nav-icon { font-size: 17px; width: 22px; display: flex; justify-content: center; }
+.nav-count {
+  margin-left: auto;
+  font-size: 11px;
+  background: var(--bg-elevated);
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.nav-item.active .nav-count { background: var(--primary); color: white; }
+.nav-count.alert { background: var(--danger); color: white; }
+
+.sidebar-cta {
+  margin-top: auto;
+  padding: 16px;
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  border: 1px solid #ddd6fe;
+  border-radius: 14px;
+}
+.sidebar-cta-icon { font-size: 22px; margin-bottom: 8px; }
+.sidebar-cta-title { font-size: 13px; font-weight: 700; color: #5b21b6; line-height: 1.3; }
+.sidebar-cta-desc { font-size: 11px; color: #6d28d9; margin-top: 4px; line-height: 1.4; }
+.sidebar-cta-btn {
+  display: block;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #7c3aed;
+  color: white;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+}
+.sidebar-cta-btn:hover { background: #6d28d9; }
+
+/* MAIN */
+.main { grid-column: 2; grid-row: 2; overflow-y: auto; }
+.section { display: none; }
+.section.active { display: block; }
+.section-header {
+  padding: 28px 32px 20px;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+.section-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+.section-subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+/* HOME */
+.greeting { padding: 0 32px 22px; }
+.greeting-hello { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+.greeting-sub { color: var(--text-muted); margin-top: 4px; font-size: 14px; }
+
+/* SETUP STATUS BANNER */
+.status-banner {
+  margin: 0 32px 20px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #ecfdf5, #f0fdfa);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.status-banner-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-size: 22px;
+  flex-shrink: 0;
+  position: relative;
+}
+.status-banner-icon::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border: 2px solid var(--primary-bright);
+  border-radius: 14px;
+  border-top-color: transparent;
+  animation: spin 1.5s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.status-banner-content { flex: 1; min-width: 0; }
+.status-banner-title { font-size: 15px; font-weight: 700; }
+.status-banner-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+.status-banner-progress {
+  margin-top: 10px;
+  height: 5px;
+  background: rgba(16, 185, 129, 0.15);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.status-banner-progress-fill {
+  height: 100%;
+  width: 60%;
+  background: linear-gradient(90deg, var(--primary-bright), var(--primary));
+  border-radius: 100px;
+}
+
+/* KPIs */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 0 32px 16px;
+}
+.kpi {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-sm);
+}
+.kpi:hover {
+  border-color: var(--border-bright);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+.kpi-icon-bg {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  margin-bottom: 10px;
+}
+.kpi-icon-bg.green { background: rgba(16, 185, 129, 0.12); }
+.kpi-icon-bg.blue { background: rgba(59, 130, 246, 0.12); }
+.kpi-icon-bg.amber { background: rgba(245, 158, 11, 0.12); }
+.kpi-icon-bg.purple { background: rgba(139, 92, 246, 0.12); }
+.kpi-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+.kpi-value { font-size: 26px; font-weight: 700; margin-top: 4px; letter-spacing: -0.02em; }
+.kpi-trend { font-size: 11px; color: var(--success); margin-top: 4px; font-weight: 600; }
+.kpi-trend.neutral { color: var(--text-dim); font-weight: 500; }
+
+/* HOME GRID */
+.home-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+  padding: 0 32px 32px;
+}
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.card-title { font-size: 15px; font-weight: 700; }
+.card-link { font-size: 12px; color: var(--primary); font-weight: 600; }
+
+/* AGENT CARD */
+.agent-card-portal {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: linear-gradient(135deg, #ecfdf5, #f0fdfa);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.agent-portal-avatar {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-bright), var(--primary-dark));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  position: relative;
+}
+.agent-portal-avatar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 2px;
+  width: 12px; height: 12px;
+  background: var(--success);
+  border-radius: 50%;
+  border: 2.5px solid #ecfdf5;
+}
+.agent-portal-info { flex: 1; }
+.agent-portal-name { font-size: 15px; font-weight: 700; }
+.agent-portal-role { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.agent-portal-stats { display: flex; gap: 14px; margin-top: 8px; font-size: 11px; color: var(--text-muted); }
+.agent-portal-stats strong { color: var(--text); font-weight: 700; }
+
+/* ACTIVITY */
+.activity-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.activity-icon.call { background: rgba(16, 185, 129, 0.12); }
+.activity-icon.sms { background: rgba(59, 130, 246, 0.12); }
+.activity-icon.appt { background: rgba(245, 158, 11, 0.12); }
+.activity-icon.review { background: rgba(139, 92, 246, 0.12); }
+.activity-icon.payment { background: rgba(236, 72, 153, 0.12); }
+.activity-text { flex: 1; font-size: 13px; line-height: 1.5; min-width: 0; }
+.activity-text strong { font-weight: 700; }
+.activity-time { color: var(--text-dim); font-size: 11px; margin-top: 2px; }
+
+/* APPOINTMENTS */
+.appt-item {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.appt-item:last-child { border-bottom: none; }
+.appt-time {
+  width: 56px;
+  text-align: center;
+  flex-shrink: 0;
+  background: var(--primary-dim);
+  padding: 8px 4px;
+  border-radius: 10px;
+}
+.appt-day { font-size: 10px; font-weight: 700; color: var(--primary-dark); text-transform: uppercase; }
+.appt-hour { font-size: 14px; font-weight: 700; color: var(--primary-dark); margin-top: 2px; }
+.appt-content { flex: 1; min-width: 0; }
+.appt-name { font-size: 13px; font-weight: 600; }
+.appt-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* LEADS - Kanban style simplified */
+.leads-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 0 32px 16px;
+}
+.lead-stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lead-stat-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.lead-stat-dot.new { background: var(--info); }
+.lead-stat-dot.contacted { background: var(--warning); }
+.lead-stat-dot.qualified { background: var(--primary); }
+.lead-stat-dot.converted { background: var(--success); }
+.lead-stat-info { flex: 1; min-width: 0; }
+.lead-stat-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.lead-stat-count { font-size: 20px; font-weight: 700; }
+
+.leads-list {
+  padding: 0 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lead-row {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.12s;
+  text-align: left;
+  width: 100%;
+  box-shadow: var(--shadow-sm);
+}
+.lead-row:hover {
+  border-color: var(--border-bright);
+  background: var(--bg-soft);
+}
+.lead-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.lead-info { flex: 1; min-width: 0; }
+.lead-name { font-size: 14px; font-weight: 600; }
+.lead-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.lead-stage {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.lead-stage.new { background: rgba(59, 130, 246, 0.12); color: var(--info); }
+.lead-stage.contacted { background: rgba(245, 158, 11, 0.12); color: var(--warning); }
+.lead-stage.qualified { background: rgba(16, 185, 129, 0.12); color: var(--primary-dark); }
+.lead-stage.converted { background: rgba(16, 185, 129, 0.18); color: var(--primary-dark); font-weight: 700; }
+.lead-time { font-size: 11px; color: var(--text-dim); flex-shrink: 0; min-width: 60px; text-align: right; }
+
+/* MESSAGES */
+.messages-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 0 32px 32px;
+}
+.msg-thread {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px);
+  min-height: 480px;
+}
+.msg-thread-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-soft);
+}
+.msg-team-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 13px;
+  position: relative;
+}
+.msg-team-avatar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 10px; height: 10px;
+  background: var(--success);
+  border-radius: 50%;
+  border: 2px solid var(--bg-soft);
+}
+.msg-thread-info { flex: 1; }
+.msg-thread-name { font-size: 14px; font-weight: 700; }
+.msg-thread-status { font-size: 11px; color: var(--success); display: flex; align-items: center; gap: 4px; }
+.msg-thread-status .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+
+.msg-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.msg-bubble {
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+.msg-bubble.them {
+  background: var(--bg-elevated);
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+}
+.msg-bubble.you {
+  background: var(--primary);
+  color: white;
+  border-bottom-right-radius: 4px;
+  align-self: flex-end;
+}
+.msg-meta { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; padding: 0 6px; }
+.msg-meta.you { text-align: right; }
+
+.msg-input-row {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  align-items: flex-end;
+}
+.msg-input {
+  flex: 1;
+  background: var(--bg-soft);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  resize: none;
+  max-height: 120px;
+  transition: all 0.15s;
+}
+.msg-input:focus { border-color: var(--primary); }
+.msg-send {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.msg-send:hover { background: var(--primary-dark); }
+
+/* SETTINGS */
+.settings-grid { padding: 0 32px 32px; display: flex; flex-direction: column; gap: 16px; }
+.settings-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+}
+.settings-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.settings-section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.setting-info { flex: 1; min-width: 0; }
+.setting-label { font-size: 13px; font-weight: 600; }
+.setting-value { font-size: 12px; color: var(--text-muted); margin-top: 2px; word-break: break-all; }
+.setting-status {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.setting-status.connected { background: rgba(16, 185, 129, 0.12); color: var(--primary-dark); }
+.setting-status.pending { background: rgba(245, 158, 11, 0.12); color: var(--warning); }
+
+/* BOTTOM BAR (mobile) */
+.bottombar {
+  display: none;
+  grid-column: 1; grid-row: 3;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 4px max(8px, env(safe-area-inset-bottom));
+}
+.tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  flex: 1;
+  max-width: 80px;
+  position: relative;
+}
+.tab-btn .tab-icon { font-size: 19px; }
+.tab-btn.active { color: var(--primary); }
+.tab-btn .tab-badge {
+  position: absolute;
+  top: 0; right: 50%;
+  transform: translateX(14px);
+  background: var(--danger);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* DRAWER */
+.drawer-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  z-index: 100;
+  backdrop-filter: blur(4px);
+}
+.drawer-overlay.open { display: block; }
+.drawer {
+  position: fixed; top: 0; left: 0;
+  width: 280px; height: 100vh;
+  background: var(--bg);
+  z-index: 101;
+  padding: 20px 16px;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+.drawer.open { transform: translateX(0); }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .home-grid { grid-template-columns: 1fr; }
+  .leads-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  body { font-size: 14px; }
+
+  /* Login mobile */
+  .login-card { padding: 28px 20px; border-radius: 16px; }
+  .login-title { font-size: 22px; }
+
+  /* Wizard mobile */
+  .wizard-topbar { padding: 12px 14px; }
+  .wizard-progress-wrap { gap: 8px; }
+  .wizard-step-text { font-size: 11px; }
+  .wizard-body { padding: 24px 16px 130px; }
+  .wizard-icon { width: 56px; height: 56px; font-size: 26px; margin-bottom: 16px; }
+  .wizard-title { font-size: 22px; }
+  .wizard-desc { font-size: 14px; margin-bottom: 22px; }
+  .wizard-card { padding: 18px; border-radius: 14px; }
+  .field-row { grid-template-columns: 1fr; }
+  .wizard-footer { padding: 12px 14px calc(12px + env(safe-area-inset-bottom)); gap: 8px; }
+  .wizard-footer .btn { min-width: auto; flex: 1; }
+  .wizard-footer .btn-primary { flex: 1.5; }
+  .choice-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+  /* Welcome mobile */
+  .welcome-card { padding: 32px 20px; }
+  .welcome-title { font-size: 24px; }
+  .welcome-check { width: 60px; height: 60px; }
+
+  /* Portal mobile */
+  #screen-portal.active {
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--topbar-h) 1fr var(--bottombar-h);
+  }
+  .sidebar { display: none; }
+  .main { grid-column: 1; grid-row: 2; }
+  .bottombar { display: flex; }
+  .menu-btn { display: flex; }
+  .topbar-brand-text { display: none; }
+  .profile-name { display: none; }
+  .profile-btn { padding: 4px; border: none; }
+
+  .greeting { padding: 0 16px 18px; }
+  .greeting-hello { font-size: 22px; }
+  .section-header { padding: 20px 16px 14px; }
+  .section-title { font-size: 22px; }
+  .status-banner { margin: 0 16px 16px; padding: 14px 16px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); padding: 0 16px 12px; gap: 8px; }
+  .kpi { padding: 14px; }
+  .kpi-value { font-size: 22px; }
+  .home-grid { padding: 0 16px 24px; gap: 12px; }
+  .card { padding: 16px; border-radius: 12px; }
+  .leads-stats { grid-template-columns: repeat(2, 1fr); padding: 0 16px 12px; gap: 8px; }
+  .leads-list { padding: 0 16px 16px; }
+  .lead-row { padding: 12px 14px; gap: 10px; }
+  .lead-stage { font-size: 10px; padding: 3px 8px; }
+  .messages-layout { padding: 0 16px 16px; }
+  .msg-thread { height: calc(100vh - var(--topbar-h) - var(--bottombar-h) - 80px); border-radius: 12px; }
+  .msg-bubble { max-width: 84%; }
+  .settings-grid { padding: 0 16px 16px; }
+  .settings-section { padding: 16px; }
+  .lang-toggle { top: 12px; right: 12px; }
+  .demo-nav { bottom: 80px; padding: 3px; }
+  .demo-nav-btn { padding: 5px 10px; font-size: 10px; }
+}
+
+@media (max-width: 420px) {
+  .leads-stats { grid-template-columns: 1fr 1fr; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .agent-portal-stats { flex-wrap: wrap; gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LANG TOGGLE -->
+<div class="lang-toggle">
+  <button class="lang-btn active" data-lang="es" onclick="setLang('es')">ES</button>
+  <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+</div>
+
+<!-- DEMO NAV -->
+<div class="demo-nav" id="demoNav">
+  <button class="demo-nav-btn active" data-screen="login" onclick="goScreen('login')">Login</button>
+  <button class="demo-nav-btn" data-screen="wizard" onclick="goScreen('wizard'); resetWizard()">Onboarding</button>
+  <button class="demo-nav-btn" data-screen="welcome" onclick="goScreen('welcome')">Welcome</button>
+  <button class="demo-nav-btn" data-screen="portal" onclick="goScreen('portal')">Portal</button>
+</div>
+
+<!-- ============ LOGIN ============ -->
+<div class="screen active" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="brand-mark">RG</div>
+        <div>
+          <div class="brand-name">RG Production</div>
+          <div class="brand-tag" data-i18n="login.tag">Tu socio en marketing y AI</div>
+        </div>
+      </div>
+
+      <div class="login-title" data-i18n="login.title">Bienvenido de regreso</div>
+      <div class="login-sub" data-i18n="login.sub">Accede al portal de tu negocio para ver tus leads, citas y mensajes.</div>
+
+      <div class="field-group">
+        <label class="field-label" data-i18n="login.email">Email</label>
+        <input class="field-input" type="email" id="rg-login-email" placeholder="tu@negocio.com" onkeydown="if(event.key==='Enter')doRealLogin()" />
+      </div>
+
+      <button class="btn btn-primary btn-block" id="rg-login-btn" onclick="doRealLogin()" data-i18n="login.submit">Iniciar sesión →</button>
+
+      <div id="rg-login-error" style="display:none;margin-top:10px;font-size:13px;color:#ef4444;text-align:center;"></div>
+
+      <div class="login-footer">
+        <span data-i18n="login.noAccount">¿Aún no tienes cuenta?</span>
+        <a onclick="goScreen('wizard'); resetWizard();" data-i18n="login.signup">Empieza tu onboarding →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ WIZARD ============ -->
+<div class="screen" id="screen-wizard">
+
+  <header class="wizard-topbar">
+    <div class="wizard-brand-mini">
+      <div class="brand-mark">RG</div>
+      <div class="brand-name">RG Production</div>
+    </div>
+    <div class="wizard-progress-wrap">
+      <span class="wizard-step-text" id="wizardStepText">Paso 1 de 5</span>
+      <div class="wizard-progress-bar"><div class="wizard-progress-fill" id="wizardProgress" style="width: 20%;"></div></div>
+    </div>
+    <button class="btn-link" onclick="goScreen('login')" data-i18n="wizard.savExit">Guardar y salir</button>
+  </header>
+
+  <div class="wizard-body">
+    <div class="wizard-content" id="wizardContent"></div>
+  </div>
+
+  <footer class="wizard-footer">
+    <button class="btn btn-ghost" id="wizardBack" onclick="prevStep()" data-i18n="wizard.back">← Anterior</button>
+    <div class="wizard-footer-spacer"></div>
+    <button class="btn btn-primary" id="wizardNext" onclick="nextStep()" data-i18n="wizard.next">Continuar →</button>
+  </footer>
+
+</div>
+
+<!-- ============ WELCOME ============ -->
+<div class="screen" id="screen-welcome">
+  <div class="welcome-card">
+    <div class="welcome-check">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="welcome-title" data-i18n="welcome.title">¡Bienvenido a RG Production!</div>
+    <div class="welcome-sub" data-i18n="welcome.sub">Tu onboarding está completo. Esto es lo que pasará a continuación:</div>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-marker">1</div>
+        <div class="timeline-content">
+          <div class="timeline-when" data-i18n="welcome.t1.when">Próximas 24 horas</div>
+          <div class="timeline-what" data-i18n="welcome.t1.what">Recibirás un email de confirmación con tus credenciales del portal.</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-marker">2</div>
+        <div class="timeline-content">
+          <div class="timeline-when" data-i18n="welcome.t2.when">Días 1-3</div>
+          <div class="timeline-what" data-i18n="welcome.t2.what">Nuestro equipo configura tu asistente y revisa tus metas.</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-marker">3</div>
+        <div class="timeline-content">
+          <div class="timeline-when" data-i18n="welcome.t3.when">Días 3-7</div>
+          <div class="timeline-what" data-i18n="welcome.t3.what">Tu número de WhatsApp se activa y tu asistente entra en operación 24/7.</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-marker">4</div>
+        <div class="timeline-content">
+          <div class="timeline-when" data-i18n="welcome.t4.when">Semana 2</div>
+          <div class="timeline-what" data-i18n="welcome.t4.what">Primera entrega de calendario de contenido y estrategia de campaña.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="welcome-actions">
+      <button class="btn btn-primary btn-block" onclick="goScreen('portal')" data-i18n="welcome.toPortal">Ir a mi portal →</button>
+      <button class="btn btn-ghost btn-block" data-i18n="welcome.whatsapp">💬 Mensaje por WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PORTAL ============ -->
+<div class="screen" id="screen-portal">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" onclick="toggleDrawer()" aria-label="Menú">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-brand">
+        <div class="brand-mark">RG</div>
+        <div class="topbar-brand-text">RG Production</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" aria-label="Notificaciones">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="badge">3</span>
+      </button>
+      <button class="profile-btn">
+        <div class="profile-avatar">DR</div>
+        <span class="profile-name">Dra. Ramírez</span>
+      </button>
+    </div>
+  </header>
+
+  <aside class="sidebar">
+    <nav>
+      <div class="nav-section">
+        <div class="nav-label" data-i18n="nav.principal">Principal</div>
+        <button class="nav-item active" data-section="home" onclick="goPortal('home')"><span class="nav-icon">🏠</span><span data-i18n="nav.home">Inicio</span></button>
+        <button class="nav-item" data-section="leads" onclick="goPortal('leads')"><span class="nav-icon">👥</span><span data-i18n="nav.leads">Mis leads</span><span class="nav-count alert">8</span></button>
+        <button class="nav-item" data-section="appointments" onclick="goPortal('appointments')"><span class="nav-icon">📅</span><span data-i18n="nav.appts">Citas</span><span class="nav-count">5</span></button>
+        <button class="nav-item" data-section="messages" onclick="goPortal('messages')"><span class="nav-icon">💬</span><span data-i18n="nav.messages">Mensajes</span><span class="nav-count alert">2</span></button>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label" data-i18n="nav.account">Cuenta</div>
+        <button class="nav-item" data-section="settings" onclick="goPortal('settings')"><span class="nav-icon">⚙️</span><span data-i18n="nav.settings">Configuración</span></button>
+        <button class="nav-item" data-section="billing" onclick="goPortal('billing')"><span class="nav-icon">💳</span><span data-i18n="nav.billing">Facturación</span></button>
+      </div>
+    </nav>
+    <div class="sidebar-cta">
+      <div class="sidebar-cta-icon">⚡</div>
+      <div class="sidebar-cta-title" data-i18n="cta.title">Aumenta tus resultados</div>
+      <div class="sidebar-cta-desc" data-i18n="cta.desc">Agrega producción de video, ads gestionadas y más.</div>
+      <button class="sidebar-cta-btn" data-i18n="cta.btn">Ver servicios</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- HOME -->
+    <section class="section active" id="portal-home">
+      <div class="greeting">
+        <div class="greeting-hello" data-i18n="home.hello">Hola, Dra. Ramírez 👋</div>
+        <div class="greeting-sub" data-i18n="home.sub">Esto es lo que pasó esta semana en tu negocio.</div>
+      </div>
+
+      <div class="status-banner">
+        <div class="status-banner-icon">⚡</div>
+        <div class="status-banner-content">
+          <div class="status-banner-title" data-i18n="status.title">Tu asistente Sofía está siendo configurado</div>
+          <div class="status-banner-desc" data-i18n="status.desc">Día 4 de 7 · Tu número de WhatsApp se activa pronto. Te avisamos cuando esté listo.</div>
+          <div class="status-banner-progress"><div class="status-banner-progress-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-icon-bg green">💚</div>
+          <div class="kpi-label" data-i18n="kpi.leads">Nuevos leads</div>
+          <div class="kpi-value">12</div>
+          <div class="kpi-trend">↑ 4 esta semana</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icon-bg blue">📞</div>
+          <div class="kpi-label" data-i18n="kpi.calls">Llamadas atendidas</div>
+          <div class="kpi-value">38</div>
+          <div class="kpi-trend">↑ 100% atendidas</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icon-bg amber">📅</div>
+          <div class="kpi-label" data-i18n="kpi.appts">Citas agendadas</div>
+          <div class="kpi-value">7</div>
+          <div class="kpi-trend">↑ 3 esta semana</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icon-bg purple">💵</div>
+          <div class="kpi-label" data-i18n="kpi.revenue">Revenue estimado</div>
+          <div class="kpi-value">$2,400</div>
+          <div class="kpi-trend neutral">3 cerrados</div>
+        </div>
+      </div>
+
+      <div class="home-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title" data-i18n="recent.title">Actividad reciente</div>
+            <button class="card-link" data-i18n="recent.viewAll">Ver toda</button>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon call">📞</div>
+            <div class="activity-text">Sofía atendió una llamada de <strong>María González</strong>. Lead calificado, agendó cita.<div class="activity-time">hace 32 min</div></div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon sms">💬</div>
+            <div class="activity-text"><strong>Carlos Ramírez</strong> respondió en WhatsApp pidiendo info sobre el tratamiento.<div class="activity-time">hace 1 h</div></div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon appt">📅</div>
+            <div class="activity-text">Nueva cita agendada con <strong>Ana Torres</strong> para mañana 10:00 AM.<div class="activity-time">hace 2 h</div></div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon payment">💳</div>
+            <div class="activity-text"><strong>Daniel Soto</strong> completó pago vía Stripe — $497.<div class="activity-time">hace 4 h</div></div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon review">⭐</div>
+            <div class="activity-text"><strong>Patricia R.</strong> dejó reseña de 5★ en Google: "Excelente atención…"<div class="activity-time">ayer</div></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom: 12px;">
+            <div class="card-header"><div class="card-title" data-i18n="agent.title">Tu asistente</div></div>
+            <div class="agent-card-portal">
+              <div class="agent-portal-avatar">💚</div>
+              <div class="agent-portal-info">
+                <div class="agent-portal-name">Sofía</div>
+                <div class="agent-portal-role" data-i18n="agent.role">Activa 24/7 · WhatsApp</div>
+                <div class="agent-portal-stats">
+                  <span><strong>38</strong> llamadas</span>
+                  <span><strong>4.8★</strong> calidad</span>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-ghost btn-block" data-i18n="agent.config">⚙️ Configurar asistente</button>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title" data-i18n="upcoming.title">Próximas citas</div></div>
+            <div class="appt-item">
+              <div class="appt-time"><div class="appt-day">MAY</div><div class="appt-hour">5</div></div>
+              <div class="appt-content">
+                <div class="appt-name">Ana Torres</div>
+                <div class="appt-meta">10:00 AM · Consulta inicial</div>
+              </div>
+            </div>
+            <div class="appt-item">
+              <div class="appt-time"><div class="appt-day">MAY</div><div class="appt-hour">6</div></div>
+              <div class="appt-content">
+                <div class="appt-name">Jorge Castro</div>
+                <div class="appt-meta">2:30 PM · Seguimiento</div>
+              </div>
+            </div>
+            <div class="appt-item">
+              <div class="appt-time"><div class="appt-day">MAY</div><div class="appt-hour">8</div></div>
+              <div class="appt-content">
+                <div class="appt-name">Patricia Ruiz</div>
+                <div class="appt-meta">11:15 AM · Tratamiento</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEADS -->
+    <section class="section" id="portal-leads">
+      <div class="section-header">
+        <div>
+          <div class="section-title" data-i18n="leads.title">Mis leads</div>
+          <div class="section-subtitle" data-i18n="leads.sub">12 leads esta semana · 8 sin contactar</div>
+        </div>
+        <button class="btn btn-primary" data-i18n="leads.add">＋ Agregar lead</button>
+      </div>
+      <div class="leads-stats">
+        <div class="lead-stat"><div class="lead-stat-dot new"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.new">Nuevos</div><div class="lead-stat-count">8</div></div></div>
+        <div class="lead-stat"><div class="lead-stat-dot contacted"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.contacted">Contactados</div><div class="lead-stat-count">5</div></div></div>
+        <div class="lead-stat"><div class="lead-stat-dot qualified"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.qualified">Calificados</div><div class="lead-stat-count">4</div></div></div>
+        <div class="lead-stat"><div class="lead-stat-dot converted"></div><div class="lead-stat-info"><div class="lead-stat-label" data-i18n="leads.converted">Convertidos</div><div class="lead-stat-count">3</div></div></div>
+      </div>
+      <div class="leads-list" id="leadsList"></div>
+    </section>
+
+    <!-- APPOINTMENTS -->
+    <section class="section" id="portal-appointments">
+      <div class="section-header">
+        <div>
+          <div class="section-title" data-i18n="appts.title">Citas</div>
+          <div class="section-subtitle" data-i18n="appts.sub">5 citas próximas · 12 esta semana</div>
+        </div>
+        <button class="btn btn-primary" data-i18n="appts.add">＋ Nueva cita</button>
+      </div>
+      <div style="padding: 0 32px 32px;">
+        <div class="card">
+          <div class="card-header"><div class="card-title" data-i18n="appts.thisWeek">Esta semana</div></div>
+          <div id="apptList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MESSAGES -->
+    <section class="section" id="portal-messages">
+      <div class="section-header">
+        <div>
+          <div class="section-title" data-i18n="msg.title">Mensajes con tu equipo</div>
+          <div class="section-subtitle" data-i18n="msg.sub">Habla directamente con tu account manager de RG Production</div>
+        </div>
+      </div>
+      <div class="messages-layout">
+        <div class="msg-thread">
+          <div class="msg-thread-header">
+            <div class="msg-team-avatar">RG</div>
+            <div class="msg-thread-info">
+              <div class="msg-thread-name" data-i18n="msg.team">Equipo RG Production</div>
+              <div class="msg-thread-status"><span class="dot"></span><span data-i18n="msg.online">Online · responde en 5 min</span></div>
+            </div>
+          </div>
+          <div class="msg-list" id="msgList"></div>
+          <div class="msg-input-row">
+            <textarea class="msg-input" id="msgInput" rows="1" placeholder="Escribe un mensaje…"></textarea>
+            <button class="msg-send" onclick="sendPortalMessage()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="section" id="portal-settings">
+      <div class="section-header">
+        <div>
+          <div class="section-title" data-i18n="set.title">Configuración</div>
+          <div class="section-subtitle" data-i18n="set.sub">Tu información y servicios conectados</div>
+        </div>
+      </div>
+      <div class="settings-grid">
+        <div class="settings-section">
+          <div class="settings-section-title" data-i18n="set.business">Información de tu negocio</div>
+          <div class="settings-section-desc" data-i18n="set.businessDesc">La que registraste durante el onboarding</div>
+          <div class="setting-row"><div class="setting-icon">🏢</div><div class="setting-info"><div class="setting-label" data-i18n="set.bizName">Nombre del negocio</div><div class="setting-value">Clínica Médica Ramírez</div></div></div>
+          <div class="setting-row"><div class="setting-icon">📍</div><div class="setting-info"><div class="setting-label" data-i18n="set.location">Ubicación</div><div class="setting-value">Los Angeles, CA</div></div></div>
+          <div class="setting-row"><div class="setting-icon">📧</div><div class="setting-info"><div class="setting-label">Email</div><div class="setting-value">cliente@ejemplo.com</div></div></div>
+          <div class="setting-row"><div class="setting-icon">📞</div><div class="setting-info"><div class="setting-label" data-i18n="set.phone">Teléfono</div><div class="setting-value">+1 (213) 555-0142</div></div></div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title" data-i18n="set.services">Servicios conectados</div>
+          <div class="settings-section-desc" data-i18n="set.servicesDesc">Estado de las herramientas integradas con tu cuenta</div>
+          <div class="setting-row"><div class="setting-icon">💚</div><div class="setting-info"><div class="setting-label">WhatsApp Business</div><div class="setting-value">+1 (213) 555-0142</div></div><span class="setting-status pending" data-i18n="set.activating">Activando</span></div>
+          <div class="setting-row"><div class="setting-icon">📅</div><div class="setting-info"><div class="setting-label">Google Calendar</div><div class="setting-value">cliente@ejemplo.com</div></div><span class="setting-status connected" data-i18n="set.connected">Conectado</span></div>
+          <div class="setting-row"><div class="setting-icon">💳</div><div class="setting-info"><div class="setting-label">Stripe</div><div class="setting-value">acct_1ABC...XYZ</div></div><span class="setting-status connected" data-i18n="set.connected">Conectado</span></div>
+          <div class="setting-row"><div class="setting-icon">📘</div><div class="setting-info"><div class="setting-label">Facebook + Instagram</div><div class="setting-value">@clinicaramirez</div></div><span class="setting-status connected" data-i18n="set.connected">Conectado</span></div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title" data-i18n="set.assistant">Tu asistente</div>
+          <div class="settings-section-desc" data-i18n="set.assistantDesc">Configuración de Sofía, tu agente de voz</div>
+          <div class="setting-row"><div class="setting-icon">💚</div><div class="setting-info"><div class="setting-label" data-i18n="set.aname">Nombre del asistente</div><div class="setting-value">Sofía</div></div></div>
+          <div class="setting-row"><div class="setting-icon">🌎</div><div class="setting-info"><div class="setting-label" data-i18n="set.alang">Idioma</div><div class="setting-value" data-i18n="set.bilingual">Bilingüe (Español + Inglés)</div></div></div>
+          <div class="setting-row"><div class="setting-icon">⏰</div><div class="setting-info"><div class="setting-label" data-i18n="set.ahours">Horario</div><div class="setting-value" data-i18n="set.always">24/7 — Siempre activa</div></div></div>
+          <div class="setting-row"><div class="setting-icon">🎭</div><div class="setting-info"><div class="setting-label" data-i18n="set.atone">Tono</div><div class="setting-value" data-i18n="set.warm">Cálido y profesional</div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BILLING (placeholder) -->
+    <section class="section" id="portal-billing">
+      <div class="section-header"><div><div class="section-title" data-i18n="bill.title">Facturación</div><div class="section-subtitle" data-i18n="bill.sub">Tu plan y método de pago</div></div></div>
+      <div style="padding: 0 32px 32px;">
+        <div class="card" style="text-align: center; padding: 40px 20px;">
+          <div style="font-size: 32px; margin-bottom: 12px;">💳</div>
+          <div style="font-weight: 700; margin-bottom: 6px;" data-i18n="bill.plan">Plan Profesional · $497/mes</div>
+          <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 18px;" data-i18n="bill.next">Próximo cobro: 5 de junio</div>
+          <button class="btn btn-ghost" data-i18n="bill.manage">Gestionar suscripción</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottombar">
+    <button class="tab-btn active" data-section="home" onclick="goPortal('home')"><span class="tab-icon">🏠</span><span data-i18n="nav.home">Inicio</span></button>
+    <button class="tab-btn" data-section="leads" onclick="goPortal('leads')"><span class="tab-icon">👥</span><span data-i18n="nav.leads">Leads</span><span class="tab-badge">8</span></button>
+    <button class="tab-btn" data-section="appointments" onclick="goPortal('appointments')"><span class="tab-icon">📅</span><span data-i18n="nav.apptsShort">Citas</span></button>
+    <button class="tab-btn" data-section="messages" onclick="goPortal('messages')"><span class="tab-icon">💬</span><span data-i18n="nav.msg">Mensajes</span><span class="tab-badge">2</span></button>
+    <button class="tab-btn" data-section="settings" onclick="goPortal('settings')"><span class="tab-icon">⚙️</span><span data-i18n="nav.more">Más</span></button>
+  </nav>
+
+</div>
+
+<!-- DRAWER (mobile) -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="topbar-brand" style="margin-bottom: 24px; padding: 0 8px;">
+    <div class="brand-mark">RG</div>
+    <div class="topbar-brand-text">RG Production</div>
+  </div>
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label" data-i18n="nav.principal">Principal</div>
+      <button class="nav-item" data-section="home" onclick="goPortal('home'); toggleDrawer()"><span class="nav-icon">🏠</span><span data-i18n="nav.home">Inicio</span></button>
+      <button class="nav-item" data-section="leads" onclick="goPortal('leads'); toggleDrawer()"><span class="nav-icon">👥</span><span data-i18n="nav.leads">Mis leads</span></button>
+      <button class="nav-item" data-section="appointments" onclick="goPortal('appointments'); toggleDrawer()"><span class="nav-icon">📅</span><span data-i18n="nav.appts">Citas</span></button>
+      <button class="nav-item" data-section="messages" onclick="goPortal('messages'); toggleDrawer()"><span class="nav-icon">💬</span><span data-i18n="nav.messages">Mensajes</span></button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label" data-i18n="nav.account">Cuenta</div>
+      <button class="nav-item" data-section="settings" onclick="goPortal('settings'); toggleDrawer()"><span class="nav-icon">⚙️</span><span data-i18n="nav.settings">Configuración</span></button>
+      <button class="nav-item" data-section="billing" onclick="goPortal('billing'); toggleDrawer()"><span class="nav-icon">💳</span><span data-i18n="nav.billing">Facturación</span></button>
+    </div>
+  </nav>
+</aside>
+
+<script>
+// ============ I18N ============
+const i18n = {
+  es: {
+    'login.tag': 'Tu socio en marketing y AI',
+    'login.title': 'Bienvenido de regreso',
+    'login.sub': 'Accede al portal de tu negocio para ver tus leads, citas y mensajes.',
+    'login.google': 'Continuar con Google',
+    'login.or': 'o con email',
+    'login.email': 'Email',
+    'login.password': 'Contraseña',
+    'login.submit': 'Iniciar sesión →',
+    'login.demoHint': 'Demo: cualquier email y contraseña funciona. O dale click directo a "Iniciar sesión".',
+    'login.noAccount': '¿Aún no tienes cuenta?',
+    'login.signup': 'Empieza tu onboarding →',
+    'wizard.savExit': 'Guardar y salir',
+    'wizard.back': '← Anterior',
+    'wizard.next': 'Continuar →',
+    'welcome.title': '¡Bienvenido a RG Production!',
+    'welcome.sub': 'Tu onboarding está completo. Esto es lo que pasará a continuación:',
+    'welcome.t1.when': 'Próximas 24 horas',
+    'welcome.t1.what': 'Recibirás un email de confirmación con tus credenciales del portal.',
+    'welcome.t2.when': 'Días 1-3',
+    'welcome.t2.what': 'Nuestro equipo configura tu asistente y revisa tus metas.',
+    'welcome.t3.when': 'Días 3-7',
+    'welcome.t3.what': 'Tu número de WhatsApp se activa y tu asistente entra en operación 24/7.',
+    'welcome.t4.when': 'Semana 2',
+    'welcome.t4.what': 'Primera entrega de calendario de contenido y estrategia de campaña.',
+    'welcome.toPortal': 'Ir a mi portal →',
+    'welcome.whatsapp': '💬 Mensaje por WhatsApp',
+    'nav.principal': 'Principal',
+    'nav.home': 'Inicio',
+    'nav.leads': 'Mis leads',
+    'nav.appts': 'Citas',
+    'nav.apptsShort': 'Citas',
+    'nav.msg': 'Mensajes',
+    'nav.more': 'Más',
+    'nav.messages': 'Mensajes',
+    'nav.account': 'Cuenta',
+    'nav.settings': 'Configuración',
+    'nav.billing': 'Facturación',
+    'cta.title': 'Aumenta tus resultados',
+    'cta.desc': 'Agrega producción de video, ads gestionadas y más.',
+    'cta.btn': 'Ver servicios',
+    'home.hello': 'Hola, Dra. Ramírez 👋',
+    'home.sub': 'Esto es lo que pasó esta semana en tu negocio.',
+    'status.title': 'Tu asistente Sofía está siendo configurado',
+    'status.desc': 'Día 4 de 7 · Tu número de WhatsApp se activa pronto. Te avisamos cuando esté listo.',
+    'kpi.leads': 'Nuevos leads',
+    'kpi.calls': 'Llamadas atendidas',
+    'kpi.appts': 'Citas agendadas',
+    'kpi.revenue': 'Revenue estimado',
+    'recent.title': 'Actividad reciente',
+    'recent.viewAll': 'Ver toda',
+    'agent.title': 'Tu asistente',
+    'agent.role': 'Activa 24/7 · WhatsApp',
+    'agent.config': '⚙️ Configurar asistente',
+    'upcoming.title': 'Próximas citas',
+    'leads.title': 'Mis leads',
+    'leads.sub': '12 leads esta semana · 8 sin contactar',
+    'leads.add': '＋ Agregar lead',
+    'leads.new': 'Nuevos',
+    'leads.contacted': 'Contactados',
+    'leads.qualified': 'Calificados',
+    'leads.converted': 'Convertidos',
+    'appts.title': 'Citas',
+    'appts.sub': '5 citas próximas · 12 esta semana',
+    'appts.add': '＋ Nueva cita',
+    'appts.thisWeek': 'Esta semana',
+    'msg.title': 'Mensajes con tu equipo',
+    'msg.sub': 'Habla directamente con tu account manager de RG Production',
+    'msg.team': 'Equipo RG Production',
+    'msg.online': 'Online · responde en 5 min',
+    'set.title': 'Configuración',
+    'set.sub': 'Tu información y servicios conectados',
+    'set.business': 'Información de tu negocio',
+    'set.businessDesc': 'La que registraste durante el onboarding',
+    'set.bizName': 'Nombre del negocio',
+    'set.location': 'Ubicación',
+    'set.phone': 'Teléfono',
+    'set.services': 'Servicios conectados',
+    'set.servicesDesc': 'Estado de las herramientas integradas con tu cuenta',
+    'set.activating': 'Activando',
+    'set.connected': 'Conectado',
+    'set.assistant': 'Tu asistente',
+    'set.assistantDesc': 'Configuración de Sofía, tu agente de voz',
+    'set.aname': 'Nombre del asistente',
+    'set.alang': 'Idioma',
+    'set.bilingual': 'Bilingüe (Español + Inglés)',
+    'set.ahours': 'Horario',
+    'set.always': '24/7 — Siempre activa',
+    'set.atone': 'Tono',
+    'set.warm': 'Cálido y profesional',
+    'bill.title': 'Facturación',
+    'bill.sub': 'Tu plan y método de pago',
+    'bill.plan': 'Plan Profesional · $497/mes',
+    'bill.next': 'Próximo cobro: 5 de junio',
+    'bill.manage': 'Gestionar suscripción'
+  },
+  en: {
+    'login.tag': 'Your marketing & AI partner',
+    'login.title': 'Welcome back',
+    'login.sub': 'Access your business portal to see your leads, appointments and messages.',
+    'login.google': 'Continue with Google',
+    'login.or': 'or with email',
+    'login.email': 'Email',
+    'login.password': 'Password',
+    'login.submit': 'Sign in →',
+    'login.demoHint': 'Demo: any email and password works. Or click "Sign in" directly.',
+    'login.noAccount': "Don't have an account yet?",
+    'login.signup': 'Start your onboarding →',
+    'wizard.savExit': 'Save & exit',
+    'wizard.back': '← Back',
+    'wizard.next': 'Continue →',
+    'welcome.title': 'Welcome to RG Production!',
+    'welcome.sub': 'Your onboarding is complete. Here is what happens next:',
+    'welcome.t1.when': 'Next 24 hours',
+    'welcome.t1.what': "You'll receive a confirmation email with your portal credentials.",
+    'welcome.t2.when': 'Days 1-3',
+    'welcome.t2.what': 'Our team sets up your assistant and reviews your goals.',
+    'welcome.t3.when': 'Days 3-7',
+    'welcome.t3.what': 'Your WhatsApp number activates and your assistant goes live 24/7.',
+    'welcome.t4.when': 'Week 2',
+    'welcome.t4.what': 'First content calendar and campaign strategy delivered.',
+    'welcome.toPortal': 'Go to my portal →',
+    'welcome.whatsapp': '💬 Message us on WhatsApp',
+    'nav.principal': 'Main',
+    'nav.home': 'Home',
+    'nav.leads': 'My leads',
+    'nav.appts': 'Appointments',
+    'nav.apptsShort': 'Appts',
+    'nav.msg': 'Messages',
+    'nav.more': 'More',
+    'nav.messages': 'Messages',
+    'nav.account': 'Account',
+    'nav.settings': 'Settings',
+    'nav.billing': 'Billing',
+    'cta.title': 'Boost your results',
+    'cta.desc': 'Add video production, managed ads and more.',
+    'cta.btn': 'See services',
+    'home.hello': 'Hello, Dr. Ramirez 👋',
+    'home.sub': "Here's what happened this week in your business.",
+    'status.title': 'Your assistant Sofía is being set up',
+    'status.desc': "Day 4 of 7 · Your WhatsApp number activates soon. We'll let you know when ready.",
+    'kpi.leads': 'New leads',
+    'kpi.calls': 'Calls answered',
+    'kpi.appts': 'Appointments',
+    'kpi.revenue': 'Est. revenue',
+    'recent.title': 'Recent activity',
+    'recent.viewAll': 'View all',
+    'agent.title': 'Your assistant',
+    'agent.role': 'Active 24/7 · WhatsApp',
+    'agent.config': '⚙️ Configure assistant',
+    'upcoming.title': 'Upcoming appointments',
+    'leads.title': 'My leads',
+    'leads.sub': '12 leads this week · 8 not contacted',
+    'leads.add': '＋ Add lead',
+    'leads.new': 'New',
+    'leads.contacted': 'Contacted',
+    'leads.qualified': 'Qualified',
+    'leads.converted': 'Converted',
+    'appts.title': 'Appointments',
+    'appts.sub': '5 upcoming · 12 this week',
+    'appts.add': '＋ New appointment',
+    'appts.thisWeek': 'This week',
+    'msg.title': 'Messages with your team',
+    'msg.sub': 'Talk directly with your RG Production account manager',
+    'msg.team': 'RG Production Team',
+    'msg.online': 'Online · replies in 5 min',
+    'set.title': 'Settings',
+    'set.sub': 'Your information and connected services',
+    'set.business': 'Business information',
+    'set.businessDesc': 'The one you registered during onboarding',
+    'set.bizName': 'Business name',
+    'set.location': 'Location',
+    'set.phone': 'Phone',
+    'set.services': 'Connected services',
+    'set.servicesDesc': 'Status of the tools integrated with your account',
+    'set.activating': 'Activating',
+    'set.connected': 'Connected',
+    'set.assistant': 'Your assistant',
+    'set.assistantDesc': 'Configuration of Sofía, your voice agent',
+    'set.aname': 'Assistant name',
+    'set.alang': 'Language',
+    'set.bilingual': 'Bilingual (Spanish + English)',
+    'set.ahours': 'Hours',
+    'set.always': '24/7 — Always on',
+    'set.atone': 'Tone',
+    'set.warm': 'Warm & professional',
+    'bill.title': 'Billing',
+    'bill.sub': 'Your plan and payment method',
+    'bill.plan': 'Professional Plan · $497/mo',
+    'bill.next': 'Next charge: June 5',
+    'bill.manage': 'Manage subscription'
+  }
+};
+
+let currentLang = 'es';
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (i18n[lang][key]) el.textContent = i18n[lang][key];
+  });
+  // Re-render dynamic content
+  if (currentScreen === 'wizard') renderWizardStep();
+}
+
+// ============ SCREEN NAV ============
+let currentScreen = 'login';
+function goScreen(name) {
+  currentScreen = name;
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + name));
+  document.querySelectorAll('.demo-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.screen === name));
+  if (name === 'wizard' && !wizardData.step) renderWizardStep();
+  window.scrollTo(0, 0);
+}
+
+// ============ DRAWER ============
+function toggleDrawer() {
+  document.getElementById('drawer').classList.toggle('open');
+  document.getElementById('drawerOverlay').classList.toggle('open');
+}
+
+// ============ PORTAL NAV ============
+function goPortal(name) {
+  document.querySelectorAll('#screen-portal .section').forEach(s => s.classList.remove('active'));
+  document.getElementById('portal-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item, .tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.section === name);
+  });
+  document.querySelector('.main').scrollTop = 0;
+}
+
+// ============ WIZARD ============
+const wizardSteps = [
+  { id: 1, key: 'business' },
+  { id: 2, key: 'goals' },
+  { id: 3, key: 'assistant' },
+  { id: 4, key: 'presence' },
+  { id: 5, key: 'review' }
+];
+let currentStep = 1;
+const wizardData = { goals: [], step: 0 };
+
+function resetWizard() { currentStep = 1; renderWizardStep(); }
+
+function nextStep() {
+  if (currentStep < wizardSteps.length) {
+    currentStep++;
+    renderWizardStep();
+  } else {
+    goScreen('welcome');
+  }
+}
+function prevStep() {
+  if (currentStep > 1) { currentStep--; renderWizardStep(); }
+}
+
+function renderWizardStep() {
+  const total = wizardSteps.length;
+  const pct = (currentStep / total) * 100;
+  document.getElementById('wizardProgress').style.width = pct + '%';
+  document.getElementById('wizardStepText').textContent = currentLang === 'es' ? `Paso ${currentStep} de ${total}` : `Step ${currentStep} of ${total}`;
+  document.getElementById('wizardBack').style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+  const nextBtn = document.getElementById('wizardNext');
+  if (currentStep === total) {
+    nextBtn.textContent = currentLang === 'es' ? '🚀 Enviar' : '🚀 Submit';
+  } else {
+    nextBtn.textContent = currentLang === 'es' ? 'Continuar →' : 'Continue →';
+  }
+  document.getElementById('wizardContent').innerHTML = stepContent(currentStep);
+}
+
+function stepContent(step) {
+  const es = currentLang === 'es';
+  if (step === 1) return `
+    <div class="wizard-icon">📋</div>
+    <h1 class="wizard-title">${es ? 'Cuéntanos de tu negocio' : 'Tell us about your business'}</h1>
+    <p class="wizard-desc">${es ? 'Esto nos ayuda a personalizar tu estrategia desde el día uno.' : 'This helps us tailor your strategy from day one.'}</p>
+    <div class="wizard-card">
+      <div class="field-group">
+        <label class="field-label">${es ? 'Nombre del negocio' : 'Business name'} <span class="field-required">*</span></label>
+        <input class="field-input" placeholder="${es ? 'Clínica Médica Ramírez' : 'Ramirez Medical Clinic'}" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? 'Tu nombre' : 'Your name'} <span class="field-required">*</span></label>
+        <input class="field-input" placeholder="${es ? 'Dra. Ana Ramírez' : 'Dr. Ana Ramirez'}" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? 'Industria' : 'Industry'} <span class="field-required">*</span></label>
+        <select class="field-select">
+          <option>${es ? 'Selecciona…' : 'Select…'}</option>
+          <option>${es ? 'Clínica médica / GLP-1' : 'Medical Clinic / GLP-1'}</option>
+          <option>${es ? 'Clínica dental' : 'Dental Clinic'}</option>
+          <option>${es ? 'Clínica estética' : 'Aesthetic Clinic'}</option>
+          <option>${es ? 'Quiropráctica' : 'Chiropractic'}</option>
+          <option>${es ? 'Salud mental' : 'Mental Health'}</option>
+          <option>${es ? 'Servicios financieros' : 'Financial Services'}</option>
+          <option>${es ? 'Bienes raíces' : 'Real Estate'}</option>
+          <option>${es ? 'Concesionario' : 'Car Dealership'}</option>
+          <option>${es ? 'Restaurante' : 'Restaurant'}</option>
+          <option>${es ? 'Wellness / Spa' : 'Wellness / Spa'}</option>
+          <option>${es ? 'Otro' : 'Other'}</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Email <span class="field-required">*</span></label>
+          <input class="field-input" type="email" placeholder="tu@negocio.com" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">${es ? 'Teléfono' : 'Phone'} <span class="field-required">*</span></label>
+          <input class="field-input" type="tel" placeholder="+1 (213) 555-0142" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? 'Ciudad y Estado' : 'City & State'}</label>
+        <input class="field-input" placeholder="Los Angeles, CA" />
+      </div>
+    </div>`;
+
+  if (step === 2) {
+    const goals = es ? [
+      { id: 'leads', icon: '🎯', label: 'Nuevos pacientes / leads' },
+      { id: 'followup', icon: '🔁', label: 'Follow-ups automáticos' },
+      { id: 'social', icon: '📱', label: 'Contenido para redes' },
+      { id: 'reviews', icon: '⭐', label: 'Reseñas online' },
+      { id: 'email', icon: '📧', label: 'Campañas de email' },
+      { id: 'reminders', icon: '📅', label: 'Recordatorios de citas' },
+      { id: 'awareness', icon: '🌟', label: 'Awareness de marca' },
+      { id: 'video', icon: '🎬', label: 'Producción de video' }
+    ] : [
+      { id: 'leads', icon: '🎯', label: 'New patient leads' },
+      { id: 'followup', icon: '🔁', label: 'Automated follow-ups' },
+      { id: 'social', icon: '📱', label: 'Social media content' },
+      { id: 'reviews', icon: '⭐', label: 'Online reviews' },
+      { id: 'email', icon: '📧', label: 'Email campaigns' },
+      { id: 'reminders', icon: '📅', label: 'Appointment reminders' },
+      { id: 'awareness', icon: '🌟', label: 'Brand awareness' },
+      { id: 'video', icon: '🎬', label: 'Video production' }
+    ];
+    return `
+    <div class="wizard-icon">🎯</div>
+    <h1 class="wizard-title">${es ? '¿Cuáles son tus metas?' : 'What are your goals?'}</h1>
+    <p class="wizard-desc">${es ? 'Selecciona todas las que apliquen. Construiremos tu estrategia alrededor de estas prioridades.' : "Select all that apply. We'll build your strategy around these priorities."}</p>
+    <div class="wizard-card">
+      <div class="choice-grid">
+        ${goals.map(g => `<button class="choice ${wizardData.goals.includes(g.id) ? 'selected' : ''}" onclick="toggleGoal(this, '${g.id}')"><span class="choice-icon">${g.icon}</span><span class="choice-label">${g.label}</span></button>`).join('')}
+      </div>
+      <div class="field-group" style="margin-top: 20px;">
+        <label class="field-label">${es ? 'Presupuesto mensual de marketing (USD)' : 'Monthly marketing budget (USD)'}</label>
+        <select class="field-select">
+          <option>${es ? 'Prefiero no decir' : 'Prefer not to say'}</option>
+          <option>${es ? 'Menos de $500' : 'Under $500'}</option>
+          <option>$500 - $1,000</option>
+          <option>$1,000 - $2,500</option>
+          <option>$2,500 - $5,000</option>
+          <option>$5,000+</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? '¿Algo más que debamos saber?' : 'Anything else we should know?'}</label>
+        <textarea class="field-textarea" placeholder="${es ? 'Opcional...' : 'Optional...'}"></textarea>
+      </div>
+    </div>`;
+  }
+
+  if (step === 3) return `
+    <div class="wizard-icon">💚</div>
+    <h1 class="wizard-title">${es ? 'Tu asistente virtual' : 'Your virtual assistant'}</h1>
+    <p class="wizard-desc">${es ? 'Configuraremos un asistente dedicado que responde a tus pacientes en WhatsApp 24/7 desde tu propio número.' : 'We will set up a dedicated assistant that answers your patients on WhatsApp 24/7 from your own business number.'}</p>
+    <div class="wizard-card">
+      <div class="field-group">
+        <label class="field-label">${es ? 'Tu número de WhatsApp Business' : 'Your WhatsApp Business number'} <span class="field-required">*</span></label>
+        <div class="input-prefix-wrap">
+          <span class="input-prefix">+1</span>
+          <input type="tel" placeholder="(213) 555-0142" />
+        </div>
+        <div class="field-hint">${es ? 'Este es el número al que escribirán tus pacientes. Lo activamos en 3-7 días hábiles.' : 'This is the number your patients will text. We activate it in 3-7 business days.'}</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? '¿Está activo este número?' : 'Is this number active?'}</label>
+        <div class="radio-list">
+          <button class="radio-item selected" onclick="selectRadio(this, 'active')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Sí, ya es un número activo' : 'Yes, it is active'}</div></div></button>
+          <button class="radio-item" onclick="selectRadio(this, 'active')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'No, necesito uno nuevo' : 'No, I need a new one'}</div></div></button>
+          <button class="radio-item" onclick="selectRadio(this, 'active')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'No estoy seguro - que RG decida' : 'Not sure - let RG decide'}</div></div></button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? 'Nombre del asistente' : 'Assistant name'} <span class="field-required">*</span></label>
+        <input class="field-input" value="Sofía" />
+        <div class="field-hint">${es ? 'Este es el nombre que verán tus pacientes. Algo cálido y profesional.' : 'This is the name your patients will see. Choose something warm and professional.'}</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? 'Idioma del asistente' : 'Assistant language'}</label>
+        <select class="field-select">
+          <option>${es ? 'Bilingüe - Español e Inglés' : 'Bilingual - Spanish & English'}</option>
+          <option>${es ? 'Solo español' : 'Spanish only'}</option>
+          <option>${es ? 'Solo inglés' : 'English only'}</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? 'Horario de respuesta' : 'Response hours'}</label>
+        <div class="radio-list">
+          <button class="radio-item selected" onclick="selectRadio(this, 'hours')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? '24/7 — Siempre activa' : '24/7 — Always on'}</div><div class="radio-sub">${es ? 'Recomendado · captura más leads' : 'Recommended · captures more leads'}</div></div></button>
+          <button class="radio-item" onclick="selectRadio(this, 'hours')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Horario laboral · 8am - 8pm' : 'Business hours · 8am - 8pm'}</div></div></button>
+          <button class="radio-item" onclick="selectRadio(this, 'hours')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Lun-Vie · 9am - 6pm' : 'Mon-Fri · 9am - 6pm'}</div></div></button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? 'Tono y personalidad' : 'Tone & personality'}</label>
+        <div class="radio-list">
+          <button class="radio-item selected" onclick="selectRadio(this, 'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Cálido y profesional' : 'Warm & professional'}</div><div class="radio-sub">${es ? 'Amigable pero creíble' : 'Friendly but credible'}</div></div></button>
+          <button class="radio-item" onclick="selectRadio(this, 'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Formal' : 'Formal'}</div><div class="radio-sub">${es ? 'Muy profesional, sin emojis' : 'Very professional, no emojis'}</div></div></button>
+          <button class="radio-item" onclick="selectRadio(this, 'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Casual y amigable' : 'Casual & friendly'}</div><div class="radio-sub">${es ? 'Conversacional, usa emojis' : 'Conversational, uses emojis'}</div></div></button>
+          <button class="radio-item" onclick="selectRadio(this, 'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Empático' : 'Empathetic'}</div><div class="radio-sub">${es ? 'Especial para salud y wellness' : 'Especially for health and wellness'}</div></div></button>
+        </div>
+      </div>
+    </div>`;
+
+  if (step === 4) return `
+    <div class="wizard-icon">🌐</div>
+    <h1 class="wizard-title">${es ? 'Tu presencia online' : 'Your online presence'}</h1>
+    <p class="wizard-desc">${es ? 'Comparte tus handles y analizaremos qué está funcionando. Salta lo que no tengas — te ayudamos a construirlo.' : 'Share your handles and we will analyze what is working. Skip anything you do not have - we will help you build it.'}</p>
+    <div class="wizard-card">
+      <div class="field-group">
+        <label class="field-label">Facebook</label>
+        <div class="input-prefix-wrap"><span class="input-prefix">facebook.com/</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" /></div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Instagram</label>
+        <div class="input-prefix-wrap"><span class="input-prefix">instagram.com/</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" /></div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">YouTube</label>
+        <div class="input-prefix-wrap"><span class="input-prefix">youtube.com/@</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" /></div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">TikTok</label>
+        <div class="input-prefix-wrap"><span class="input-prefix">tiktok.com/@</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" /></div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? 'Sitio web' : 'Website'}</label>
+        <input class="field-input" type="url" placeholder="https://tunegocio.com" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? 'Google Business' : 'Google Business name'}</label>
+        <input class="field-input" placeholder="${es ? 'Nombre que aparece en Maps' : 'Name as it appears on Maps'}" />
+      </div>
+    </div>`;
+
+  if (step === 5) return `
+    <div class="wizard-icon">✓</div>
+    <h1 class="wizard-title">${es ? 'Revisa tu información' : 'Review your information'}</h1>
+    <p class="wizard-desc">${es ? '¿Todo se ve correcto? Una vez enviado, nuestro equipo te contacta en 24 horas.' : 'Everything look correct? Once submitted our team will be in touch within 24 hours.'}</p>
+    <div class="wizard-card">
+      <div class="summary-list">
+        <div class="summary-row"><span class="key">${es ? 'Negocio' : 'Business'}</span><span class="val">Clínica Médica Ramírez</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Industria' : 'Industry'}</span><span class="val">${es ? 'Clínica médica / GLP-1' : 'Medical / GLP-1'}</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Contacto' : 'Contact'}</span><span class="val">Dra. Ramírez</span></div>
+        <div class="summary-row"><span class="key">Email</span><span class="val">cliente@ejemplo.com</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Teléfono' : 'Phone'}</span><span class="val">+1 (213) 555-0142</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Metas seleccionadas' : 'Goals selected'}</span><span class="val">${wizardData.goals.length || 0}</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Asistente' : 'Assistant'}</span><span class="val">Sofía · ${es ? 'Bilingüe · 24/7' : 'Bilingual · 24/7'}</span></div>
+        <div class="summary-row"><span class="key">${es ? 'Estado' : 'Status'}</span><span class="val ok">● ${es ? 'Listo para enviar' : 'Ready to submit'}</span></div>
+      </div>
+    </div>`;
+  return '';
+}
+
+function toggleGoal(el, id) {
+  el.classList.toggle('selected');
+  const idx = wizardData.goals.indexOf(id);
+  if (idx > -1) wizardData.goals.splice(idx, 1); else wizardData.goals.push(id);
+}
+
+function selectRadio(el, group) {
+  el.parentElement.querySelectorAll('.radio-item').forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ============ LEADS DATA ============
+const leadsData = [
+  { name: 'María González', initials: 'MG', meta: 'WhatsApp · interesada en GLP-1', stage: 'new', stageLabel: { es: 'Nuevo', en: 'New' }, time: 'hace 2h' },
+  { name: 'Carlos Ramírez', initials: 'CR', meta: 'Facebook · pidió info por DM', stage: 'new', stageLabel: { es: 'Nuevo', en: 'New' }, time: 'hace 4h' },
+  { name: 'Ana Torres', initials: 'AT', meta: 'Instagram · agendó cita', stage: 'qualified', stageLabel: { es: 'Calificado', en: 'Qualified' }, time: 'hace 6h' },
+  { name: 'Jorge Castro', initials: 'JC', meta: 'WhatsApp · respondió follow-up', stage: 'contacted', stageLabel: { es: 'Contactado', en: 'Contacted' }, time: 'ayer' },
+  { name: 'Patricia Ruiz', initials: 'PR', meta: 'Facebook · agendó llamada', stage: 'qualified', stageLabel: { es: 'Calificado', en: 'Qualified' }, time: 'ayer' },
+  { name: 'Daniel Soto', initials: 'DS', meta: 'WhatsApp · pagó $497 ✓', stage: 'converted', stageLabel: { es: 'Convertido', en: 'Converted' }, time: 'lun' },
+  { name: 'Laura Núñez', initials: 'LN', meta: 'Referido · pagó $497 ✓', stage: 'converted', stageLabel: { es: 'Convertido', en: 'Converted' }, time: 'lun' },
+  { name: 'Miguel Ángel', initials: 'MA', meta: 'Instagram · objeción precio', stage: 'contacted', stageLabel: { es: 'Contactado', en: 'Contacted' }, time: 'mar' }
+];
+
+function renderLeads() {
+  document.getElementById('leadsList').innerHTML = leadsData.map(l => `
+    <button class="lead-row">
+      <div class="lead-avatar">${l.initials}</div>
+      <div class="lead-info">
+        <div class="lead-name">${l.name}</div>
+        <div class="lead-meta">${l.meta}</div>
+      </div>
+      <span class="lead-stage ${l.stage}">${l.stageLabel[currentLang]}</span>
+      <span class="lead-time">${l.time}</span>
+    </button>
+  `).join('');
+}
+
+// ============ APPOINTMENTS DATA ============
+const apptsData = [
+  { day: 'MAY', date: '5', name: 'Ana Torres', meta: '10:00 AM · Consulta inicial' },
+  { day: 'MAY', date: '6', name: 'Jorge Castro', meta: '2:30 PM · Seguimiento' },
+  { day: 'MAY', date: '8', name: 'Patricia Ruiz', meta: '11:15 AM · Tratamiento' },
+  { day: 'MAY', date: '9', name: 'Carlos Ramírez', meta: '3:00 PM · Consulta inicial' },
+  { day: 'MAY', date: '12', name: 'Elena Vargas', meta: '9:30 AM · Seguimiento' }
+];
+
+function renderAppts() {
+  document.getElementById('apptList').innerHTML = apptsData.map(a => `
+    <div class="appt-item">
+      <div class="appt-time"><div class="appt-day">${a.day}</div><div class="appt-hour">${a.date}</div></div>
+      <div class="appt-content">
+        <div class="appt-name">${a.name}</div>
+        <div class="appt-meta">${a.meta}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============ MESSAGES ============
+const portalMessages = [
+  { from: 'them', text: 'Hola Dra. Ramírez! Te escribo para confirmar que tu setup está al 60%. Tu número de WhatsApp se activa en 2-3 días.', time: 'Lun 10:32' },
+  { from: 'them', text: 'Mientras tanto, ya puedes ver el primer borrador del calendario de contenido en la sección de Inicio.', time: 'Lun 10:33' },
+  { from: 'you', text: '¡Perfecto! ¿Sofía va a poder responder en español también?', time: 'Lun 14:18' },
+  { from: 'them', text: 'Sí, está configurada como bilingüe por default — detecta el idioma del paciente y responde en el mismo. 💚', time: 'Lun 14:25' },
+  { from: 'you', text: 'Excelente, gracias!', time: 'Lun 14:26' },
+  { from: 'them', text: 'Por cierto, ya tienes 3 leads calificados esta semana. Quieres que Sofía haga follow-up automático cuando esté lista?', time: 'hace 2h' }
+];
+
+function renderMessages() {
+  document.getElementById('msgList').innerHTML = portalMessages.map(m => `
+    <div class="msg-meta ${m.from === 'you' ? 'you' : ''}">${m.time}</div>
+    <div class="msg-bubble ${m.from}">${m.text}</div>
+  `).join('');
+  const list = document.getElementById('msgList');
+  list.scrollTop = list.scrollHeight;
+}
+
+function sendPortalMessage() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text) return;
+  portalMessages.push({ from: 'you', text: text, time: 'ahora' });
+  renderMessages();
+  input.value = '';
+  setTimeout(() => {
+    portalMessages.push({ from: 'them', text: '¡Recibido! Te respondo en breve. 👋', time: 'ahora' });
+    renderMessages();
+  }, 800);
+}
+
+document.getElementById('msgInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPortalMessage(); }
+});
+
+// ============ INIT ============
+renderWizardStep();
+renderLeads();
+renderAppts();
+renderMessages();
+
+// ============ REAL LOGIN ============
+function doRealLogin() {
+  const emailEl = document.getElementById('rg-login-email');
+  const btn     = document.getElementById('rg-login-btn');
+  const errEl   = document.getElementById('rg-login-error');
+  const email   = (emailEl?.value || '').trim();
+  if (!email) { errEl.textContent = 'Ingresa tu email.'; errEl.style.display = 'block'; return; }
+  btn.textContent = 'Verificando...'; btn.disabled = true; errEl.style.display = 'none';
+  fetch('/api/cliente-login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  })
+  .then(r => r.json())
+  .then(d => {
+    btn.textContent = 'Iniciar sesión →'; btn.disabled = false;
+    if (!d.ok) { errEl.textContent = d.error || 'Error. Intenta de nuevo.'; errEl.style.display = 'block'; return; }
+    populatePortal(d);
+    goScreen('portal');
+  })
+  .catch(() => {
+    btn.textContent = 'Iniciar sesión →'; btn.disabled = false;
+    errEl.textContent = 'Error de conexión. Intenta de nuevo.'; errEl.style.display = 'block';
+  });
+}
+
+function populatePortal(d) {
+  const firstName = (d.owner || d.nombre || '').split(' ')[0] || 'Cliente';
+  const greetEl   = document.querySelector('.greeting-hello');
+  const subEl     = document.querySelector('.greeting-sub');
+  if (greetEl) greetEl.textContent = `Hola, ${firstName} 👋`;
+  if (subEl)   subEl.textContent   = `${d.nombre}${d.industria ? ' · ' + d.industria : ''}`;
+  // Sidebar profile
+  const sidebarName = document.querySelector('.profile-name');
+  const sidebarRole = document.querySelector('.profile-role');
+  if (sidebarName) sidebarName.textContent = d.owner || d.nombre;
+  if (sidebarRole) sidebarRole.textContent = d.industria || 'Cliente';
+}
+
+// Auto-login si viene ?email= en la URL
+(function() {
+  const urlEmail = new URLSearchParams(location.search).get('email');
+  if (urlEmail) {
+    const emailEl = document.getElementById('rg-login-email');
+    if (emailEl) emailEl.value = urlEmail;
+    doRealLogin();
+  }
+})();
+</script>
+</body>
+</html>

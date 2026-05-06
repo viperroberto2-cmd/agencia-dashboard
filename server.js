@@ -135,6 +135,50 @@ app.post('/api/onboard-cliente', async (req, res) => {
 
 app.get('/index.html', (req, res) => serveIndex(res));
 
+// ── Listar clientes onboarded (para el dashboard de Roberto) ──────────────
+app.get('/api/clientes', async (req, res) => {
+  try {
+    const r = await sbFetch('/clientes?user_id=eq.roberto_agencia&select=data');
+    const rows = await r.json();
+    const data = rows[0]?.data || {};
+    const clientes = data.clientes || {};
+    const lista = Object.entries(clientes).map(([nombre, info]) => ({
+      nombre, email: info.email, owner: info.owner, industria: info.industria,
+      ciudad: info.ciudad, telefono: info.telefono, objetivos: info.objetivos,
+      presupuesto: info.presupuesto, redes_sociales: info.redes_sociales,
+      onboarding_completo: info.onboarding_completo,
+      fecha_onboarding: info.fecha_onboarding, notas: info.notas,
+      fuente: info.fuente
+    }));
+    res.json({ ok: true, clientes: lista });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// ── Client login por email — para portal del cliente ──────────────────────
+app.post('/api/cliente-login', async (req, res) => {
+  const { email } = req.body || {};
+  if (!email) return res.status(400).json({ ok: false, error: 'email requerido' });
+  try {
+    const r = await sbFetch('/clientes?user_id=eq.roberto_agencia&select=data');
+    const rows = await r.json();
+    const clientes = rows[0]?.data?.clientes || {};
+    const match = Object.entries(clientes).find(
+      ([, info]) => (info.email || '').toLowerCase() === email.toLowerCase()
+    );
+    if (!match) return res.status(404).json({ ok: false, error: 'No encontramos tu email. Verifica o contacta a tu agencia.' });
+    const [nombre, info] = match;
+    res.json({ ok: true, nombre, ...info });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// ── Portal del cliente ─────────────────────────────────────────────────────
+app.get('/portal', (req, res) => {
+  res.sendFile(require('path').join(__dirname, 'rg-production-client-portal.html'));
+});
+app.get('/client-portal', (req, res) => {
+  res.sendFile(require('path').join(__dirname, 'rg-production-client-portal.html'));
+});
+
 // ── Supabase helper (server-side, uses secret key) ───────────────────────────
 async function sbFetch(path, opts = {}) {
   const url = `${process.env.SUPABASE_PROJECT_URL}/rest/v1${path}`;
