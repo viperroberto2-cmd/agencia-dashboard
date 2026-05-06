@@ -5,17 +5,17 @@
 window.SUPABASE_URL = '__SUPABASE_URL__';
 window.SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
 window.AGENT_MAP = {
-  organizador: { url: 'https://web-production-77871.up.railway.app',               endpoint: '/organizador/chat' },
-  director:    { url: 'https://agencia-ai-production.up.railway.app',               endpoint: '/director/chat'    },
-  crew:        { url: 'https://worker-production-34f9.up.railway.app',              endpoint: '/crew/chat'        },
-  estrategia:  { url: 'https://worker-production-035f.up.railway.app',             endpoint: '/estratega/chat'   },
-  scheduler:   { url: 'https://worker-production-aa53.up.railway.app',             endpoint: '/scheduler/chat'   },
-  analytics:   { url: 'https://upbeat-endurance.up.railway.app',                   endpoint: '/analytics/chat'   },
-  compositor:  { url: 'https://compositorbot-production.up.railway.app',            endpoint: '/compositor/chat'  },
-  scraper:     { url: 'https://agencia-ai-scraper-production.up.railway.app',       endpoint: '/scraper/task'     },
-  seo:         { url: 'https://agencia-ai-seo-production.up.railway.app',           endpoint: '/seo/task'         },
-  web:         { url: 'https://agencia-ai-web-designer-production.up.railway.app',  endpoint: '/web/chat'         },
-  motion:      { url: 'https://web-production-d67bad.up.railway.app',               endpoint: '/motion/chat'      }
+  organizador: { url: '', endpoint: '/api/chat/organizador' },
+  director:    { url: '', endpoint: '/api/chat/director'    },
+  crew:        { url: '', endpoint: '/api/chat/crew'        },
+  estrategia:  { url: '', endpoint: '/api/chat/estrategia'  },
+  scheduler:   { url: '', endpoint: '/api/chat/scheduler'   },
+  analytics:   { url: '', endpoint: '/api/chat/analytics'   },
+  compositor:  { url: '', endpoint: '/api/chat/compositor'  },
+  scraper:     { url: '', endpoint: '/api/chat/scraper'     },
+  seo:         { url: '', endpoint: '/api/chat/seo'         },
+  web:         { url: '', endpoint: '/api/chat/web'         },
+  motion:      { url: '', endpoint: '/api/chat/motion'      },
 };
 </script>
 <meta charset="UTF-8">
@@ -1899,6 +1899,31 @@ input, textarea { font-family: inherit; }
       </div>
     </section>
 
+    <!-- MARKETING STUDIO -->
+    <section class="section" id="section-marketing">
+      <div style="padding:28px 32px;max-width:900px">
+        <div class="section-title" style="margin-bottom:4px">🎬 Marketing Studio</div>
+        <div class="section-subtitle" style="margin-bottom:28px">Seedance 2.0 · kie.ai · RG Production</div>
+
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:12px">Tipo de video</div>
+        <div id="ms-presets" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px">
+          <div class="ms-preset-card ms-active" onclick="msSelect(this,'ugc')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">👤</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">UGC</div><div style="font-size:11px;color:#7b6fa0">Video estilo usuario real</div></div>
+          <div class="ms-preset-card" onclick="msSelect(this,'tutorial')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">📋</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Tutorial</div><div style="font-size:11px;color:#7b6fa0">Paso a paso del producto</div></div>
+          <div class="ms-preset-card" onclick="msSelect(this,'tv_spot')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">📺</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">TV Spot</div><div style="font-size:11px;color:#7b6fa0">Comercial cinematográfico</div></div>
+          <div class="ms-preset-card" onclick="msSelect(this,'hyper_motion')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">⚡</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Hyper Motion</div><div style="font-size:11px;color:#7b6fa0">Alta energía y acción</div></div>
+          <div class="ms-preset-card" onclick="msSelect(this,'review')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">⭐</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Review</div><div style="font-size:11px;color:#7b6fa0">Testimonio de cliente</div></div>
+          <div class="ms-preset-card" onclick="msSelect(this,'wild_card')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">🃏</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Wild Card</div><div style="font-size:11px;color:#7b6fa0">Formato libre</div></div>
+        </div>
+
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Brief</div>
+        <textarea id="ms-brief" placeholder="Describe el contenido: tono, audiencia, mensaje, CTA..." style="width:100%;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;color:#e8e0ff;resize:vertical;min-height:90px;box-sizing:border-box;outline:none;margin-bottom:16px"></textarea>
+
+        <button onclick="msGenerar()" style="width:100%;background:linear-gradient(135deg,#7c5cfc,#a78bfa);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;margin-bottom:8px">✦ Generar Video</button>
+        <div id="ms-status" style="font-size:12px;color:#7c5cfc;min-height:16px;margin-bottom:12px"></div>
+        <div id="ms-output" style="background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:14px;min-height:60px;font-size:12px;color:#9b8ec4;white-space:pre-wrap;display:none"></div>
+      </div>
+    </section>
+
   </main>
 
   <nav class="bottombar">
@@ -2727,47 +2752,5 @@ async function msGenerar() {
 
 </script>
 
-<div class="section" id="section-marketing">
-  <div style="padding:28px 32px;max-width:900px">
-    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:4px">🎬 Marketing Studio</div>
-    <div style="font-size:12px;color:#7b6fa0;margin-bottom:28px">Seedance 2.0 · kie.ai · RG Production</div>
-
-    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:12px">Tipo de video</div>
-    <div id="ms-presets" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px">
-      <div class="ms-preset-card ms-active" onclick="msSelect(this,'ugc')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
-          <div style="font-size:22px;margin-bottom:8px">👤</div>
-          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">UGC</div>
-          <div style="font-size:11px;color:#7b6fa0">Video estilo usuario real</div>
-        </div><div class="ms-preset-card" onclick="msSelect(this,'tutorial')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
-          <div style="font-size:22px;margin-bottom:8px">📋</div>
-          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Tutorial</div>
-          <div style="font-size:11px;color:#7b6fa0">Paso a paso del producto</div>
-        </div><div class="ms-preset-card" onclick="msSelect(this,'tvspot')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
-          <div style="font-size:22px;margin-bottom:8px">📺</div>
-          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">TV Spot</div>
-          <div style="font-size:11px;color:#7b6fa0">Comercial cinematográfico</div>
-        </div><div class="ms-preset-card" onclick="msSelect(this,'hypermotion')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
-          <div style="font-size:22px;margin-bottom:8px">⚡</div>
-          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Hyper Motion</div>
-          <div style="font-size:11px;color:#7b6fa0">Alta energía y acción</div>
-        </div><div class="ms-preset-card" onclick="msSelect(this,'review')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
-          <div style="font-size:22px;margin-bottom:8px">⭐</div>
-          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Review</div>
-          <div style="font-size:11px;color:#7b6fa0">Testimonio de cliente</div>
-        </div><div class="ms-preset-card" onclick="msSelect(this,'wildcard')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;position:relative;transition:all .18s">
-          <div style="font-size:22px;margin-bottom:8px">🃏</div>
-          <div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Wild Card</div>
-          <div style="font-size:11px;color:#7b6fa0">Formato libre</div>
-        </div>
-    </div>
-
-    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Brief</div>
-    <textarea id="ms-brief" placeholder="Describe el contenido: tono, audiencia, mensaje, CTA..." style="width:100%;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;color:#e8e0ff;resize:vertical;min-height:90px;box-sizing:border-box;outline:none;margin-bottom:16px"></textarea>
-
-    <button onclick="msGenerar()" style="width:100%;background:linear-gradient(135deg,#7c5cfc,#a78bfa);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;margin-bottom:8px">✦ Generar Video</button>
-    <div id="ms-status" style="font-size:12px;color:#7c5cfc;min-height:16px;margin-bottom:12px"></div>
-    <div id="ms-output" style="background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:14px;min-height:60px;font-size:12px;color:#9b8ec4;white-space:pre-wrap;display:none"></div>
-  </div>
-</div>
 </body>
 </html>

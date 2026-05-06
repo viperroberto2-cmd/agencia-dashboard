@@ -207,6 +207,27 @@ app.post('/api/scheduler/publicar', (req, res) => {
   proxyPost('https://worker-production-aa53.up.railway.app/scheduler/publicar', req, res);
 });
 
+// ── Chat proxy — all agent chats go through here (avoids CORS) ───────────────
+const CHAT_TARGETS = {
+  organizador: 'https://web-production-77871.up.railway.app/organizador/chat',
+  director:    'https://agencia-ai-production.up.railway.app/director/chat',
+  crew:        'https://worker-production-34f9.up.railway.app/crew/chat',
+  estrategia:  'https://worker-production-035f.up.railway.app/estratega/chat',
+  scheduler:   'https://worker-production-aa53.up.railway.app/scheduler/chat',
+  analytics:   'https://agencia-ai-analytics-production.up.railway.app/analytics/chat',
+  compositor:  'https://compositorbot-production.up.railway.app/compositor/chat',
+  scraper:     'https://agencia-ai-scraper-production.up.railway.app/scraper/task',
+  seo:         'https://agencia-ai-seo-production.up.railway.app/seo/task',
+  web:         'https://agencia-ai-web-designer-production.up.railway.app/web/chat',
+  motion:      'https://web-production-d67bad.up.railway.app/motion/chat',
+};
+
+app.post('/api/chat/:agentId', (req, res) => {
+  const target = CHAT_TARGETS[req.params.agentId];
+  if (!target) return res.status(404).json({ error: 'Agent not found: ' + req.params.agentId });
+  proxyPost(target, req, res);
+});
+
 // ── Google Drive ─────────────────────────────────────────────────────
 async function getGoogleAccessToken() {
     const body = JSON.stringify({
