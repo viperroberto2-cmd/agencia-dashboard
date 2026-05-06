@@ -2083,42 +2083,42 @@ function stepContent(step) {
     <div class="wizard-card">
       <div class="field-group">
         <label class="field-label">${es ? 'Nombre del negocio' : 'Business name'} <span class="field-required">*</span></label>
-        <input class="field-input" placeholder="${es ? 'Clínica Médica Ramírez' : 'Ramirez Medical Clinic'}" />
+        <input class="field-input" placeholder="${es ? 'Clínica Médica Ramírez' : 'Ramirez Medical Clinic'}" value="${wizardData.negocio||''}" oninput="wizardData.negocio=this.value" />
       </div>
       <div class="field-group">
         <label class="field-label">${es ? 'Tu nombre' : 'Your name'} <span class="field-required">*</span></label>
-        <input class="field-input" placeholder="${es ? 'Dra. Ana Ramírez' : 'Dr. Ana Ramirez'}" />
+        <input class="field-input" placeholder="${es ? 'Dra. Ana Ramírez' : 'Dr. Ana Ramirez'}" value="${wizardData.nombre||''}" oninput="wizardData.nombre=this.value" />
       </div>
       <div class="field-group">
         <label class="field-label">${es ? 'Industria' : 'Industry'} <span class="field-required">*</span></label>
-        <select class="field-select">
-          <option>${es ? 'Selecciona…' : 'Select…'}</option>
-          <option>${es ? 'Clínica médica / GLP-1' : 'Medical Clinic / GLP-1'}</option>
-          <option>${es ? 'Clínica dental' : 'Dental Clinic'}</option>
-          <option>${es ? 'Clínica estética' : 'Aesthetic Clinic'}</option>
-          <option>${es ? 'Quiropráctica' : 'Chiropractic'}</option>
-          <option>${es ? 'Salud mental' : 'Mental Health'}</option>
-          <option>${es ? 'Servicios financieros' : 'Financial Services'}</option>
-          <option>${es ? 'Bienes raíces' : 'Real Estate'}</option>
-          <option>${es ? 'Concesionario' : 'Car Dealership'}</option>
-          <option>${es ? 'Restaurante' : 'Restaurant'}</option>
-          <option>${es ? 'Wellness / Spa' : 'Wellness / Spa'}</option>
-          <option>${es ? 'Otro' : 'Other'}</option>
+        <select class="field-select" onchange="wizardData.industria=this.value">
+          <option value="">${es ? 'Selecciona…' : 'Select…'}</option>
+          <option ${wizardData.industria===( es?'Clínica médica / GLP-1':'Medical Clinic / GLP-1')?'selected':''}>${es ? 'Clínica médica / GLP-1' : 'Medical Clinic / GLP-1'}</option>
+          <option ${wizardData.industria===(es?'Clínica dental':'Dental Clinic')?'selected':''}>${es ? 'Clínica dental' : 'Dental Clinic'}</option>
+          <option ${wizardData.industria===(es?'Clínica estética':'Aesthetic Clinic')?'selected':''}>${es ? 'Clínica estética' : 'Aesthetic Clinic'}</option>
+          <option ${wizardData.industria===(es?'Quiropráctica':'Chiropractic')?'selected':''}>${es ? 'Quiropráctica' : 'Chiropractic'}</option>
+          <option ${wizardData.industria===(es?'Salud mental':'Mental Health')?'selected':''}>${es ? 'Salud mental' : 'Mental Health'}</option>
+          <option ${wizardData.industria===(es?'Servicios financieros':'Financial Services')?'selected':''}>${es ? 'Servicios financieros' : 'Financial Services'}</option>
+          <option ${wizardData.industria===(es?'Bienes raíces':'Real Estate')?'selected':''}>${es ? 'Bienes raíces' : 'Real Estate'}</option>
+          <option ${wizardData.industria===(es?'Concesionario':'Car Dealership')?'selected':''}>${es ? 'Concesionario' : 'Car Dealership'}</option>
+          <option ${wizardData.industria===(es?'Restaurante':'Restaurant')?'selected':''}>${es ? 'Restaurante' : 'Restaurant'}</option>
+          <option ${wizardData.industria===(es?'Wellness / Spa':'Wellness / Spa')?'selected':''}>${es ? 'Wellness / Spa' : 'Wellness / Spa'}</option>
+          <option ${wizardData.industria===(es?'Otro':'Other')?'selected':''}>${es ? 'Otro' : 'Other'}</option>
         </select>
       </div>
       <div class="field-row">
         <div class="field-group">
           <label class="field-label">Email <span class="field-required">*</span></label>
-          <input class="field-input" type="email" placeholder="tu@negocio.com" />
+          <input class="field-input" type="email" placeholder="tu@negocio.com" value="${wizardData.email||''}" oninput="wizardData.email=this.value" />
         </div>
         <div class="field-group">
           <label class="field-label">${es ? 'Teléfono' : 'Phone'} <span class="field-required">*</span></label>
-          <input class="field-input" type="tel" placeholder="+1 (213) 555-0142" />
+          <input class="field-input" type="tel" placeholder="+1 (213) 555-0142" value="${wizardData.telefono||''}" oninput="wizardData.telefono=this.value" />
         </div>
       </div>
       <div class="field-group">
         <label class="field-label">${es ? 'Ciudad y Estado' : 'City & State'}</label>
-        <input class="field-input" placeholder="Los Angeles, CA" />
+        <input class="field-input" placeholder="Los Angeles, CA" value="${wizardData.ciudad||''}" oninput="wizardData.ciudad=this.value" />
       </div>
     </div>`;
 
@@ -2191,7 +2191,7 @@ function stepContent(step) {
       </div>
       <div class="field-group">
         <label class="field-label">${es ? 'Nombre del asistente' : 'Assistant name'} <span class="field-required">*</span></label>
-        <input class="field-input" value="Sofía" />
+        <input class="field-input" value="${wizardData.asistente||'Sofía'}" oninput="wizardData.asistente=this.value" />
         <div class="field-hint">${es ? 'Este es el nombre que verán tus pacientes. Algo cálido y profesional.' : 'This is the name your patients will see. Choose something warm and professional.'}</div>
       </div>
       <div class="field-group">
