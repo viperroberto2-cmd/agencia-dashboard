@@ -379,6 +379,13 @@ app.patch('/api/clientes/:user_id', async (req, res) => {
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
+app.delete('/api/clientes/:user_id', async (req, res) => {
+  try {
+    await sbFetch(`/clientes?user_id=eq.${req.params.user_id}`, { method: 'DELETE' });
+    res.json({ ok: true });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 // ── PORTAL USERS ─────────────────────────────────────────────────
 app.get('/api/portal-users', async (req, res) => {
   try {

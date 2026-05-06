@@ -3986,9 +3986,20 @@ async function loadConfigClientes() {
           ${tags.length ? '<div class="client-tags">' + tags.map(t => `<span class="client-tag">${t}</span>`).join('') + '</div>' : ''}
         </div>
         <span class="agent-status online"><span class="dot"></span>activo</span>
+        <button onclick="eliminarCliente('${c.user_id}','${c.nombre}')" style="margin-left:12px;padding:4px 10px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--danger);cursor:pointer;" title="Dar de baja">Dar de baja</button>
       </div>`;
     }).join('');
   } catch(e) { el.innerHTML = '<div style="color:var(--danger);font-size:13px;">Error cargando clientes.</div>'; }
+}
+
+async function eliminarCliente(userId, nombre) {
+  if (!confirm(`¿Dar de baja a "${nombre}"?\n\nEsto eliminará su registro de clientes. Sus leads e historial se conservan.`)) return;
+  try {
+    const res = await fetch(`/api/clientes/${userId}`, { method: 'DELETE' });
+    const d = await res.json();
+    if (!d.ok) { alert('Error: ' + (d.error || 'No se pudo eliminar')); return; }
+    loadConfigClientes();
+  } catch(e) { alert('Error de conexión.'); }
 }
 
 // ── PORTAL USERS ──────────────────────────────────────────────────
