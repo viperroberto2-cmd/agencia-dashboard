@@ -1825,7 +1825,7 @@ input, textarea { font-family: inherit; }
         </div>
         <div style="display: flex; gap: 8px;">
           <button class="btn btn-ghost" id="driveBtnSubir" onclick="alert('Sube un archivo desde tu computadora')">⬆ Subir archivo</button>
-          <button class="btn btn-primary">＋ Generar</button>
+          <button class="btn btn-primary" onclick="openDriveGenerar()">＋ Generar</button>
         </div>
       </div>
       <div id="driveContent"></div>
@@ -2034,6 +2034,32 @@ input, textarea { font-family: inherit; }
 </div>
 
 <!-- ── LEAD MODAL ────────────────────────────────────────────────── -->
+<!-- ── DRIVE GENERAR MODAL ───────────────────────────────────────── -->
+<div id="driveGenerarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;" onclick="if(event.target===this)closeDriveGenerar()">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;width:min(520px,95vw);padding:28px;position:relative;">
+    <button onclick="closeDriveGenerar()" style="position:absolute;top:16px;right:16px;background:var(--bg-elevated);border:none;border-radius:8px;width:32px;height:32px;font-size:16px;color:var(--text-muted);cursor:pointer;">✕</button>
+    <div style="font-size:17px;font-weight:700;margin-bottom:4px;">✨ Generar contenido</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Describe lo que necesitas y el Crew lo genera y lo guarda en Drive.</div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Tipo de contenido</div>
+      <div style="display:flex;gap:8px;">
+        <button id="gtype-video" onclick="selectGenType('video')" style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--accent);background:var(--accent-dim);color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;">🎬 Video</button>
+        <button id="gtype-image" onclick="selectGenType('image')" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;">🖼️ Imagen</button>
+        <button id="gtype-audio" onclick="selectGenType('audio')" style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-muted);font-size:13px;font-weight:600;cursor:pointer;">🎵 Audio</button>
+      </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Prompt / descripción</div>
+      <textarea id="gen-prompt" rows="4" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;color:var(--text);font-family:inherit;resize:vertical;outline:none;" placeholder="Ej: Reel de 30 segundos mostrando los beneficios de rentar un Tesla en Turo, tono aspiracional, música upbeat…"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button id="gen-btn" onclick="submitGenerar()" style="flex:1;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;">✨ Enviar al Crew →</button>
+      <button onclick="closeDriveGenerar()" style="background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:13px;cursor:pointer;">Cancelar</button>
+    </div>
+    <div id="gen-result" style="display:none;margin-top:14px;padding:12px;background:var(--bg-elevated);border-radius:10px;font-size:13px;color:var(--success);"></div>
+  </div>
+</div>
+
 <div id="leadModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:300;align-items:center;justify-content:center;" onclick="if(event.target===this)closeLeadModal()">
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;padding:28px;position:relative;">
     <button onclick="closeLeadModal()" style="position:absolute;top:16px;right:16px;background:var(--bg-elevated);border:none;border-radius:8px;width:32px;height:32px;font-size:16px;color:var(--text-muted);cursor:pointer;">✕</button>
@@ -3003,23 +3029,79 @@ setInterval(loadHealth, 30000);
 
 // ── GDRIVE LIVE LOAD ──────────────────────────────────────────────
 async function loadDriveFromAPI() {
+  const content = document.getElementById('driveContent');
+  if (content && !window._driveAPIItems) {
+    content.innerHTML = '<div style="padding:32px;color:var(--text-muted);font-size:14px;">Conectando con Google Drive…</div>';
+  }
   try {
-    const tipo = driveFilter === 'all' ? 'all' : driveFilter;
-    const res = await fetch('/gdrive/listar?tipo=' + tipo);
+    const res = await fetch('/gdrive/listar?tipo=all');
     const data = await res.json();
-    if (!data.ok || !data.archivos.length) return; // fallback to static data
+    if (!data.ok || !data.archivos || !data.archivos.length) { renderDrive(); return; }
     const iconMap = { video: '🎬', audio: '🎵', image: '🖼️' };
     window._driveAPIItems = data.archivos.map(f => {
       const mime = f.mimeType || '';
       const type = mime.includes('video') ? 'video' : mime.includes('audio') ? 'audio' : mime.includes('image') ? 'image' : 'file';
       const sizeKB = f.size ? Math.round(f.size / 1024) : 0;
       const sizeFmt = sizeKB > 1024 ? (sizeKB/1024).toFixed(1) + ' MB' : sizeKB + ' KB';
-      return { type, name: f.name, size: sizeFmt, source: 'Drive', date: new Date(f.modifiedTime).toLocaleDateString('es-MX',{month:'short',day:'numeric'}), icon: iconMap[type]||'📄', link: f.webViewLink };
+      return { type, name: f.name, size: sizeFmt, source: 'Google Drive', date: new Date(f.modifiedTime).toLocaleDateString('es-MX',{month:'short',day:'numeric'}), icon: iconMap[type]||'📄', link: f.webViewLink };
     });
     renderDrive();
-  } catch(e) { console.warn('GDrive API failed, using static data:', e.message); }
+  } catch(e) { console.warn('GDrive API no disponible, usando datos demo:', e.message); renderDrive(); }
 }
 
+
+// ── DRIVE GENERAR MODAL ───────────────────────────────────────────
+let genType = 'video';
+
+function openDriveGenerar() {
+  genType = 'video';
+  selectGenType('video');
+  document.getElementById('gen-prompt').value = '';
+  document.getElementById('gen-result').style.display = 'none';
+  document.getElementById('gen-btn').textContent = '✨ Enviar al Crew →';
+  document.getElementById('gen-btn').disabled = false;
+  document.getElementById('driveGenerarOverlay').style.display = 'flex';
+}
+
+function closeDriveGenerar() {
+  document.getElementById('driveGenerarOverlay').style.display = 'none';
+}
+
+function selectGenType(type) {
+  genType = type;
+  ['video','image','audio'].forEach(t => {
+    const btn = document.getElementById('gtype-' + t);
+    const active = t === type;
+    btn.style.border = active ? '2px solid var(--accent)' : '1px solid var(--border)';
+    btn.style.background = active ? 'var(--accent-dim)' : 'var(--bg-elevated)';
+    btn.style.color = active ? 'var(--accent)' : 'var(--text-muted)';
+  });
+}
+
+async function submitGenerar() {
+  const prompt = document.getElementById('gen-prompt').value.trim();
+  if (!prompt) { document.getElementById('gen-prompt').focus(); return; }
+  const btn = document.getElementById('gen-btn');
+  btn.textContent = 'Enviando…'; btn.disabled = true;
+  try {
+    const r = await fetch('/api/chat/crew', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: `[GENERAR ${genType.toUpperCase()}] ${prompt}`, agent: 'crew' })
+    });
+    const d = await r.json();
+    const result = document.getElementById('gen-result');
+    result.style.display = 'block';
+    result.textContent = '✅ ' + (d.response || 'Solicitud enviada al Crew. Revisa Drive en unos minutos.');
+    btn.textContent = 'Enviado ✓';
+  } catch(e) {
+    const result = document.getElementById('gen-result');
+    result.style.display = 'block';
+    result.style.color = 'var(--danger)';
+    result.textContent = 'Error: ' + e.message;
+    btn.textContent = '✨ Enviar al Crew →'; btn.disabled = false;
+  }
+}
 
 // ── MARKETING STUDIO ──────────────────────────────────────────────
 let msPreset = 'ugc';
