@@ -419,6 +419,40 @@ app.get('/api/recordings', async (req, res) => {
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
+// ── LEADS (CRM) ─────────────────────────────────────────────────
+app.get('/api/leads', async (req, res) => {
+  try {
+    const cliente = req.query.cliente ? `&cliente=eq.${req.query.cliente}` : '';
+    const r = await sbFetch(`/voice_leads?select=*&order=created_at.desc&limit=200${cliente}`);
+    const rows = await r.json();
+    const data = Array.isArray(rows) ? rows : [];
+    const cols = { new: [], contacted: [], interested: [], closed: [] };
+    data.forEach(l => {
+      const col = ['new','contacted','interested','closed'].includes(l.status) ? l.status : 'new';
+      cols[col].push({
+        id: l.id, name: l.nombre || l.from_number || 'Lead',
+        phone: l.from_number || l.telefono || '',
+        email: l.email || '', source: l.fuente || 'Llamada',
+        meta: l.created_at ? new Date(l.created_at).toLocaleDateString('es-MX') : '',
+        notes: l.notas || '', cliente: l.cliente || 'arranca',
+        recording_url: l.recording_url || null
+      });
+    });
+    res.json({ ok: true, leads: cols, total: data.length });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.patch('/api/leads/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body || {};
+    await sbFetch(`/voice_leads?id=eq.${req.params.id}`, {
+      method: 'PATCH', body: JSON.stringify({ status }),
+      headers: { 'Prefer': 'return=minimal' }
+    });
+    res.json({ ok: true });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 // ── SCRAPER LOGS ─────────────────────────────────────────────────
 app.get('/api/scraper/logs', async (req, res) => {
   try {

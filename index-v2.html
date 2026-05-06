@@ -1728,7 +1728,7 @@ input, textarea { font-family: inherit; }
         <div class="chat-messages" id="chatMessages">
           <div class="message-group">
             <div class="message-meta">Organizador · ahora</div>
-            <div class="message bot">Hola Roberto. Soy el Organizador — el CEO de tu agencia. Tienes 12 leads esta semana en Arranca y 3 tareas pendientes del Crew. ¿Qué arrancamos hoy?</div>
+            <div class="message bot" id="chatWelcomeMsg">Hola Roberto. Soy el Organizador — el CEO de tu agencia. ¿Qué arrancamos hoy?</div>
           </div>
         </div>
         <div class="chat-quick-actions">
@@ -2349,6 +2349,7 @@ function goSection(name) {
   if (name === 'drive')     loadDriveFromAPI();
   if (name === 'marketing') { loadMSJobs(); renderRefSlots('ms'); }
   if (name === 'inbox')     loadInboxFromSupabase();
+  if (name === 'crm')       loadLeadsFromAPI();
   if (name === 'scheduler') loadSchedulerPosts();
   if (name === 'grabaciones') loadRecordingsFromAPI();
   if (name === 'scraper')   { loadScraperStats(); loadScraperLogs(); }
@@ -2418,7 +2419,7 @@ function openChat(agentId) {
 
 function getAgentGreeting(a) {
   const g = {
-    organizador: 'Hola Roberto. Soy el Organizador. Tienes 12 leads esta semana y 3 tareas del Crew pendientes. ¿Qué arrancamos?',
+    organizador: 'Hola Roberto. Soy el Organizador. ¿Qué arrancamos hoy?',
     director: 'Listo para guiones, copy y dirección musical. ¿Qué necesitas escribir?',
     crew: 'Crew aquí. Estoy crasheando ahora mismo — chécame el último commit en Railway.',
     estrategia: 'Estrategia online. Campañas, SEO, funnels — ¿qué movemos hoy?',
@@ -2855,7 +2856,7 @@ function sendQuick(text) { chatInput.value = text; sendMessage(); }
 
 function simulateReply(text) {
   const t = text.toLowerCase();
-  if (t.includes('estado') || t.includes('proyecto')) return 'Arranca: 12 leads, 2 cerrados ($394). Sofía: agente de voz activo. Crew: crasheando.';
+  if (t.includes('estado') || t.includes('proyecto')) return 'Consultando estado actual del sistema...';
   if (t.includes('reporte')) return 'Generando reporte semanal... Te lo mando en PDF y al Telegram.';
   if (t.includes('campaña')) return '¿Para qué cliente? Dame brief: objetivo, presupuesto, canales y deadline.';
   if (t.includes('lead')) return 'Hoy: 3 leads nuevos. María llamó a 2 — uno sin respuesta.';
@@ -3655,22 +3656,43 @@ async function loadInboxFromSupabase() {
   try {
     const r = await fetch(`/api/inbox?client=roberto_agencia&limit=30`);
     const d = await r.json();
-    if (!d.ok || !d.items.length) return; // fallback to hardcoded if no real data
-    // Replace hardcoded inboxItems with Supabase data
-    inboxItems = d.items.map((item, idx) => ({
-      id: item.id || idx,
-      channel: 'telegram', icon: '✈️',
-      from: item.bot_destino || 'Agencia AI',
-      preview: (item.contenido || '').slice(0, 80),
-      time: item.ts_creado ? new Date(item.ts_creado).toLocaleString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—',
-      unread: !item.ts_procesado,
-      client: 'arranca', tipo: item.tipo, prioridad: item.prioridad
-    }));
+    if (d.ok && d.items && d.items.length) {
+      inboxItems = d.items.map((item, idx) => ({
+        id: item.id || idx,
+        channel: item.canal || 'telegram', icon: item.canal === 'whatsapp' ? '💚' : item.canal === 'instagram' ? '📸' : '✈️',
+        from: item.from_name || item.bot_destino || 'Agencia AI',
+        preview: (item.contenido || '').slice(0, 80),
+        time: item.ts_creado ? new Date(item.ts_creado).toLocaleString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—',
+        unread: !item.ts_procesado,
+        client: item.cliente || 'arranca', tipo: item.tipo, prioridad: item.prioridad
+      }));
+    } else {
+      // Si no hay datos reales, mostrar inbox vacío en vez de demo
+      inboxItems = [];
+    }
     renderInbox();
     const unread = inboxItems.filter(i => i.unread).length;
     document.getElementById('tabInboxCount').textContent = unread || '';
     document.getElementById('navInboxCount').textContent = unread || '';
-  } catch(e) { /* keep hardcoded fallback */ }
+  } catch(e) { /* keep current inboxItems */ }
+}
+
+async function loadLeadsFromAPI() {
+  try {
+    const r = await fetch('/api/leads');
+    const d = await r.json();
+    if (!d.ok) return;
+    const total = d.total || 0;
+    // Actualizar subtitle del CRM
+    const sub = document.getElementById('crmSubtitle');
+    if (sub) sub.textContent = `${total} leads · esta semana`;
+    // Si hay datos reales, reemplazar el array demo
+    const hasData = Object.values(d.leads).some(col => col.length > 0);
+    if (hasData) {
+      Object.assign(leads, d.leads);
+      renderLeads();
+    }
+  } catch(e) { /* mantiene leads demo */ }
 }
 
 // ============ CRM EXPORT ============
