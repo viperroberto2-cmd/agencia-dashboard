@@ -2431,7 +2431,7 @@ function renderPosts() {
       const statusCss = ESTADO_CSS[p.estado] || 'draft';
       const statusLbl = ESTADO_LABEL_MAP[p.estado] || p.estado;
       const snippet = p.contenido ? (p.contenido.length>70 ? p.contenido.slice(0,70)+'…' : p.contenido) : '(sin contenido)';
-      return `<div class="post-item">
+      return `<div class="post-item" style="gap:10px;">
         <div class="post-thumb">${icon}</div>
         <div class="post-content">
           <div class="post-channels"><span class="post-channel">${icon} ${p.plataforma}</span>${p.cliente ? `<span class="post-channel" style="opacity:.6">${p.cliente}</span>` : ''}</div>
@@ -2439,9 +2439,21 @@ function renderPosts() {
           <div class="post-meta"><span>${dateLabel} · ${p.hora_publicacion || ''}</span></div>
         </div>
         <span class="post-status ${statusCss}">${statusLbl}</span>
+        <button onclick="deletePost('${p.post_id}')" title="Borrar post" style="background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer;padding:4px;border-radius:6px;flex-shrink:0;line-height:1;" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-dim)'">🗑</button>
       </div>`;
     }).join('')}
   `;
+}
+
+async function deletePost(postId) {
+  if (!confirm('¿Borrar este post? Se eliminará de Supabase y no se publicará.')) return;
+  try {
+    const r = await fetch(`/api/scheduler/posts/${postId}`, { method: 'DELETE' });
+    if (!r.ok) { alert('Error al borrar el post.'); return; }
+    schedulerPosts = schedulerPosts.filter(p => p.post_id !== postId);
+    renderCalendar();
+    renderPosts();
+  } catch(e) { alert('Error de conexión: ' + e.message); }
 }
 
 // ============ INBOX ============
@@ -3146,6 +3158,7 @@ function openLeadModal(colId, idx) {
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button onclick="openChat('organizador');closeLeadModal()" style="flex:1;min-width:120px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;">💬 Consultar Organizador</button>
+      <button onclick="deleteLead('${colId}',${idx})" style="background:#f8717120;color:var(--danger);border:1px solid #f8717140;border-radius:10px;padding:11px 14px;font-size:13px;cursor:pointer;">🗑 Borrar</button>
       <button onclick="closeLeadModal()" style="background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:13px;cursor:pointer;">Cerrar</button>
     </div>`;
   overlay.style.display = 'flex';
@@ -3157,6 +3170,14 @@ function moveLead(fromCol, idx, toCol) {
   closeLeadModal();
   renderCRM();
   openLeadModal(toCol, leads[toCol].length - 1);
+}
+
+function deleteLead(colId, idx) {
+  const lead = leads[colId][idx];
+  if (!confirm(`¿Borrar a ${lead.name}? Esta acción no se puede deshacer.`)) return;
+  leads[colId].splice(idx, 1);
+  closeLeadModal();
+  renderCRM();
 }
 
 function closeLeadModal() {

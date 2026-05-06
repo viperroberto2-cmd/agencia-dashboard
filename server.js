@@ -318,6 +318,15 @@ app.get('/api/scheduler/posts', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── Borrar post por post_id ───────────────────────────────────────────────────
+app.delete('/api/scheduler/posts/:postId', async (req, res) => {
+  try {
+    const { postId } = req.params;
+    await sbFetch(`/contenidos_programados?post_id=eq.${encodeURIComponent(postId)}`, { method: 'DELETE' });
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── Programar post manual (inyecta secret server-side) ───────────────────────
 app.post('/api/scheduler/post', async (req, res) => {
   try {
