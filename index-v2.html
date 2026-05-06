@@ -2008,14 +2008,11 @@ input, textarea { font-family: inherit; }
 
         <!-- Referencias desde Drive -->
         <div style="margin-bottom:16px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;">Referencias desde Drive</div>
-            <button onclick="toggleRefPicker('ms')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:8px;padding:5px 10px;font-size:12px;color:#9b8ec4;cursor:pointer;">📎 Adjuntar</button>
-          </div>
-          <div id="ms-ref-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:0;"></div>
-          <div id="ms-ref-picker" style="display:none;background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:12px;margin-top:8px;max-height:180px;overflow-y:auto;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:10px;">Referencias desde Drive</div>
+          <div id="ms-ref-slots"></div>
+          <div id="ms-ref-picker" style="display:none;background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:12px;margin-top:8px;max-height:200px;overflow-y:auto;">
             <div id="ms-ref-list" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-              <div style="color:#7b6fa0;font-size:12px;grid-column:1/-1;">Cargando archivos de Drive…</div>
+              <div style="color:#7b6fa0;font-size:12px;grid-column:1/-1;">Cargando…</div>
             </div>
           </div>
         </div>
@@ -2068,14 +2065,11 @@ input, textarea { font-family: inherit; }
     </div>
     <!-- Referencias desde Drive -->
     <div style="margin-bottom:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;">Referencias desde Drive</div>
-        <button onclick="toggleRefPicker('gen')" style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--text-muted);cursor:pointer;">📎 Adjuntar</button>
-      </div>
-      <div id="gen-ref-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:0;"></div>
-      <div id="gen-ref-picker" style="display:none;background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:8px;max-height:180px;overflow-y:auto;">
+      <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;">Referencias desde Drive</div>
+      <div id="gen-ref-slots"></div>
+      <div id="gen-ref-picker" style="display:none;background:var(--bg-elevated);border:1px solid var(--border);border-radius:12px;padding:12px;margin-top:8px;max-height:200px;overflow-y:auto;">
         <div id="gen-ref-list" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-          <div style="color:var(--text-muted);font-size:12px;grid-column:1/-1;">Cargando archivos de Drive…</div>
+          <div style="color:var(--text-muted);font-size:12px;grid-column:1/-1;">Cargando…</div>
         </div>
       </div>
     </div>
@@ -2315,7 +2309,7 @@ function goSection(name) {
   });
   document.querySelector('.main').scrollTop = 0;
   if (name === 'drive') loadDriveFromAPI();
-  if (name === 'marketing') loadMSJobs();
+  if (name === 'marketing') { loadMSJobs(); renderRefSlots('ms'); }
   if (name === 'inbox') loadInboxFromSupabase();
   if (name === 'scheduler') loadSchedulerPosts();
   closeAllDropdowns();
@@ -3077,9 +3071,58 @@ async function loadDriveFromAPI() {
 }
 
 
-// ── REFERENCIAS DESDE DRIVE (compartido: Generar modal + Marketing Studio) ───
+// ── REFERENCIAS DESDE DRIVE ───────────────────────────────────────────────────
 let refCache = null;
-const refSelected = { gen: new Map(), ms: new Map() }; // id → {name, link}
+let refPickerCtx = null;   // 'gen' | 'ms'
+let refPickerSlot = null;  // 'first_frame' | 'last_frame' | 'ref_images' | 'ref_videos' | 'ref_audios'
+let refPickerFilter = null; // 'image' | 'video' | 'audio'
+
+// Slot definitions per context
+const REF_SLOTS_DEF = [
+  { key: 'first_frame',  label: '🎯 First Frame',          type: 'image', multi: false, color: '#f59e0b' },
+  { key: 'last_frame',   label: '🏁 Last Frame',           type: 'image', multi: false, color: '#10b981' },
+  { key: 'ref_images',   label: '🖼️ Imagen de referencia', type: 'image', multi: true,  color: 'var(--accent)' },
+  { key: 'ref_videos',   label: '🎬 Video de referencia',  type: 'video', multi: true,  color: 'var(--info)' },
+  { key: 'ref_audios',   label: '🎵 Audio de referencia',  type: 'audio', multi: true,  color: '#a78bfa' },
+];
+
+// Data: gen and ms each have their own slots
+const refSlots = {
+  gen: { first_frame: null, last_frame: null, ref_images: [], ref_videos: [], ref_audios: [] },
+  ms:  { first_frame: null, last_frame: null, ref_images: [], ref_videos: [], ref_audios: [] },
+};
+
+function resetRefSlots(ctx) {
+  refSlots[ctx] = { first_frame: null, last_frame: null, ref_images: [], ref_videos: [], ref_audios: [] };
+}
+
+function renderRefSlots(ctx) {
+  const container = document.getElementById(ctx + '-ref-slots');
+  if (!container) return;
+  const isMs = ctx === 'ms';
+  const mutualNote = `<div style="font-size:10px;color:#f59e0b;padding:4px 0 8px;grid-column:1/-1;">⚠️ First/Last Frame y Referencias de imagen son mutuamente exclusivos</div>`;
+  const rows = REF_SLOTS_DEF.map((slot, i) => {
+    const val = refSlots[ctx][slot.key];
+    const files = slot.multi ? (val || []) : (val ? [val] : []);
+    const chips = files.map(f =>
+      `<span style="display:inline-flex;align-items:center;gap:4px;background:${slot.color}18;border:1px solid ${slot.color}50;border-radius:20px;padding:3px 8px;font-size:11px;color:${slot.color}">
+        <span style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span>
+        <button onclick="removeRefSlot('${ctx}','${slot.key}','${f.id}')" style="background:none;border:none;color:${slot.color};cursor:pointer;font-size:12px;padding:0;line-height:1;">✕</button>
+      </span>`).join('');
+    const btnLabel = slot.type === 'image' ? '+ imagen' : slot.type === 'video' ? '+ video' : '+ audio';
+    const btn = `<button onclick="openRefPicker('${ctx}','${slot.key}','${slot.type}')"
+      style="background:${isMs?'#1a1730':'var(--bg-elevated)'};border:${isMs?'.5px solid #2a2540':'1px solid var(--border)'};
+      border-radius:8px;padding:4px 10px;font-size:11px;color:${isMs?'#9b8ec4':'var(--text-muted)'};cursor:pointer;white-space:nowrap;flex-shrink:0;">
+      ${btnLabel}</button>`;
+    const separator = i === 1 ? mutualNote : '';
+    return `${separator}<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid ${isMs?'#1a1730':'var(--border)'};">
+      <span style="font-size:12px;font-weight:600;color:${slot.color};min-width:160px;flex-shrink:0;">${slot.label}</span>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;">${chips || `<span style="font-size:11px;color:${isMs?'#7b6fa0':'var(--text-dim)'}">Sin archivo</span>`}</div>
+      ${(!slot.multi && files.length) ? '' : btn}
+    </div>`;
+  }).join('');
+  container.innerHTML = `<div style="display:flex;flex-direction:column;">${rows}</div>`;
+}
 
 async function loadRefFiles() {
   if (refCache) return refCache;
@@ -3088,120 +3131,87 @@ async function loadRefFiles() {
     const d = await r.json();
     const iconFor = m => m.includes('video') ? '🎬' : m.includes('audio') ? '🎵' : m.includes('image') ? '🖼️' : '📄';
     refCache = (d.archivos || []).map(f => ({
-      id: f.id, name: f.name, link: f.webViewLink,
+      id: f.id, name: f.name, link: f.webViewLink || f.link || '',
       icon: iconFor(f.mimeType || ''), mime: f.mimeType || ''
     }));
   } catch(e) { refCache = []; }
   return refCache;
 }
 
-async function toggleRefPicker(ctx) {
+async function openRefPicker(ctx, slot, filterType) {
   const picker = document.getElementById(ctx + '-ref-picker');
   const list   = document.getElementById(ctx + '-ref-list');
-  if (picker.style.display !== 'none') { picker.style.display = 'none'; return; }
+  // Toggle off if same picker open
+  if (refPickerCtx === ctx && refPickerSlot === slot && picker.style.display !== 'none') {
+    picker.style.display = 'none'; refPickerCtx = null; return;
+  }
+  refPickerCtx = ctx; refPickerSlot = slot; refPickerFilter = filterType;
   picker.style.display = 'block';
   list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;grid-column:1/-1;">Cargando…</div>';
-  const files = await loadRefFiles();
+  const allFiles = await loadRefFiles();
+  const files = allFiles.filter(f => f.mime.includes(filterType));
   if (!files.length) {
-    list.innerHTML = '<div style="color:var(--text-muted);font-size:12px;grid-column:1/-1;">No hay archivos en la carpeta de referencias.<br>Agrega archivos a tu folder Referencias en Drive.</div>';
+    list.innerHTML = `<div style="color:var(--text-muted);font-size:12px;grid-column:1/-1;">No hay archivos de tipo <b>${filterType}</b> en tu carpeta Referencias de Drive.</div>`;
     return;
   }
   list.innerHTML = files.map(f => {
-    const sel = refSelected[ctx].has(f.id);
-    return `<button onclick="toggleRefFile('${ctx}','${f.id}','${f.name.replace(/'/g,"\\'")}','${f.link}','${f.mime}')"
-      style="display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:8px;
-      border:1px solid ${sel ? 'var(--accent)' : 'var(--border)'};
-      background:${sel ? 'var(--accent-dim)' : 'var(--bg-card)'};
-      color:${sel ? 'var(--accent)' : 'var(--text)'};font-size:12px;cursor:pointer;text-align:left;width:100%;"
-      id="ref-btn-${ctx}-${f.id}">
+    const slotData = refSlots[ctx][slot];
+    const isSel = Array.isArray(slotData) ? slotData.some(x => x.id === f.id) : slotData?.id === f.id;
+    return `<button onclick="selectRefFile('${ctx}','${slot}','${f.id}','${f.name.replace(/'/g,"\\'")}','${f.link}','${f.mime}')"
+      id="rpick-${ctx}-${slot}-${f.id}"
+      style="display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:8px;width:100%;text-align:left;
+      border:1px solid ${isSel ? 'var(--accent)' : 'var(--border)'};
+      background:${isSel ? 'var(--accent-dim)' : 'var(--bg-card)'};
+      color:${isSel ? 'var(--accent)' : 'var(--text)'};font-size:12px;cursor:pointer;">
       <span>${f.icon}</span>
       <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span>
     </button>`;
   }).join('');
 }
 
-function toggleRefFile(ctx, id, name, link, mime) {
-  if (refSelected[ctx].has(id)) {
-    refSelected[ctx].delete(id);
+function selectRefFile(ctx, slot, id, name, link, mime) {
+  const def = REF_SLOTS_DEF.find(s => s.key === slot);
+  const file = { id, name, link, mime };
+  if (def.multi) {
+    const arr = refSlots[ctx][slot] || [];
+    const idx = arr.findIndex(f => f.id === id);
+    if (idx >= 0) arr.splice(idx, 1); else arr.push(file);
+    refSlots[ctx][slot] = arr;
   } else {
-    const isImg = mime && mime.includes('image');
-    refSelected[ctx].set(id, { name, link, mime: mime || '', role: isImg ? 'ref' : 'media' });
+    refSlots[ctx][slot] = refSlots[ctx][slot]?.id === id ? null : file;
   }
-  renderRefChips(ctx);
-  const btn = document.getElementById(`ref-btn-${ctx}-${id}`);
-  if (btn) {
-    const sel = refSelected[ctx].has(id);
-    btn.style.border = sel ? '1px solid var(--accent)' : '1px solid var(--border)';
-    btn.style.background = sel ? 'var(--accent-dim)' : 'var(--bg-card)';
-    btn.style.color = sel ? 'var(--accent)' : 'var(--text)';
-  }
+  renderRefSlots(ctx);
+  // re-open picker to refresh selection state
+  openRefPicker(ctx, slot, mime.includes('video') ? 'video' : mime.includes('audio') ? 'audio' : 'image');
 }
 
-const IMAGE_ROLES = ['ref', 'first', 'last'];
-const IMAGE_ROLE_LABEL = { ref: '🖼️ Ref', first: '🎯 1er frame', last: '🏁 Últ. frame' };
-const IMAGE_ROLE_COLOR = { ref: 'var(--accent)', first: '#f59e0b', last: '#10b981' };
-
-function cycleImageRole(ctx, id) {
-  const f = refSelected[ctx].get(id);
-  if (!f || !f.mime.includes('image')) return;
-  const idx = IMAGE_ROLES.indexOf(f.role);
-  f.role = IMAGE_ROLES[(idx + 1) % IMAGE_ROLES.length];
-  refSelected[ctx].set(id, f);
-  renderRefChips(ctx);
-}
-
-function renderRefChips(ctx) {
-  const chips = document.getElementById(ctx + '-ref-chips');
-  if (!chips) return;
-  chips.innerHTML = [...refSelected[ctx].entries()].map(([id, f]) => {
-    const isImg = f.mime && f.mime.includes('image');
-    const color = isImg ? IMAGE_ROLE_COLOR[f.role] : 'var(--info)';
-    const label = isImg ? IMAGE_ROLE_LABEL[f.role] : (f.mime.includes('video') ? '🎬' : '🎵');
-    const roleBtn = isImg ? `<button onclick="cycleImageRole('${ctx}','${id}')" title="Cambiar rol"
-      style="background:none;border:none;color:${color};cursor:pointer;font-size:10px;padding:0 2px;font-weight:700;">${label}</button>` : `<span style="font-size:10px">${label}</span>`;
-    return `<span style="display:inline-flex;align-items:center;gap:4px;background:${color}18;
-      border:1px solid ${color}50;border-radius:20px;padding:4px 8px;font-size:11px;font-weight:500;color:${color}">
-      ${roleBtn}
-      <span style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">${f.name}</span>
-      <button onclick="removeRef('${ctx}','${id}')"
-        style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:13px;padding:0;line-height:1;">✕</button>
-    </span>`;
-  }).join('');
-}
-
-function removeRef(ctx, id) {
-  refSelected[ctx].delete(id);
-  renderRefChips(ctx);
-  const btn = document.getElementById(`ref-btn-${ctx}-${id}`);
-  if (btn) { btn.style.border='1px solid var(--border)'; btn.style.background='var(--bg-card)'; btn.style.color='var(--text)'; }
-}
-
-function buildRefText(ctx) {
-  if (!refSelected[ctx].size) return '';
-  const links = [...refSelected[ctx].values()].map(f => `- ${f.name}: ${f.link}`).join('\n');
-  return `\n\nArchivos de referencia (Drive):\n${links}`;
+function removeRefSlot(ctx, slot, id) {
+  const def = REF_SLOTS_DEF.find(s => s.key === slot);
+  if (def.multi) refSlots[ctx][slot] = (refSlots[ctx][slot] || []).filter(f => f.id !== id);
+  else refSlots[ctx][slot] = null;
+  renderRefSlots(ctx);
 }
 
 function buildRefPayload(ctx) {
-  // Classify selected files by mime type for kie.ai API
-  const files = [...refSelected[ctx].values()];
-  const isImage = f => f.mime && f.mime.includes('image');
-  const isVideo = f => f.mime && f.mime.includes('video');
-  const isAudio = f => f.mime && f.mime.includes('audio');
-  const images = files.filter(isImage);
-  const videos = files.filter(isVideo).map(f => f.link);
-  const audios = files.filter(isAudio).map(f => f.link);
-  // First image → first_frame_url if tagged, rest → reference_image_urls
-  const firstFrame = files.find(f => f.role === 'first');
-  const lastFrame  = files.find(f => f.role === 'last');
-  const refImages  = images.filter(f => f.role !== 'first' && f.role !== 'last').map(f => f.link);
+  const s = refSlots[ctx];
   return {
-    first_frame_url:      firstFrame ? firstFrame.link : undefined,
-    last_frame_url:       lastFrame  ? lastFrame.link  : undefined,
-    reference_image_urls: refImages.length ? refImages : undefined,
-    reference_video_urls: videos.length ? videos : undefined,
-    reference_audio_urls: audios.length ? audios : undefined,
+    first_frame_url:      s.first_frame ? s.first_frame.link : undefined,
+    last_frame_url:       s.last_frame  ? s.last_frame.link  : undefined,
+    reference_image_urls: s.ref_images.length  ? s.ref_images.map(f => f.link)  : undefined,
+    reference_video_urls: s.ref_videos.length  ? s.ref_videos.map(f => f.link)  : undefined,
+    reference_audio_urls: s.ref_audios.length  ? s.ref_audios.map(f => f.link)  : undefined,
   };
+}
+
+function buildRefText(ctx) {
+  const s = refSlots[ctx];
+  const lines = [];
+  if (s.first_frame)    lines.push(`- First Frame: ${s.first_frame.link}`);
+  if (s.last_frame)     lines.push(`- Last Frame: ${s.last_frame.link}`);
+  s.ref_images.forEach(f => lines.push(`- Img referencia: ${f.link}`));
+  s.ref_videos.forEach(f => lines.push(`- Video referencia: ${f.link}`));
+  s.ref_audios.forEach(f => lines.push(`- Audio referencia: ${f.link}`));
+  return lines.length ? `\n\nReferencias (Drive):\n${lines.join('\n')}` : '';
 }
 
 // ── DRIVE GENERAR MODAL ───────────────────────────────────────────
@@ -3214,9 +3224,9 @@ function openDriveGenerar() {
   document.getElementById('gen-result').style.display = 'none';
   document.getElementById('gen-btn').textContent = '✨ Enviar al Crew →';
   document.getElementById('gen-btn').disabled = false;
+  resetRefSlots('gen');
+  renderRefSlots('gen');
   document.getElementById('gen-ref-picker').style.display = 'none';
-  refSelected.gen.clear();
-  renderRefChips('gen');
   document.getElementById('driveGenerarOverlay').style.display = 'flex';
 }
 
