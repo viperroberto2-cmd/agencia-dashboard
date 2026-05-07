@@ -2302,19 +2302,19 @@ function selectRadio(el, group) {
 }
 
 // ============ LEADS DATA ============
-const leadsData = [
-  { name: 'María González', initials: 'MG', meta: 'WhatsApp · interesada en GLP-1', stage: 'new', stageLabel: { es: 'Nuevo', en: 'New' }, time: 'hace 2h' },
-  { name: 'Carlos Ramírez', initials: 'CR', meta: 'Facebook · pidió info por DM', stage: 'new', stageLabel: { es: 'Nuevo', en: 'New' }, time: 'hace 4h' },
-  { name: 'Ana Torres', initials: 'AT', meta: 'Instagram · agendó cita', stage: 'qualified', stageLabel: { es: 'Calificado', en: 'Qualified' }, time: 'hace 6h' },
-  { name: 'Jorge Castro', initials: 'JC', meta: 'WhatsApp · respondió follow-up', stage: 'contacted', stageLabel: { es: 'Contactado', en: 'Contacted' }, time: 'ayer' },
-  { name: 'Patricia Ruiz', initials: 'PR', meta: 'Facebook · agendó llamada', stage: 'qualified', stageLabel: { es: 'Calificado', en: 'Qualified' }, time: 'ayer' },
-  { name: 'Daniel Soto', initials: 'DS', meta: 'WhatsApp · pagó $497 ✓', stage: 'converted', stageLabel: { es: 'Convertido', en: 'Converted' }, time: 'lun' },
-  { name: 'Laura Núñez', initials: 'LN', meta: 'Referido · pagó $497 ✓', stage: 'converted', stageLabel: { es: 'Convertido', en: 'Converted' }, time: 'lun' },
-  { name: 'Miguel Ángel', initials: 'MA', meta: 'Instagram · objeción precio', stage: 'contacted', stageLabel: { es: 'Contactado', en: 'Contacted' }, time: 'mar' }
-];
+const leadsData = [];
 
 function renderLeads() {
-  document.getElementById('leadsList').innerHTML = leadsData.map(l => `
+  const el = document.getElementById('leadsList');
+  if (!el) return;
+  if (!leadsData.length) {
+    el.innerHTML = `<div style="text-align:center;padding:32px 0;color:#64748b;font-size:13px;">
+      <div style="font-size:28px;margin-bottom:8px">👥</div>
+      <div>Sin leads todavía</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = leadsData.map(l => `
     <button class="lead-row">
       <div class="lead-avatar">${l.initials}</div>
       <div class="lead-info">
@@ -2328,16 +2328,18 @@ function renderLeads() {
 }
 
 // ============ APPOINTMENTS DATA ============
-const apptsData = [
-  { day: 'MAY', date: '5', name: 'Ana Torres', meta: '10:00 AM · Consulta inicial' },
-  { day: 'MAY', date: '6', name: 'Jorge Castro', meta: '2:30 PM · Seguimiento' },
-  { day: 'MAY', date: '8', name: 'Patricia Ruiz', meta: '11:15 AM · Tratamiento' },
-  { day: 'MAY', date: '9', name: 'Carlos Ramírez', meta: '3:00 PM · Consulta inicial' },
-  { day: 'MAY', date: '12', name: 'Elena Vargas', meta: '9:30 AM · Seguimiento' }
-];
+const apptsData = [];
 
 function renderAppts() {
-  document.getElementById('apptList').innerHTML = apptsData.map(a => `
+  const el = document.getElementById('apptList');
+  if (!el) return;
+  if (!apptsData.length) {
+    el.innerHTML = `<div style="text-align:center;padding:24px 0;color:#64748b;font-size:13px;">
+      <div style="font-size:24px;margin-bottom:6px">📅</div><div>Sin citas próximas</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = apptsData.map(a => `
     <div class="appt-item">
       <div class="appt-time"><div class="appt-day">${a.day}</div><div class="appt-hour">${a.date}</div></div>
       <div class="appt-content">
@@ -2349,21 +2351,21 @@ function renderAppts() {
 }
 
 // ============ MESSAGES ============
-const portalMessages = [
-  { from: 'them', text: 'Hola Dra. Ramírez! Te escribo para confirmar que tu setup está al 60%. Tu número de WhatsApp se activa en 2-3 días.', time: 'Lun 10:32' },
-  { from: 'them', text: 'Mientras tanto, ya puedes ver el primer borrador del calendario de contenido en la sección de Inicio.', time: 'Lun 10:33' },
-  { from: 'you', text: '¡Perfecto! ¿Sofía va a poder responder en español también?', time: 'Lun 14:18' },
-  { from: 'them', text: 'Sí, está configurada como bilingüe por default — detecta el idioma del paciente y responde en el mismo. 💚', time: 'Lun 14:25' },
-  { from: 'you', text: 'Excelente, gracias!', time: 'Lun 14:26' },
-  { from: 'them', text: 'Por cierto, ya tienes 3 leads calificados esta semana. Quieres que Sofía haga follow-up automático cuando esté lista?', time: 'hace 2h' }
-];
+const portalMessages = [];
 
 function renderMessages() {
-  document.getElementById('msgList').innerHTML = portalMessages.map(m => `
+  const list = document.getElementById('msgList');
+  if (!list) return;
+  if (!portalMessages.length) {
+    list.innerHTML = `<div style="text-align:center;padding:32px 0;color:#64748b;font-size:13px;">
+      <div style="font-size:24px;margin-bottom:6px">💬</div><div>Sin mensajes todavía</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML = portalMessages.map(m => `
     <div class="msg-meta ${m.from === 'you' ? 'you' : ''}">${m.time}</div>
     <div class="msg-bubble ${m.from}">${m.text}</div>
   `).join('');
-  const list = document.getElementById('msgList');
   list.scrollTop = list.scrollHeight;
 }
 
@@ -2557,9 +2559,6 @@ async function loadPortalLeads() {
     const r = await fetch(`/api/portal/leads?user_id=${encodeURIComponent(portalClient.user_id)}`);
     const d = await r.json();
     if (!d.ok) return;
-    const hasData = Object.values(d.leads).some(col => col.length > 0);
-    if (!hasData) return; // si no hay leads reales, mantiene demo
-    // Reemplazar datos demo con datos reales
     leadsData.length = 0;
     Object.entries(d.leads).forEach(([status, items]) => {
       items.forEach(l => leadsData.push({
