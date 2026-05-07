@@ -3,7 +3,13 @@
     "allow": [
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Read(//c/Users/roberto godinez/Downloads/**)",
+      "Read(//c/Users/roberto godinez/Desktop/**)",
+      "Read(//c/Users/roberto godinez/Desktop/AETHETICS/**)",
+      "Bash(cp \"/c/Users/roberto godinez/Downloads/sleight-of-mouth-ventas.skill\" \"/c/Users/roberto godinez/Desktop/AGENCIA-AI-BACKUP-2026-04-27/skills/\")",
+      "Bash(cp \"/c/Users/roberto godinez/Desktop/hypnotic-selling.skill\" \"/c/Users/roberto godinez/Desktop/AGENCIA-AI-BACKUP-2026-04-27/skills/\")",
+      "Bash(cp \"/c/Users/roberto godinez/Desktop/AETHETICS/media-aesthetics-coach.skill\" \"/c/Users/roberto godinez/Desktop/AGENCIA-AI-BACKUP-2026-04-27/skills/\")"
     ]
   }
 }

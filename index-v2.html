@@ -2253,15 +2253,7 @@ const inboxItems = [
   { id: 9, channel: 'sms', icon: '💬', from: '+1 (818) 555-0234', preview: 'Hola, ¿es la clínica de pérdida de peso?', time: 'ayer', unread: false, client: 'sofia' }
 ];
 
-const recordings = [
-  { date: 'Hoy 14:32', agent: 'maria', phone: '+1 (714) 555-0123', duration: '4:21', transcript: 'Hola, soy María de Arranca Financial. Te llamo porque dejaste tus datos en Facebook…', leadStatus: 'interested', client: 'arranca' },
-  { date: 'Hoy 11:18', agent: 'maria', phone: '+1 (323) 555-0089', duration: '2:45', transcript: 'Buenos días, ¿hablo con Carlos? Soy María de Arranca, vi que comentaste en…', leadStatus: 'contacted', client: 'arranca' },
-  { date: 'Ayer 17:50', agent: 'sofia', phone: '+1 (213) 555-0142', duration: '6:12', transcript: 'Hola, soy Sofía de la clínica. Te llamo por tu interés en el tratamiento GLP-1…', leadStatus: 'closed', client: 'sofia' },
-  { date: 'Ayer 16:23', agent: 'maria', phone: '+1 (818) 555-0234', duration: '3:38', transcript: 'Hola Patricia, soy María de Arranca. Vi que agendaste llamada para hoy…', leadStatus: 'interested', client: 'arranca' },
-  { date: 'Ayer 10:05', agent: 'sofia', phone: '+1 (310) 555-0876', duration: '1:52', transcript: 'Hola, soy Sofía, vi que llenaste el formulario sobre el programa de pérdida de peso…', leadStatus: 'contacted', client: 'sofia' },
-  { date: 'Lun 15:30', agent: 'maria', phone: '+1 (323) 555-0445', duration: '5:48', transcript: 'Hola, soy María, ¿sigues interesado en el curso? Recuerdo que mencionaste…', leadStatus: 'closed', client: 'arranca' },
-  { date: 'Lun 12:14', agent: 'sofia', phone: '+1 (619) 555-0301', duration: '4:02', transcript: 'Buenas tardes, soy Sofía de la clínica. Te llamo para contarte sobre…', leadStatus: 'interested', client: 'sofia' }
-];
+const recordings = [];
 
 const driveItems = [
   { type: 'video', name: 'Reel_Turo_3errores_v2.mp4', size: '28 MB', source: 'Crew', date: 'Hoy', icon: '🎬' },
@@ -2672,19 +2664,32 @@ function renderRecordings() {
   if (recordingFilter === 'maria' || recordingFilter === 'sofia') items = items.filter(r => r.agent === recordingFilter);
   else if (recordingFilter === 'closed') items = items.filter(r => r.leadStatus === 'closed');
   const statusLabel = { closed: '✅ Cerrado', interested: '🔥 Interesado', contacted: '📞 Contactado' };
-  document.getElementById('recordingsTable').innerHTML = `
+  const el = document.getElementById('recordingsTable');
+  if (!el) return;
+  if (items.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:48px 0;color:var(--text-dim)">
+      <div style="font-size:36px;margin-bottom:12px">🎙️</div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:6px">Sin grabaciones todavía</div>
+      <div style="font-size:12px">Las llamadas del voice agent aparecerán aquí automáticamente</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `
     <div class="rec-row header">
       <div>Fecha</div><div>Agente</div><div>Teléfono</div><div>Duración</div><div class="rec-col-trans">Transcript</div><div class="rec-col-status">Estado</div><div class="rec-col-play">Audio</div>
     </div>
     ${items.map(r => `
       <div class="rec-row">
         <div>${r.date}</div>
-        <div><span class="rec-agent ${r.agent}">${r.agent === 'maria' ? '🎯 María' : '💊 Sofía'}</span></div>
+        <div><span class="rec-agent ${r.agent}">${r.agent}</span></div>
         <div class="rec-phone">${r.phone}</div>
         <div class="rec-duration">${r.duration}</div>
-        <div class="rec-transcript rec-col-trans" title="${r.transcript}">${r.transcript}</div>
-        <div class="rec-col-status"><span class="rec-status-pill ${r.leadStatus}">${statusLabel[r.leadStatus]}</span></div>
-        <div class="rec-col-play"><button class="rec-play" onclick="alert('Reproduciendo grabación de ${r.date}...')">▶</button></div>
+        <div class="rec-transcript rec-col-trans" title="${r.transcript || ''}">${r.transcript || '—'}</div>
+        <div class="rec-col-status"><span class="rec-status-pill ${r.leadStatus}">${statusLabel[r.leadStatus] || r.leadStatus}</span></div>
+        <div class="rec-col-play">${r.recording_url
+          ? `<audio controls src="${r.recording_url}" style="height:28px;width:120px"></audio>`
+          : `<span style="font-size:11px;color:var(--text-dim)">—</span>`
+        }</div>
       </div>
     `).join('')}
   `;
@@ -4319,28 +4324,36 @@ async function createUserManual() {
 
 // ── RECORDINGS REAL ───────────────────────────────────────────────
 async function loadRecordingsFromAPI() {
-  const el = document.getElementById('recordingsList');
-  if (!el) return;
-  el.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Cargando grabaciones...</div>';
   try {
-    const res = await fetch('/api/recordings');
+    const clienteParam = currentClient ? `?cliente=${encodeURIComponent(currentClient)}` : '';
+    const res = await fetch(`/api/recordings${clienteParam}`);
     const d = await res.json();
-    if (!d.ok || !d.recordings.length) {
-      el.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">Sin grabaciones aún. Se activarán cuando el voice agent inicie llamadas.</div>';
-      return;
+    recordings.length = 0;
+    if (d.ok && d.recordings && d.recordings.length) {
+      d.recordings.forEach(r => {
+        let ts = null;
+        if (r.ts_inicio) ts = new Date(r.ts_inicio * 1000);
+        else if (r.created_at) ts = new Date(r.created_at);
+        const dateStr = ts ? ts.toLocaleString('es-MX', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+        const dur = r.duration ? `${Math.floor(r.duration/60)}:${String(r.duration%60).padStart(2,'0')}` : '—';
+        const status = r.call_status === 'completed' ? 'closed'
+          : r.call_status === 'answered' ? 'contacted'
+          : r.call_status || 'contacted';
+        recordings.push({
+          date: dateStr,
+          agent: r.agent || 'agente',
+          phone: r.telefono || r.from_number || r.call_sid || '—',
+          duration: dur,
+          transcript: r.transcript || '',
+          leadStatus: status,
+          client: r.cliente || '',
+          recording_url: r.recording_url || null
+        });
+      });
     }
-    el.innerHTML = d.recordings.map(r => {
-      const ts = r.ts_inicio ? new Date(r.ts_inicio * 1000).toLocaleString('es-MX', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
-      return `<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:20px">🎙️</span>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:500">${r.agent || 'Agente'} · ${r.cliente || '—'}</div>
-          <div style="font-size:11px;color:var(--text-muted)">${ts} · ${r.call_status || '—'}</div>
-          ${r.recording_url ? `<audio controls src="${r.recording_url}" style="margin-top:6px;width:100%;height:32px"></audio>` : '<div style="font-size:11px;color:var(--text-dim)">Grabación no disponible</div>'}
-        </div>
-      </div>`;
-    }).join('');
-  } catch(e) { el.innerHTML = '<div style="color:var(--danger);font-size:13px;">Error cargando grabaciones.</div>'; }
+    renderRecordingFilters();
+    renderRecordings();
+  } catch(e) { renderRecordingFilters(); renderRecordings(); }
 }
 
 // ── SCRAPER STATS + LOGS ──────────────────────────────────────────

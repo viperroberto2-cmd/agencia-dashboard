@@ -465,7 +465,7 @@ app.delete('/api/portal-users/:id', async (req, res) => {
 app.get('/api/recordings', async (req, res) => {
   try {
     const cliente = req.query.cliente ? `&cliente=eq.${req.query.cliente}` : '';
-    const r = await sbFetch(`/voice_leads?select=call_sid,recording_url,agent,cliente,call_status,ts_inicio&recording_url=not.is.null${cliente}&order=ts_inicio.desc&limit=50`);
+    const r = await sbFetch(`/voice_leads?select=call_sid,recording_url,agent,cliente,call_status,ts_inicio,telefono,duration,transcript,created_at&recording_url=not.is.null${cliente}&order=ts_inicio.desc&limit=50`);
     const data = await r.json();
     res.json({ ok: true, recordings: Array.isArray(data) ? data : [] });
   } catch(e) { res.json({ ok: false, error: e.message }); }
