@@ -1582,29 +1582,14 @@ input, textarea { font-family: inherit; }
     <div class="topbar-right">
       <div style="position: relative;">
         <button class="client-switcher" onclick="toggleDropdown('clientDropdown', event)">
-          <div class="client-avatar" id="clientAvatar">💰</div>
-          <span class="client-name-text" id="clientName">Arranca Financial</span>
+          <div class="client-avatar" id="clientAvatar">👤</div>
+          <span class="client-name-text" id="clientName">Sin clientes</span>
           <span class="client-chevron">▼</span>
         </button>
         <div class="dropdown" id="clientDropdown">
-          <button class="dropdown-item active" data-client="arranca" onclick="selectClient('arranca', '💰', 'Arranca Financial', event)">
-            <div class="client-avatar">💰</div>
-            <div>
-              <div style="font-weight: 600;">Arranca Financial</div>
-              <div style="font-size: 11px; color: var(--text-muted);">Educación · Turo</div>
-            </div>
-            <span class="check">✓</span>
-          </button>
-          <button class="dropdown-item" data-client="sofia" onclick="selectClient('sofia', '💊', 'Sofía', event)">
-            <div class="client-avatar">💊</div>
-            <div>
-              <div style="font-weight: 600;">Sofía</div>
-              <div style="font-size: 11px; color: var(--text-muted);">Clínica GLP-1</div>
-            </div>
-            <span class="check">✓</span>
-          </button>
+          <div id="clientDropdownList"></div>
           <div class="dropdown-divider"></div>
-          <button class="dropdown-item">
+          <button class="dropdown-item" onclick="goSection('onboarding');closeAllDropdowns()">
             <span style="font-size: 16px;">＋</span>
             <span>Agregar cliente</span>
           </button>
@@ -2335,7 +2320,7 @@ let calendarMonth = new Date(); calendarMonth.setDate(1);
 let calendarDayFilter = null;
 
 let activeAgent = agents[0];
-let currentClient = 'arranca';
+let currentClient = null;
 let inboxFilter = 'all';
 let driveFilter = 'all';
 let recordingFilter = 'all';
@@ -3200,6 +3185,7 @@ async function nextStep() {
         alert('🚀 Cliente ' + onboardingData.nombre + ' creado exitosamente.');
         resetOnboarding();
         loadConfigClientes();
+        loadClientSwitcher();
       } else {
         const errEl = document.getElementById('onboardingError');
         if (errEl) { errEl.textContent = d.error || 'Error al crear cliente.'; errEl.style.display = 'block'; }
@@ -3214,7 +3200,7 @@ async function nextStep() {
 }
 function resetOnboarding() {
   currentStep = 1;
-  Object.assign(onboardingData, { nombre:'', industria:'', email:'', telefono:'', precio_producto:197, descripcion:'', whatsapp_option:'', respond_io_key:'', whatsapp_number:'', heygen_avatar_id:'', heygen_voice_id:'', objetivo:'', presupuesto_ads:'', mensaje_principal:'', redes:[], channels:[], agents:[], integrations:[] });
+  Object.assign(onboardingData, { nombre:'', industria:'', email:'', telefono:'', precio_producto:'', descripcion:'', whatsapp_option:'', respond_io_key:'', whatsapp_number:'', heygen_avatar_id:'', heygen_voice_id:'', objetivo:'', presupuesto_ads:'', mensaje_principal:'', redes:[], channels:[], agents:[], integrations:[] });
   renderStepper(); renderStepContent();
 }
 
@@ -3406,6 +3392,7 @@ async function loadHomeStats() {
   } catch(e) { console.warn('loadHomeStats error:', e.message); }
 }
 loadHomeStats();
+loadClientSwitcher();
 
 // ── GDRIVE LIVE LOAD ──────────────────────────────────────────────
 async function loadDriveFromAPI() {
@@ -4229,6 +4216,39 @@ const SECTOR_EMOJI = {
   'educacion': '📚', 'salud': '💊', 'restaurante': '🍽️', 'automotriz': '🚗',
   'bienes_raices': '🏠', 'finanzas': '💰', 'legal': '⚖️', 'belleza': '💅', 'otro': '🏢'
 };
+async function loadClientSwitcher() {
+  try {
+    const res = await fetch('/api/clientes');
+    const d = await res.json();
+    const list = document.getElementById('clientDropdownList');
+    if (!list) return;
+    if (!d.ok || !d.clientes || !d.clientes.length) {
+      list.innerHTML = '<div style="padding:10px 16px;font-size:12px;color:var(--text-dim);">Sin clientes — usa Onboarding para agregar uno</div>';
+      document.getElementById('clientName').textContent = 'Sin clientes';
+      document.getElementById('clientAvatar').textContent = '👤';
+      currentClient = null;
+      return;
+    }
+    list.innerHTML = d.clientes.map(c => {
+      const emoji = SECTOR_EMOJI[c.industria] || '🏢';
+      const sub = [c.industria, c.precio_producto ? '$' + c.precio_producto : null].filter(Boolean).join(' · ');
+      return `<button class="dropdown-item ${currentClient === c.nombre ? 'active' : ''}" data-client="${c.nombre}" onclick="selectClient('${c.nombre}','${emoji}','${c.nombre}',event)">
+        <div class="client-avatar">${emoji}</div>
+        <div>
+          <div style="font-weight:600;">${c.nombre}</div>
+          ${sub ? `<div style="font-size:11px;color:var(--text-muted);">${sub}</div>` : ''}
+        </div>
+        <span class="check">✓</span>
+      </button>`;
+    }).join('');
+    if (!currentClient) {
+      const first = d.clientes[0];
+      const emoji = SECTOR_EMOJI[first.industria] || '🏢';
+      selectClient(first.nombre, emoji, first.nombre, null);
+    }
+  } catch(e) { console.warn('loadClientSwitcher:', e.message); }
+}
+
 async function loadConfigClientes() {
   const el = document.getElementById('configClientesList');
   if (!el) return;
