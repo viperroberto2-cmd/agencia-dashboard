@@ -2064,12 +2064,24 @@ function captureStepData() {
   }
 }
 
-function nextStep() {
+async function nextStep() {
   captureStepData();
   if (currentStep < wizardSteps.length) {
     currentStep++;
     renderWizardStep();
   } else {
+    const btn = document.getElementById('wizardNext');
+    btn.textContent = currentLang === 'es' ? 'Guardando...' : 'Saving...';
+    btn.disabled = true;
+    try {
+      if (portalClient?.user_id) {
+        await fetch('/api/portal/onboarding-submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: portalClient.user_id, ...wizardData })
+        });
+      }
+    } catch(e) { console.warn('onboarding-submit error:', e); }
     goScreen('welcome');
   }
 }
@@ -2195,46 +2207,46 @@ function stepContent(step) {
         <label class="field-label">${es ? 'Tu número de WhatsApp Business' : 'Your WhatsApp Business number'} <span class="field-required">*</span></label>
         <div class="input-prefix-wrap">
           <span class="input-prefix">+1</span>
-          <input type="tel" placeholder="(213) 555-0142" />
+          <input type="tel" placeholder="(213) 555-0142" value="${wizardData.whatsapp||''}" oninput="wizardData.whatsapp=this.value" />
         </div>
         <div class="field-hint">${es ? 'Este es el número al que escribirán tus pacientes. Lo activamos en 3-7 días hábiles.' : 'This is the number your patients will text. We activate it in 3-7 business days.'}</div>
       </div>
       <div class="field-group">
         <label class="field-label">${es ? '¿Está activo este número?' : 'Is this number active?'}</label>
         <div class="radio-list">
-          <button class="radio-item selected" onclick="selectRadio(this, 'active')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Sí, ya es un número activo' : 'Yes, it is active'}</div></div></button>
-          <button class="radio-item" onclick="selectRadio(this, 'active')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'No, necesito uno nuevo' : 'No, I need a new one'}</div></div></button>
-          <button class="radio-item" onclick="selectRadio(this, 'active')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'No estoy seguro - que RG decida' : 'Not sure - let RG decide'}</div></div></button>
+          <button class="radio-item ${wizardData.wa_status==='activo'||!wizardData.wa_status?'selected':''}" onclick="wizardData.wa_status='activo';selectRadio(this,'active')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Sí, ya es un número activo' : 'Yes, it is active'}</div></div></button>
+          <button class="radio-item ${wizardData.wa_status==='nuevo'?'selected':''}" onclick="wizardData.wa_status='nuevo';selectRadio(this,'active')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'No, necesito uno nuevo' : 'No, I need a new one'}</div></div></button>
+          <button class="radio-item ${wizardData.wa_status==='nosure'?'selected':''}" onclick="wizardData.wa_status='nosure';selectRadio(this,'active')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'No estoy seguro - que RG decida' : 'Not sure - let RG decide'}</div></div></button>
         </div>
       </div>
       <div class="field-group">
         <label class="field-label">${es ? 'Nombre del asistente' : 'Assistant name'} <span class="field-required">*</span></label>
-        <input class="field-input" value="${wizardData.asistente||'Sofía'}" oninput="wizardData.asistente=this.value" />
+        <input class="field-input" value="${wizardData.asistente||''}" placeholder="${es?'Sofía, María, Alex…':'Sofia, Maria, Alex…'}" oninput="wizardData.asistente=this.value" />
         <div class="field-hint">${es ? 'Este es el nombre que verán tus pacientes. Algo cálido y profesional.' : 'This is the name your patients will see. Choose something warm and professional.'}</div>
       </div>
       <div class="field-group">
         <label class="field-label">${es ? 'Idioma del asistente' : 'Assistant language'}</label>
-        <select class="field-select">
-          <option>${es ? 'Bilingüe - Español e Inglés' : 'Bilingual - Spanish & English'}</option>
-          <option>${es ? 'Solo español' : 'Spanish only'}</option>
-          <option>${es ? 'Solo inglés' : 'English only'}</option>
+        <select class="field-select" onchange="wizardData.idioma=this.value">
+          <option value="bilingue" ${wizardData.idioma==='bilingue'||!wizardData.idioma?'selected':''}>${es ? 'Bilingüe - Español e Inglés' : 'Bilingual - Spanish & English'}</option>
+          <option value="espanol" ${wizardData.idioma==='espanol'?'selected':''}>${es ? 'Solo español' : 'Spanish only'}</option>
+          <option value="ingles" ${wizardData.idioma==='ingles'?'selected':''}>${es ? 'Solo inglés' : 'English only'}</option>
         </select>
       </div>
       <div class="field-group">
         <label class="field-label">${es ? 'Horario de respuesta' : 'Response hours'}</label>
         <div class="radio-list">
-          <button class="radio-item selected" onclick="selectRadio(this, 'hours')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? '24/7 — Siempre activa' : '24/7 — Always on'}</div><div class="radio-sub">${es ? 'Recomendado · captura más leads' : 'Recommended · captures more leads'}</div></div></button>
-          <button class="radio-item" onclick="selectRadio(this, 'hours')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Horario laboral · 8am - 8pm' : 'Business hours · 8am - 8pm'}</div></div></button>
-          <button class="radio-item" onclick="selectRadio(this, 'hours')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Lun-Vie · 9am - 6pm' : 'Mon-Fri · 9am - 6pm'}</div></div></button>
+          <button class="radio-item ${wizardData.horario==='24/7'||!wizardData.horario?'selected':''}" onclick="wizardData.horario='24/7';selectRadio(this,'hours')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? '24/7 — Siempre activa' : '24/7 — Always on'}</div><div class="radio-sub">${es ? 'Recomendado · captura más leads' : 'Recommended · captures more leads'}</div></div></button>
+          <button class="radio-item ${wizardData.horario==='8am-8pm'?'selected':''}" onclick="wizardData.horario='8am-8pm';selectRadio(this,'hours')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Horario laboral · 8am - 8pm' : 'Business hours · 8am - 8pm'}</div></div></button>
+          <button class="radio-item ${wizardData.horario==='9am-6pm'?'selected':''}" onclick="wizardData.horario='9am-6pm';selectRadio(this,'hours')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Lun-Vie · 9am - 6pm' : 'Mon-Fri · 9am - 6pm'}</div></div></button>
         </div>
       </div>
       <div class="field-group">
         <label class="field-label">${es ? 'Tono y personalidad' : 'Tone & personality'}</label>
         <div class="radio-list">
-          <button class="radio-item selected" onclick="selectRadio(this, 'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Cálido y profesional' : 'Warm & professional'}</div><div class="radio-sub">${es ? 'Amigable pero creíble' : 'Friendly but credible'}</div></div></button>
-          <button class="radio-item" onclick="selectRadio(this, 'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Formal' : 'Formal'}</div><div class="radio-sub">${es ? 'Muy profesional, sin emojis' : 'Very professional, no emojis'}</div></div></button>
-          <button class="radio-item" onclick="selectRadio(this, 'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Casual y amigable' : 'Casual & friendly'}</div><div class="radio-sub">${es ? 'Conversacional, usa emojis' : 'Conversational, uses emojis'}</div></div></button>
-          <button class="radio-item" onclick="selectRadio(this, 'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Empático' : 'Empathetic'}</div><div class="radio-sub">${es ? 'Especial para salud y wellness' : 'Especially for health and wellness'}</div></div></button>
+          <button class="radio-item ${wizardData.tono==='calido'||!wizardData.tono?'selected':''}" onclick="wizardData.tono='calido';selectRadio(this,'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Cálido y profesional' : 'Warm & professional'}</div><div class="radio-sub">${es ? 'Amigable pero creíble' : 'Friendly but credible'}</div></div></button>
+          <button class="radio-item ${wizardData.tono==='formal'?'selected':''}" onclick="wizardData.tono='formal';selectRadio(this,'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Formal' : 'Formal'}</div><div class="radio-sub">${es ? 'Muy profesional, sin emojis' : 'Very professional, no emojis'}</div></div></button>
+          <button class="radio-item ${wizardData.tono==='casual'?'selected':''}" onclick="wizardData.tono='casual';selectRadio(this,'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Casual y amigable' : 'Casual & friendly'}</div><div class="radio-sub">${es ? 'Conversacional, usa emojis' : 'Conversational, uses emojis'}</div></div></button>
+          <button class="radio-item ${wizardData.tono==='empatico'?'selected':''}" onclick="wizardData.tono='empatico';selectRadio(this,'tone')"><div class="radio-circle"></div><div class="radio-content"><div class="radio-label">${es ? 'Empático' : 'Empathetic'}</div><div class="radio-sub">${es ? 'Especial para salud y wellness' : 'Especially for health and wellness'}</div></div></button>
         </div>
       </div>
     </div>`;
@@ -2246,27 +2258,27 @@ function stepContent(step) {
     <div class="wizard-card">
       <div class="field-group">
         <label class="field-label">Facebook</label>
-        <div class="input-prefix-wrap"><span class="input-prefix">facebook.com/</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" /></div>
+        <div class="input-prefix-wrap"><span class="input-prefix">facebook.com/</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" value="${wizardData.facebook||''}" oninput="wizardData.facebook=this.value" /></div>
       </div>
       <div class="field-group">
         <label class="field-label">Instagram</label>
-        <div class="input-prefix-wrap"><span class="input-prefix">instagram.com/</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" /></div>
+        <div class="input-prefix-wrap"><span class="input-prefix">instagram.com/</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" value="${wizardData.instagram||''}" oninput="wizardData.instagram=this.value" /></div>
       </div>
       <div class="field-group">
         <label class="field-label">YouTube</label>
-        <div class="input-prefix-wrap"><span class="input-prefix">youtube.com/@</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" /></div>
+        <div class="input-prefix-wrap"><span class="input-prefix">youtube.com/@</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" value="${wizardData.youtube||''}" oninput="wizardData.youtube=this.value" /></div>
       </div>
       <div class="field-group">
         <label class="field-label">TikTok</label>
-        <div class="input-prefix-wrap"><span class="input-prefix">tiktok.com/@</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" /></div>
+        <div class="input-prefix-wrap"><span class="input-prefix">tiktok.com/@</span><input placeholder="${es ? 'tunegocio' : 'yourbusiness'}" value="${wizardData.tiktok||''}" oninput="wizardData.tiktok=this.value" /></div>
       </div>
       <div class="field-group">
         <label class="field-label">${es ? 'Sitio web' : 'Website'}</label>
-        <input class="field-input" type="url" placeholder="https://tunegocio.com" />
+        <input class="field-input" type="url" placeholder="https://tunegocio.com" value="${wizardData.website||''}" oninput="wizardData.website=this.value" />
       </div>
       <div class="field-group">
         <label class="field-label">${es ? 'Google Business' : 'Google Business name'}</label>
-        <input class="field-input" placeholder="${es ? 'Nombre que aparece en Maps' : 'Name as it appears on Maps'}" />
+        <input class="field-input" placeholder="${es ? 'Nombre que aparece en Maps' : 'Name as it appears on Maps'}" value="${wizardData.google_business||''}" oninput="wizardData.google_business=this.value" />
       </div>
     </div>`;
 

@@ -225,6 +225,37 @@ app.get('/api/portal/recordings', async (req, res) => {
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
+// ── PORTAL ONBOARDING SUBMIT ─────────────────────────────────────
+app.post('/api/portal/onboarding-submit', async (req, res) => {
+  const { user_id, whatsapp, asistente, idioma, tono, horario,
+          facebook, instagram, youtube, tiktok, website, google_business,
+          goals, presupuesto, notas, ciudad } = req.body;
+  if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
+  try {
+    const update = {
+      whatsapp_number: whatsapp || null,
+      ciudad: ciudad || null,
+      redes_sociales: JSON.stringify({ facebook, instagram, youtube, tiktok, website, google_business }),
+      configuracion: JSON.stringify({
+        asistente_nombre: asistente,
+        idioma: idioma || 'bilingue',
+        tono: tono || 'calido',
+        horario: horario || '24/7',
+        goals: goals || [],
+        presupuesto: presupuesto || '',
+        notas: notas || ''
+      }),
+      onboarding_completado: true
+    };
+    const r = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(update),
+      headers: { 'Prefer': 'return=representation' }
+    });
+    res.json({ ok: true });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 app.get('/api/portal/stats', async (req, res) => {
   const { user_id } = req.query;
   if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
