@@ -1780,7 +1780,7 @@ input, textarea { font-family: inherit; }
               <button class="dropdown-item" onclick="alert('Pega URL del Sheet')"><span style="font-size:18px;">📗</span><div><div style="font-weight:600;font-size:13px;">Google Sheets</div><div style="font-size:11px;color:var(--text-muted);">Pegar URL pública</div></div></button>
             </div>
           </div>
-          <button class="btn btn-primary">＋ Lead</button>
+          <button class="btn btn-primary" onclick="openAddLeadModal()">＋ Lead</button>
         </div>
       </div>
       <div class="crm-board" id="crmBoard"></div>
@@ -1912,6 +1912,39 @@ input, textarea { font-family: inherit; }
               </div>
             </div>
             <div class="integrations-grid" id="clientIntegrationsGrid"></div>
+
+            <!-- HeyGen real config -->
+            <div id="heygenConfigCard" style="background:#1a1730;border:.5px solid #2a2540;border-radius:14px;padding:18px;margin-top:16px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                <span style="font-size:20px">🎭</span>
+                <div>
+                  <div style="font-weight:600;font-size:13px">HeyGen</div>
+                  <div style="font-size:11px;color:var(--text-muted)">Avatar de video IA — talking head</div>
+                </div>
+                <span id="heygenStatus" style="margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;background:#2a2540;color:#94a3b8">Sin configurar</span>
+              </div>
+              <div style="display:grid;gap:10px">
+                <div>
+                  <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Avatar ID</label>
+                  <div style="display:flex;gap:8px">
+                    <input id="heygenAvatarId" class="field-input" style="flex:1;font-size:12px" placeholder="ej: avatar_0001abc..." />
+                    <button class="btn btn-ghost" style="font-size:12px;white-space:nowrap" onclick="loadHeygenAvatares()">Ver avatares</button>
+                  </div>
+                </div>
+                <div>
+                  <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Voice ID</label>
+                  <div style="display:flex;gap:8px">
+                    <input id="heygenVoiceId" class="field-input" style="flex:1;font-size:12px" placeholder="ej: 1bd001a9aa..." />
+                    <button class="btn btn-ghost" style="font-size:12px;white-space:nowrap" onclick="loadHeygenVoces()">Ver voces</button>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-primary" style="flex:1;font-size:12px" onclick="guardarHeygenConfig()">💾 Guardar</button>
+                </div>
+                <div id="heygenConfigStatus" style="font-size:11px;color:var(--text-muted);min-height:16px"></div>
+                <div id="heygenPickerList" style="display:none;max-height:180px;overflow-y:auto;background:#150f25;border-radius:8px;padding:8px;font-size:12px"></div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="config-pane" id="pane-usuarios">
@@ -2206,28 +2239,7 @@ const agents = [
   { id: 'motion', emoji: '🎞️', name: 'Motion Bot', role: 'Lottie · Remotion · FFmpeg', status: 'online', skills: ['Lottie', 'Remotion', 'FFmpeg'] }
 ];
 
-const leads = {
-  new: [
-    { name: 'María González', source: 'Facebook', meta: 'hace 2h · interesada en Turo', phone: '+1 (323) 555-0191', email: 'maria.g@gmail.com', notes: 'Vio el post del Turo en Facebook. Interesada en el programa de $197. Mejor hora de contacto: tardes después de las 4pm.' },
-    { name: 'Carlos Ramírez', source: 'WhatsApp', meta: 'hace 4h · pidió info', phone: '+1 (213) 555-0143', notes: 'Preguntó cuánto cuesta el curso y si hay planes de pago. Tiene un Toyota Camry 2022.' },
-    { name: 'Ana Torres', source: 'Instagram', meta: 'hace 6h · DM directo', email: 'ana.torres98@gmail.com', notes: 'DM: "¿El programa incluye soporte 1 a 1?" Perfil activo, buena presencia en IG.' },
-    { name: 'Luis Pérez', source: 'Apollo', meta: 'ayer · cold outreach' }
-  ],
-  contacted: [
-    { name: 'Roberto Díaz', source: 'Facebook', meta: 'María llamó · sin respuesta', phone: '+1 (714) 555-0177', notes: 'Llamada sin respuesta el lunes. Dejar voicemail y seguir por FB.' },
-    { name: 'Sofía Mendoza', source: 'Instagram', meta: 'SMS enviado · esperando', phone: '+1 (323) 555-0162', email: 'sofia.m@icloud.com', notes: 'SMS enviado con link de info. Leyó a los 5 min, sin respuesta aún.' },
-    { name: 'Jorge Castro', source: 'Referido', meta: 'WhatsApp · leyó', phone: '+1 (626) 555-0134', notes: 'Referido por Daniel Soto. Ya leyó el mensaje pero no ha respondido. Esperar 24h.' }
-  ],
-  interested: [
-    { name: 'Patricia Ruiz', source: 'Facebook', meta: 'agendó llamada mañana', phone: '+1 (818) 555-0189', email: 'patriruiz@yahoo.com', notes: 'Llamada agendada para mañana 10am. Tiene Subaru Outback 2021. Muy calificada.' },
-    { name: 'Miguel Ángel', source: 'WhatsApp', meta: 'pidió link de pago', phone: '+1 (562) 555-0155', notes: 'Listo para comprar. Enviar link de pago de $197. Prefiere Zelle o tarjeta.' },
-    { name: 'Elena Vargas', source: 'Instagram', meta: 'objeción precio · negociando', email: 'elena.v@gmail.com', notes: 'Objeción: "Es mucho para empezar." Ofrecer plan 2 pagos o mostrar ROI del primer mes.' }
-  ],
-  closed: [
-    { name: 'Daniel Soto', source: 'Facebook', meta: 'pagó $197 · onboarding', phone: '+1 (213) 555-0101', email: 'dsoto@gmail.com', notes: 'Cliente activo. Completó onboarding. Ya tiene su primer vehículo listado en Turo.' },
-    { name: 'Laura Núñez', source: 'Referido', meta: 'pagó $197 · módulo 1', phone: '+1 (323) 555-0118', email: 'laura.nunez@hotmail.com', notes: 'Referida por Patricia Ruiz. Muy motivada, terminó módulo 1 en 2 días.' }
-  ]
-};
+const leads = { new: [], contacted: [], interested: [], closed: [] };
 
 const inboxItems = [
   { id: 1, channel: 'whatsapp', icon: '💚', from: 'María González', preview: 'Hola, vi tu post de Turo, ¿cómo funciona el curso?', time: '2 min', unread: true, client: 'arranca' },
@@ -2447,11 +2459,22 @@ function renderAgentDropdown() {
 // ============ CRM ============
 function renderCRM() {
   const cols = [
-    { id: 'new', label: '🆕 Nuevo', items: leads.new },
-    { id: 'contacted', label: '📞 Contactado', items: leads.contacted },
-    { id: 'interested', label: '🔥 Interesado', items: leads.interested },
-    { id: 'closed', label: '✅ Cerrado', items: leads.closed }
+    { id: 'new',        label: '🆕 Nuevo',      items: leads.new },
+    { id: 'contacted',  label: '📞 Contactado',  items: leads.contacted },
+    { id: 'interested', label: '🔥 Interesado',  items: leads.interested },
+    { id: 'closed',     label: '✅ Cerrado',      items: leads.closed }
   ];
+  const total = cols.reduce((s, c) => s + c.items.length, 0);
+  if (total === 0) {
+    document.getElementById('crmBoard').innerHTML = `
+      <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text-muted);text-align:center;">
+        <div style="font-size:40px;margin-bottom:12px;">👥</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px;color:var(--text)">Sin leads todavía</div>
+        <div style="font-size:13px;margin-bottom:20px;">Las llamadas de voz y leads manuales aparecerán aquí.</div>
+        <button class="btn btn-primary" onclick="openAddLeadModal()">＋ Agregar primer lead</button>
+      </div>`;
+    return;
+  }
   document.getElementById('crmBoard').innerHTML = cols.map(col => `
     <div class="crm-column">
       <div class="crm-col-header">
@@ -2799,10 +2822,94 @@ function renderIntegrationCard(i, isClientScoped) {
 function renderGlobalIntegrations() { document.getElementById('globalIntegrationsGrid').innerHTML = globalIntegrations.map(i => renderIntegrationCard(i, false)).join(''); }
 function renderClientIntegrations() { document.getElementById('clientIntegrationsGrid').innerHTML = (clientIntegrations[currentClient] || []).map(i => renderIntegrationCard(i, true)).join(''); }
 
+// ── HeyGen config desde DB ────────────────────────────────────────────────────
+async function loadHeygenConfigDB() {
+  if (!currentClient) return;
+  try {
+    const r = await fetch('/api/clientes');
+    const d = await r.json();
+    const cli = (d.clientes || []).find(c => c.nombre === currentClient || c.user_id === currentClient);
+    if (!cli) return;
+    const avatarInput = document.getElementById('heygenAvatarId');
+    const voiceInput  = document.getElementById('heygenVoiceId');
+    const statusEl    = document.getElementById('heygenStatus');
+    if (avatarInput) avatarInput.value = cli.heygen_avatar_id || '';
+    if (voiceInput)  voiceInput.value  = cli.heygen_voice_id  || '';
+    if (statusEl) {
+      if (cli.heygen_avatar_id) {
+        statusEl.textContent = 'Configurado';
+        statusEl.style.background = '#14532d';
+        statusEl.style.color = '#4ade80';
+      } else {
+        statusEl.textContent = 'Sin configurar';
+        statusEl.style.background = '#2a2540';
+        statusEl.style.color = '#94a3b8';
+      }
+    }
+  } catch(e) {}
+}
+
+async function guardarHeygenConfig() {
+  if (!currentClient) return;
+  const avatar_id = (document.getElementById('heygenAvatarId')?.value || '').trim();
+  const voice_id  = (document.getElementById('heygenVoiceId')?.value  || '').trim();
+  const statusEl  = document.getElementById('heygenConfigStatus');
+  if (statusEl) statusEl.textContent = 'Guardando...';
+  try {
+    const r = await fetch('/api/clientes');
+    const d = await r.json();
+    const cli = (d.clientes || []).find(c => c.nombre === currentClient || c.user_id === currentClient);
+    if (!cli) { if (statusEl) statusEl.textContent = '❌ Cliente no encontrado'; return; }
+    await fetch(`/api/clientes/${cli.user_id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ heygen_avatar_id: avatar_id || null, heygen_voice_id: voice_id || null })
+    });
+    if (statusEl) statusEl.textContent = '✅ Guardado';
+    loadHeygenConfigDB();
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+async function loadHeygenAvatares() {
+  const listEl = document.getElementById('heygenPickerList');
+  if (!listEl) return;
+  listEl.style.display = 'block';
+  listEl.textContent = 'Cargando avatares...';
+  try {
+    const r = await fetch('/api/heygen/avatares');
+    const d = await r.json();
+    if (!d.ok) { listEl.textContent = '❌ ' + (d.error || 'Error'); return; }
+    if (!d.avatares.length) { listEl.textContent = 'Sin avatares en la cuenta.'; return; }
+    listEl.innerHTML = '<div style="font-weight:600;margin-bottom:6px;color:#c4b5fd">Clic para seleccionar:</div>' +
+      d.avatares.map(a => `<div onclick="document.getElementById('heygenAvatarId').value='${a.avatar_id}'" style="padding:5px 8px;border-radius:6px;cursor:pointer;color:#e8e0ff;margin-bottom:3px;background:#1a1730;border:.5px solid #2a2540">
+        ${a.avatar_name || a.avatar_id} <span style="color:#7b6fa0;font-size:10px">${a.avatar_id}</span>
+      </div>`).join('');
+  } catch(e) { listEl.textContent = '❌ ' + e.message; }
+}
+
+async function loadHeygenVoces() {
+  const listEl = document.getElementById('heygenPickerList');
+  if (!listEl) return;
+  listEl.style.display = 'block';
+  listEl.textContent = 'Cargando voces en español...';
+  try {
+    const r = await fetch('/api/heygen/voces?idioma=es');
+    const d = await r.json();
+    if (!d.ok) { listEl.textContent = '❌ ' + (d.error || 'Error'); return; }
+    if (!d.voces.length) { listEl.textContent = 'Sin voces en español.'; return; }
+    listEl.innerHTML = '<div style="font-weight:600;margin-bottom:6px;color:#c4b5fd">Clic para seleccionar:</div>' +
+      d.voces.map(v => `<div onclick="document.getElementById('heygenVoiceId').value='${v.voice_id}'" style="padding:5px 8px;border-radius:6px;cursor:pointer;color:#e8e0ff;margin-bottom:3px;background:#1a1730;border:.5px solid #2a2540">
+        ${v.display_name || v.voice_id} <span style="color:#7b6fa0;font-size:10px">${v.gender || ''} · ${v.language || ''}</span>
+      </div>`).join('');
+  } catch(e) { listEl.textContent = '❌ ' + e.message; }
+}
+
 function switchConfigTab(tab) {
   document.querySelectorAll('.config-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   document.querySelectorAll('.config-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('pane-' + tab).classList.add('active');
+  if (tab === 'integraciones') loadHeygenConfigDB();
 }
 
 // ============ CHAT ============
@@ -2919,6 +3026,8 @@ let currentStep = 1;
 const onboardingData = {
   nombre: '', industria: '', email: '', telefono: '', precio_producto: 197, descripcion: '',
   whatsapp_option: '', respond_io_key: '', whatsapp_number: '',
+  heygen_avatar_id: '', heygen_voice_id: '',
+  objetivo: '', presupuesto_ads: '', mensaje_principal: '',
   redes: [], channels: [], agents: [], integrations: []
 };
 
@@ -2998,9 +3107,16 @@ function renderStepContent() {
   if (currentStep === 4) c.innerHTML = `
     <div class="step-title">🎯 Primera campaña</div>
     <div class="step-desc">El primer objetivo del cliente.</div>
-    <div class="field-group"><label class="field-label">Objetivo principal</label><select class="field-select"><option>Generar leads</option><option>Vender producto / curso</option><option>Agendar citas</option><option>Hacer follow-up</option></select></div>
-    <div class="field-group"><label class="field-label">Presupuesto mensual ads</label><input class="field-input" placeholder="$500" /></div>
-    <div class="field-group"><label class="field-label">Mensaje principal</label><textarea class="field-textarea" placeholder="Ej: Curso $197 para aprender Turo"></textarea></div>`;
+    <div class="field-group"><label class="field-label">Objetivo principal</label>
+      <select class="field-select" onchange="onboardingData.objetivo=this.value">
+        <option value="" ${!onboardingData.objetivo?'selected':''}>Seleccionar...</option>
+        <option value="Generar leads" ${onboardingData.objetivo==='Generar leads'?'selected':''}>Generar leads</option>
+        <option value="Vender producto / curso" ${onboardingData.objetivo==='Vender producto / curso'?'selected':''}>Vender producto / curso</option>
+        <option value="Agendar citas" ${onboardingData.objetivo==='Agendar citas'?'selected':''}>Agendar citas</option>
+        <option value="Hacer follow-up" ${onboardingData.objetivo==='Hacer follow-up'?'selected':''}>Hacer follow-up</option>
+      </select></div>
+    <div class="field-group"><label class="field-label">Presupuesto mensual ads</label><input class="field-input" placeholder="$500" value="${onboardingData.presupuesto_ads}" oninput="onboardingData.presupuesto_ads=this.value" /></div>
+    <div class="field-group"><label class="field-label">Mensaje principal</label><textarea class="field-textarea" placeholder="Ej: Curso $197 para aprender Turo" oninput="onboardingData.mensaje_principal=this.value">${onboardingData.mensaje_principal}</textarea></div>`;
 
   if (currentStep === 5) c.innerHTML = `
     <div class="step-title">🤖 Agentes asignados</div>
@@ -3009,8 +3125,22 @@ function renderStepContent() {
 
   if (currentStep === 6) c.innerHTML = `
     <div class="step-title">🔌 Conexiones del cliente</div>
-    <div class="step-desc">Marca las que tiene el cliente. Credenciales se configuran después en Config → Integraciones.</div>
-    <div class="choice-grid">${['Twilio','Stripe','Facebook Ads','WhatsApp Business','Gmail/SendGrid','Google Calendar','HeyGen'].map(int => `<button class="choice ${onboardingData.integrations.includes(int)?'selected':''}" onclick="toggleChoice(this,'integration','${int}')"><span class="choice-icon">🔌</span><span class="choice-label">${int}</span></button>`).join('')}</div>`;
+    <div class="step-desc">Marca las que tiene el cliente.</div>
+    <div class="choice-grid" style="margin-bottom:16px">${['Twilio','Stripe','Facebook Ads','WhatsApp Business','Gmail/SendGrid','Google Calendar','HeyGen'].map(int => `<button class="choice ${onboardingData.integrations.includes(int)?'selected':''}" onclick="toggleChoice(this,'integration','${int}');renderStepContent()"><span class="choice-icon">🔌</span><span class="choice-label">${int}</span></button>`).join('')}</div>
+    ${onboardingData.integrations.includes('HeyGen') ? `
+    <div style="background:#1a1730;border:.5px solid #7c5cfc;border-radius:12px;padding:16px;margin-top:4px">
+      <div style="font-size:12px;font-weight:600;color:#c4b5fd;margin-bottom:12px">🎭 Configuración HeyGen</div>
+      <div class="field-group" style="margin-bottom:10px">
+        <label class="field-label">Avatar ID <span style="color:#7b6fa0;font-size:11px">(cópialo desde HeyGen → Avatars)</span></label>
+        <input class="field-input" placeholder="ej: avatar_0001abc..." value="${onboardingData.heygen_avatar_id||''}" oninput="onboardingData.heygen_avatar_id=this.value" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Voice ID <span style="color:#7b6fa0;font-size:11px">(cópialo desde HeyGen → Voices)</span></label>
+        <input class="field-input" placeholder="ej: 1bd001a9aa..." value="${onboardingData.heygen_voice_id||''}" oninput="onboardingData.heygen_voice_id=this.value" />
+      </div>
+      <div style="font-size:11px;color:#7b6fa0;margin-top:8px">💡 También puedes configurarlo después desde Telegram: <code>/heygen_avatares</code> y <code>/heygen_config</code></div>
+    </div>` : ''}
+  `;
 
   if (currentStep === 7) c.innerHTML = `
     <div class="step-title">✅ Todo listo</div>
@@ -3019,10 +3149,15 @@ function renderStepContent() {
       <div class="summary-row"><span class="key">Cliente</span><span class="val">${onboardingData.nombre || '—'}</span></div>
       <div class="summary-row"><span class="key">Sector</span><span class="val">${onboardingData.industria || '—'}</span></div>
       <div class="summary-row"><span class="key">Email</span><span class="val">${onboardingData.email || '—'}</span></div>
-      <div class="summary-row"><span class="key">WhatsApp</span><span class="val">${onboardingData.whatsapp_option || '—'} ${onboardingData.whatsapp_number ? '· ' + onboardingData.whatsapp_number : ''}</span></div>
-      <div class="summary-row"><span class="key">Redes sociales</span><span class="val">${onboardingData.redes.length ? onboardingData.redes.join(', ') : '—'}</span></div>
-      <div class="summary-row"><span class="key">Agentes</span><span class="val">${onboardingData.agents.length || '—'}</span></div>
+      <div class="summary-row"><span class="key">Teléfono</span><span class="val">${onboardingData.telefono || '—'}</span></div>
       <div class="summary-row"><span class="key">Precio producto</span><span class="val">$${onboardingData.precio_producto || 197}</span></div>
+      <div class="summary-row"><span class="key">WhatsApp</span><span class="val">${onboardingData.whatsapp_option==='respondio' ? '💼 Respond.io' : onboardingData.whatsapp_option==='propio' ? '💚 WA Business propio' : '—'}${onboardingData.whatsapp_number ? ' · ' + onboardingData.whatsapp_number : ''}</span></div>
+      <div class="summary-row"><span class="key">Redes sociales</span><span class="val">${onboardingData.redes.length ? onboardingData.redes.join(', ') : '—'}</span></div>
+      <div class="summary-row"><span class="key">Objetivo campaña</span><span class="val">${onboardingData.objetivo || '—'}</span></div>
+      ${onboardingData.presupuesto_ads ? `<div class="summary-row"><span class="key">Presupuesto ads</span><span class="val">${onboardingData.presupuesto_ads}</span></div>` : ''}
+      <div class="summary-row"><span class="key">Agentes</span><span class="val">${onboardingData.agents.length ? onboardingData.agents.join(', ') : '—'}</span></div>
+      <div class="summary-row"><span class="key">Integraciones</span><span class="val">${onboardingData.integrations.length ? onboardingData.integrations.join(', ') : '—'}</span></div>
+      ${onboardingData.integrations.includes('HeyGen') ? `<div class="summary-row"><span class="key">HeyGen Avatar ID</span><span class="val" style="font-size:11px">${onboardingData.heygen_avatar_id || '⚠ sin configurar'}</span></div>` : ''}
       <div class="summary-row"><span class="key">Estado</span><span class="val" style="color:var(--success);">● Listo para lanzar</span></div>
     </div>
     <div id="onboardingError" style="color:var(--danger);font-size:13px;margin-top:8px;display:none"></div>`;
@@ -3073,7 +3208,7 @@ async function nextStep() {
 }
 function resetOnboarding() {
   currentStep = 1;
-  Object.assign(onboardingData, { nombre:'', industria:'', email:'', telefono:'', precio_producto:197, descripcion:'', whatsapp_option:'', respond_io_key:'', whatsapp_number:'', redes:[], channels:[], agents:[], integrations:[] });
+  Object.assign(onboardingData, { nombre:'', industria:'', email:'', telefono:'', precio_producto:197, descripcion:'', whatsapp_option:'', respond_io_key:'', whatsapp_number:'', heygen_avatar_id:'', heygen_voice_id:'', objetivo:'', presupuesto_ads:'', mensaje_principal:'', redes:[], channels:[], agents:[], integrations:[] });
   renderStepper(); renderStepContent();
 }
 
@@ -3593,17 +3728,54 @@ function msToggle(type) {
 async function msGenerar() {
   const brief = document.getElementById('ms-brief').value.trim();
   if (!brief) { document.getElementById('ms-status').textContent = '⚠ Escribe un brief primero'; return; }
-  document.getElementById('ms-status').textContent = '⏳ Enviando al Crew bot...';
   document.getElementById('ms-output').style.display = 'none';
   document.getElementById('ms-ref-picker').style.display = 'none';
   const refs = buildRefPayload('ms');
+
+  // Si avatar está ON → HeyGen talking head video
+  if (msAvatarOn) {
+    document.getElementById('ms-status').textContent = '🎭 Generando video con avatar HeyGen...';
+    try {
+      // Buscar avatar_id y voice_id del cliente activo
+      let avatar_id = '', voz_id = '';
+      if (currentClient) {
+        const cr = await fetch(`/api/clientes`);
+        const cd = await cr.json();
+        const cli = (cd.clientes || []).find(c => c.nombre === currentClient || c.user_id === currentClient);
+        if (cli) { avatar_id = cli.heygen_avatar_id || ''; voz_id = cli.heygen_voice_id || ''; }
+      }
+      if (!avatar_id) {
+        document.getElementById('ms-status').textContent = '⚠ El cliente no tiene Avatar ID de HeyGen. Configúralo en Integraciones.';
+        return;
+      }
+      const r = await fetch('/api/crew/heygen', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto: brief, avatar_id, voz_id, cliente: currentClient })
+      });
+      const d = await r.json();
+      const out = document.getElementById('ms-output');
+      if (d.url_video) {
+        out.innerHTML = `<video controls style="max-width:100%;border-radius:10px;margin-top:8px" src="${d.url_video}"></video>`;
+      } else {
+        out.textContent = d.error || JSON.stringify(d, null, 2);
+      }
+      out.style.display = 'block';
+      document.getElementById('ms-status').textContent = d.url_video ? '✅ Video HeyGen listo' : '⚠ ' + (d.error || 'Error');
+    } catch(e) {
+      document.getElementById('ms-status').textContent = '⚠ Error HeyGen: ' + e.message;
+    }
+    return;
+  }
+
+  // Sin avatar → SeedAnce (flujo original)
+  document.getElementById('ms-status').textContent = '⏳ Enviando al Crew bot...';
   try {
     const r = await fetch('/api/crew/seedance', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         preset: msPreset, brief, client: currentClient,
         aspect_ratio: msAspectRatio, duration: parseInt(msDuration),
-        generate_audio: msAudioOn, use_avatar: msAvatarOn,
+        generate_audio: msAudioOn, use_avatar: false,
         ...refs
       })
     });
@@ -3679,20 +3851,27 @@ async function loadInboxFromSupabase() {
 
 async function loadLeadsFromAPI() {
   try {
-    const r = await fetch('/api/leads');
+    const clienteParam = currentClient ? `?cliente=${encodeURIComponent(currentClient)}` : '';
+    const r = await fetch(`/api/leads${clienteParam}`);
     const d = await r.json();
     if (!d.ok) return;
     const total = d.total || 0;
-    // Actualizar subtitle del CRM
+    // Actualizar subtitle con cliente real
     const sub = document.getElementById('crmSubtitle');
-    if (sub) sub.textContent = `${total} leads · esta semana`;
+    if (sub) sub.textContent = `${total} leads · ${currentClient || 'todos'} · este mes`;
+    // Actualizar nav count
+    const navCount = document.querySelector('.nav-item[data-section="crm"] .nav-count');
+    if (navCount) navCount.textContent = total;
     // Si hay datos reales, reemplazar el array demo
     const hasData = Object.values(d.leads).some(col => col.length > 0);
     if (hasData) {
-      Object.assign(leads, d.leads);
-      renderLeads();
+      leads.new        = d.leads.new        || [];
+      leads.contacted  = d.leads.contacted  || [];
+      leads.interested = d.leads.interested || [];
+      leads.closed     = d.leads.closed     || [];
     }
-  } catch(e) { /* mantiene leads demo */ }
+    renderCRM();
+  } catch(e) { renderCRM(); /* mantiene lo que haya */ }
 }
 
 // ============ CRM EXPORT ============
@@ -3822,6 +4001,64 @@ function deleteLead(colId, idx) {
 
 function closeLeadModal() {
   document.getElementById('leadModalOverlay').style.display = 'none';
+}
+
+function openAddLeadModal() {
+  document.getElementById('leadModalContent').innerHTML = `
+    <div style="font-size:17px;font-weight:700;margin-bottom:4px;">➕ Nuevo lead</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Se agregará a la columna <strong>Nuevo</strong> del CRM.</div>
+    <div class="field-group"><label class="field-label">Nombre *</label><input id="nl-nombre" class="field-input" placeholder="Nombre completo" /></div>
+    <div class="field-group"><label class="field-label">Teléfono</label><input id="nl-telefono" class="field-input" placeholder="+1 714 000 0000" /></div>
+    <div class="field-group"><label class="field-label">Email</label><input id="nl-email" class="field-input" placeholder="correo@ejemplo.com" /></div>
+    <div class="field-group"><label class="field-label">Canal / Fuente</label>
+      <select id="nl-fuente" class="field-select">
+        <option value="Manual">Manual</option>
+        <option value="Facebook">Facebook</option>
+        <option value="Instagram">Instagram</option>
+        <option value="WhatsApp">WhatsApp</option>
+        <option value="Referido">Referido</option>
+        <option value="SMS">SMS</option>
+        <option value="Apollo">Apollo</option>
+        <option value="Otro">Otro</option>
+      </select></div>
+    <div class="field-group"><label class="field-label">Notas</label><textarea id="nl-notas" class="field-textarea" style="min-height:70px" placeholder="Interés, contexto, próximo paso..."></textarea></div>
+    <div id="nl-error" style="color:var(--danger);font-size:12px;margin-bottom:8px;display:none"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeLeadModal()">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" id="nl-btn" onclick="saveNewLead()">Guardar lead</button>
+    </div>
+  `;
+  document.getElementById('leadModalOverlay').style.display = 'flex';
+}
+
+async function saveNewLead() {
+  const nombre  = document.getElementById('nl-nombre')?.value.trim();
+  const errEl   = document.getElementById('nl-error');
+  if (!nombre) { errEl.textContent = 'El nombre es obligatorio'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  const btn = document.getElementById('nl-btn');
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+  try {
+    const r = await fetch('/api/leads', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre,
+        telefono: document.getElementById('nl-telefono')?.value.trim() || null,
+        email:    document.getElementById('nl-email')?.value.trim()    || null,
+        fuente:   document.getElementById('nl-fuente')?.value          || 'Manual',
+        notas:    document.getElementById('nl-notas')?.value.trim()    || null,
+        status:   'new',
+        cliente:  currentClient || null
+      })
+    });
+    const d = await r.json();
+    if (!d.ok) { errEl.textContent = d.error || 'Error al guardar'; errEl.style.display = 'block'; btn.textContent = 'Guardar lead'; btn.disabled = false; return; }
+    closeLeadModal();
+    loadLeadsFromAPI();
+  } catch(e) {
+    errEl.textContent = 'Error de conexión'; errEl.style.display = 'block';
+    btn.textContent = 'Guardar lead'; btn.disabled = false;
+  }
 }
 
 // ============ SCHEDULE POST MODAL ============

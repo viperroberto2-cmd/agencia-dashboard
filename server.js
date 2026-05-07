@@ -373,7 +373,9 @@ app.post('/api/clientes/crear', async (req, res) => {
   try {
     const { nombre, industria, email, telefono, precio_producto, whatsapp_option,
             respond_io_key, whatsapp_number, inbox_channel_id,
-            tiktok_token, linkedin_token, youtube_token, pinterest_token, twitter_token } = req.body;
+            tiktok_token, linkedin_token, youtube_token, pinterest_token, twitter_token,
+            heygen_avatar_id, heygen_voice_id, integrations,
+            objetivo, presupuesto_ads, mensaje_principal, agents } = req.body;
     if (!nombre) return res.status(400).json({ ok: false, error: 'nombre requerido' });
     const user_id = nombre.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
     const r = await sbFetch('/clientes', {
@@ -382,7 +384,14 @@ app.post('/api/clientes/crear', async (req, res) => {
         user_id, nombre, industria, email, telefono,
         precio_producto: precio_producto || 197,
         whatsapp_option, respond_io_key, whatsapp_number, inbox_channel_id,
-        tiktok_token, linkedin_token, youtube_token, pinterest_token, twitter_token
+        tiktok_token, linkedin_token, youtube_token, pinterest_token, twitter_token,
+        heygen_avatar_id: heygen_avatar_id || null,
+        heygen_voice_id: heygen_voice_id || null,
+        integrations: integrations ? JSON.stringify(integrations) : null,
+        objetivo: objetivo || null,
+        presupuesto_ads: presupuesto_ads || null,
+        mensaje_principal: mensaje_principal || null,
+        agentes_asignados: agents ? JSON.stringify(agents) : null
       }),
       headers: { 'Prefer': 'return=representation' }
     });
@@ -482,6 +491,27 @@ app.get('/api/leads', async (req, res) => {
       });
     });
     res.json({ ok: true, leads: cols, total: data.length });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.post('/api/leads', async (req, res) => {
+  try {
+    const { nombre, telefono, email, fuente, notas, status, cliente } = req.body;
+    if (!nombre) return res.status(400).json({ ok: false, error: 'nombre requerido' });
+    const r = await sbFetch('/voice_leads', {
+      method: 'POST',
+      body: JSON.stringify({
+        nombre, telefono: telefono || null, email: email || null,
+        fuente: fuente || 'Manual', notas: notas || null,
+        status: status || 'new',
+        cliente: cliente || null,
+        call_status: 'manual',
+        created_at: new Date().toISOString()
+      }),
+      headers: { 'Prefer': 'return=representation' }
+    });
+    const data = await r.json();
+    res.json({ ok: true, lead: Array.isArray(data) ? data[0] : data });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
@@ -786,6 +816,113 @@ app.get('/gdrive/referencias', async (req, res) => {
     console.error('GDrive referencias error:', e.message);
     res.status(500).json({ ok: false, error: e.message });
   }
+});
+
+// ── HeyGen video — proxy al crew bot ─────────────────────────────────────────
+app.post('/api/crew/heygen', (req, res) => {
+  proxyPost(`${CREW_URL}/generar-avatar/heygen`, req, res);
+});
+
+// ── HeyGen: listar avatares disponibles en cuenta ────────────────────────────
+app.get('/api/heygen/avatares', async (req, res) => {
+  const heygenKey = process.env.HEYGEN_API_KEY;
+  if (!heygenKey) return res.json({ ok: false, error: 'HEYGEN_API_KEY no configurada' });
+  try {
+    const r = await fetch('https://api.heygen.com/v2/avatars', {
+      headers: { 'X-Api-Key': heygenKey, 'Content-Type': 'application/json' }
+    });
+    const d = await r.json();
+    const avatares = d?.data?.avatars || [];
+    res.json({ ok: true, avatares });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+// ── HeyGen: listar voces disponibles ─────────────────────────────────────────
+app.get('/api/heygen/voces', async (req, res) => {
+  const heygenKey = process.env.HEYGEN_API_KEY;
+  if (!heygenKey) return res.json({ ok: false, error: 'HEYGEN_API_KEY no configurada' });
+  try {
+    const idioma = req.query.idioma || 'es';
+    const r = await fetch('https://api.heygen.com/v2/voices', {
+      headers: { 'X-Api-Key': heygenKey, 'Content-Type': 'application/json' }
+    });
+    const d = await r.json();
+    let voces = d?.data?.voices || [];
+    if (idioma) voces = voces.filter(v => (v.language || '').toLowerCase().startsWith(idioma));
+    res.json({ ok: true, voces });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+// ── Portal: crear avatar HeyGen desde foto ───────────────────────────────────
+app.post('/api/portal/create-avatar', async (req, res) => {
+  try {
+    const { image_url, user_id, avatar_name } = req.body;
+    const heygenKey = process.env.HEYGEN_API_KEY;
+    if (!heygenKey) return res.json({ ok: false, error: 'HEYGEN_API_KEY no configurada' });
+    if (!image_url) return res.status(400).json({ ok: false, error: 'image_url requerida' });
+
+    // 1. Crear el Photo Avatar en HeyGen
+    const heyRes = await fetch('https://api.heygen.com/v2/photo_avatar', {
+      method: 'POST',
+      headers: {
+        'X-Api-Key': heygenKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: avatar_name || 'Asistente',
+        image_url,
+      })
+    });
+    const heyData = await heyRes.json();
+    if (!heyData.data?.photo_avatar_id) {
+      return res.json({ ok: false, error: heyData.message || 'Error al crear avatar', raw: heyData });
+    }
+    const avatar_id = heyData.data.photo_avatar_id;
+
+    // 2. Guardar en Supabase si hay user_id
+    if (user_id) {
+      await sbFetch(`/clientes?user_id=eq.${user_id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ heygen_avatar_id: avatar_id }),
+        headers: { 'Prefer': 'return=minimal' }
+      });
+    }
+
+    res.json({ ok: true, avatar_id });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+// ── Portal: subir imagen a Supabase Storage para avatar ─────────────────────
+app.post('/api/portal/upload-photo', async (req, res) => {
+  try {
+    const SUPABASE_URL  = process.env.SUPABASE_PROJECT_URL;
+    const SUPABASE_KEY  = process.env.SUPABASE_SECRET_KEY;
+    if (!SUPABASE_URL || !SUPABASE_KEY) return res.json({ ok: false, error: 'Supabase no configurado' });
+
+    // Recibir base64 del cliente
+    const { base64, filename, user_id } = req.body;
+    if (!base64) return res.status(400).json({ ok: false, error: 'base64 requerido' });
+
+    const buffer = Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
+    const ext    = (filename || 'photo.jpg').split('.').pop().replace(/[^a-z0-9]/gi, '') || 'jpg';
+    const path   = `avatars/${user_id || 'unknown'}_${Date.now()}.${ext}`;
+
+    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/media/${path}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': `image/${ext}`,
+        'x-upsert': 'true',
+      },
+      body: buffer
+    });
+    if (!uploadRes.ok) {
+      const err = await uploadRes.text();
+      return res.json({ ok: false, error: err });
+    }
+    const public_url = `${SUPABASE_URL}/storage/v1/object/public/media/${path}`;
+    res.json({ ok: true, url: public_url });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
 const PORT = process.env.PORT || 3000;

@@ -1704,26 +1704,39 @@ input, textarea, select { font-family: inherit; }
         <div class="settings-section">
           <div class="settings-section-title" data-i18n="set.business">Información de tu negocio</div>
           <div class="settings-section-desc" data-i18n="set.businessDesc">La que registraste durante el onboarding</div>
-          <div class="setting-row"><div class="setting-icon">🏢</div><div class="setting-info"><div class="setting-label" data-i18n="set.bizName">Nombre del negocio</div><div class="setting-value">Clínica Médica Ramírez</div></div></div>
-          <div class="setting-row"><div class="setting-icon">📍</div><div class="setting-info"><div class="setting-label" data-i18n="set.location">Ubicación</div><div class="setting-value">Los Angeles, CA</div></div></div>
-          <div class="setting-row"><div class="setting-icon">📧</div><div class="setting-info"><div class="setting-label">Email</div><div class="setting-value">cliente@ejemplo.com</div></div></div>
-          <div class="setting-row"><div class="setting-icon">📞</div><div class="setting-info"><div class="setting-label" data-i18n="set.phone">Teléfono</div><div class="setting-value">+1 (213) 555-0142</div></div></div>
+          <div class="setting-row"><div class="setting-icon">🏢</div><div class="setting-info"><div class="setting-label" data-i18n="set.bizName">Nombre del negocio</div><div class="setting-value" id="set-biz-name">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">🏭</div><div class="setting-info"><div class="setting-label" data-i18n="set.industry">Industria</div><div class="setting-value" id="set-industry">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">📧</div><div class="setting-info"><div class="setting-label">Email</div><div class="setting-value" id="set-email">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">📞</div><div class="setting-info"><div class="setting-label" data-i18n="set.phone">Teléfono</div><div class="setting-value" id="set-phone">—</div></div></div>
         </div>
         <div class="settings-section">
           <div class="settings-section-title" data-i18n="set.services">Servicios conectados</div>
           <div class="settings-section-desc" data-i18n="set.servicesDesc">Estado de las herramientas integradas con tu cuenta</div>
-          <div class="setting-row"><div class="setting-icon">💚</div><div class="setting-info"><div class="setting-label">WhatsApp Business</div><div class="setting-value">+1 (213) 555-0142</div></div><span class="setting-status pending" data-i18n="set.activating">Activando</span></div>
-          <div class="setting-row"><div class="setting-icon">📅</div><div class="setting-info"><div class="setting-label">Google Calendar</div><div class="setting-value">cliente@ejemplo.com</div></div><span class="setting-status connected" data-i18n="set.connected">Conectado</span></div>
-          <div class="setting-row"><div class="setting-icon">💳</div><div class="setting-info"><div class="setting-label">Stripe</div><div class="setting-value">acct_1ABC...XYZ</div></div><span class="setting-status connected" data-i18n="set.connected">Conectado</span></div>
-          <div class="setting-row"><div class="setting-icon">📘</div><div class="setting-info"><div class="setting-label">Facebook + Instagram</div><div class="setting-value">@clinicaramirez</div></div><span class="setting-status connected" data-i18n="set.connected">Conectado</span></div>
+          <div class="setting-row"><div class="setting-icon">💚</div><div class="setting-info"><div class="setting-label">WhatsApp Business</div><div class="setting-value" id="set-wa">—</div></div><span class="setting-status" id="set-wa-status">—</span></div>
+          <div class="setting-row"><div class="setting-icon">🤖</div><div class="setting-info"><div class="setting-label" data-i18n="set.voiceAgent">Agente de voz</div><div class="setting-value" id="set-agent">Sofía</div></div><span class="setting-status connected" data-i18n="set.connected">Activo</span></div>
+          <div class="setting-row"><div class="setting-icon">📅</div><div class="setting-info"><div class="setting-label">Google Calendar</div><div class="setting-value" id="set-calendar">—</div></div><span class="setting-status" id="set-calendar-status">—</span></div>
         </div>
         <div class="settings-section">
-          <div class="settings-section-title" data-i18n="set.assistant">Tu asistente</div>
-          <div class="settings-section-desc" data-i18n="set.assistantDesc">Configuración de Sofía, tu agente de voz</div>
-          <div class="setting-row"><div class="setting-icon">💚</div><div class="setting-info"><div class="setting-label" data-i18n="set.aname">Nombre del asistente</div><div class="setting-value">Sofía</div></div></div>
-          <div class="setting-row"><div class="setting-icon">🌎</div><div class="setting-info"><div class="setting-label" data-i18n="set.alang">Idioma</div><div class="setting-value" data-i18n="set.bilingual">Bilingüe (Español + Inglés)</div></div></div>
-          <div class="setting-row"><div class="setting-icon">⏰</div><div class="setting-info"><div class="setting-label" data-i18n="set.ahours">Horario</div><div class="setting-value" data-i18n="set.always">24/7 — Siempre activa</div></div></div>
-          <div class="setting-row"><div class="setting-icon">🎭</div><div class="setting-info"><div class="setting-label" data-i18n="set.atone">Tono</div><div class="setting-value" data-i18n="set.warm">Cálido y profesional</div></div></div>
+          <div class="settings-section-title" data-i18n="set.assistant">Tu avatar de IA</div>
+          <div class="settings-section-desc">Sube una foto para crear tu avatar personalizado de video</div>
+          <div id="avatar-preview-row" style="display:none" class="setting-row">
+            <div class="setting-icon">🎭</div>
+            <div class="setting-info">
+              <div class="setting-label">Avatar activo</div>
+              <div class="setting-value" id="set-avatar-id">—</div>
+            </div>
+            <span class="setting-status connected">Listo</span>
+          </div>
+          <div style="padding: 12px 0;">
+            <label style="display:block;margin-bottom:8px;font-size:13px;color:var(--text-muted)">Foto (JPG/PNG, máx 5MB)</label>
+            <input type="file" id="avatarPhotoInput" accept="image/jpeg,image/png" style="display:none" onchange="previewAvatarPhoto(this)">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <img id="avatarPhotoPreview" style="display:none;width:64px;height:64px;object-fit:cover;border-radius:50%;border:2px solid var(--accent)">
+              <button class="btn btn-ghost" style="font-size:13px" onclick="document.getElementById('avatarPhotoInput').click()">📷 Elegir foto</button>
+              <button class="btn" id="avatarUploadBtn" style="font-size:13px;display:none" onclick="uploadAvatarPhoto()">Crear avatar ✨</button>
+            </div>
+            <div id="avatarUploadStatus" style="margin-top:8px;font-size:12px;color:var(--text-muted)"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -2430,10 +2443,98 @@ function populatePortal(d) {
   const sidebarRole = document.querySelector('.profile-role');
   if (sidebarName) sidebarName.textContent = d.owner || d.nombre;
   if (sidebarRole) sidebarRole.textContent = d.industria || 'Cliente';
+  // Poblar sección settings con datos reales
+  populateSettings(d);
   // Cargar datos reales del cliente
   loadPortalStats();
   loadPortalLeads();
   loadPortalRecordings();
+}
+
+function populateSettings(d) {
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && val) el.textContent = val;
+  };
+  set('set-biz-name', d.nombre || '—');
+  set('set-industry',  d.industria || '—');
+  set('set-email',     d.email || '—');
+  set('set-phone',     d.telefono || d.whatsapp_number || '—');
+  // WhatsApp
+  const wa = d.whatsapp_number || d.telefono || '';
+  set('set-wa', wa || 'Sin configurar');
+  const waStatus = document.getElementById('set-wa-status');
+  if (waStatus) {
+    waStatus.textContent = wa ? 'Activo' : 'Pendiente';
+    waStatus.className = 'setting-status ' + (wa ? 'connected' : 'pending');
+  }
+  // Calendar
+  set('set-calendar', d.email || '—');
+  const calStatus = document.getElementById('set-calendar-status');
+  if (calStatus) {
+    calStatus.textContent = d.email ? 'Conectado' : 'Pendiente';
+    calStatus.className = 'setting-status ' + (d.email ? 'connected' : 'pending');
+  }
+  // Avatar HeyGen
+  if (d.heygen_avatar_id) {
+    set('set-avatar-id', d.heygen_avatar_id);
+    const row = document.getElementById('avatar-preview-row');
+    if (row) row.style.display = '';
+  }
+}
+
+// ── Avatar HeyGen ─────────────────────────────────────────────────────────────
+let _avatarBase64 = null;
+let _avatarFilename = null;
+
+function previewAvatarPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  _avatarFilename = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    _avatarBase64 = e.target.result;
+    const img = document.getElementById('avatarPhotoPreview');
+    if (img) { img.src = _avatarBase64; img.style.display = ''; }
+    const btn = document.getElementById('avatarUploadBtn');
+    if (btn) btn.style.display = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadAvatarPhoto() {
+  if (!_avatarBase64 || !portalClient?.user_id) return;
+  const btn = document.getElementById('avatarUploadBtn');
+  const status = document.getElementById('avatarUploadStatus');
+  if (btn) btn.disabled = true;
+  if (status) status.textContent = 'Subiendo foto...';
+  try {
+    // 1. Upload foto a Supabase Storage
+    const upRes = await fetch('/api/portal/upload-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base64: _avatarBase64, filename: _avatarFilename, user_id: portalClient.user_id })
+    });
+    const upData = await upRes.json();
+    if (!upData.ok) { if (status) status.textContent = '❌ ' + (upData.error || 'Error subiendo foto'); if (btn) btn.disabled = false; return; }
+    if (status) status.textContent = 'Creando avatar en HeyGen...';
+    // 2. Crear Photo Avatar en HeyGen
+    const avRes = await fetch('/api/portal/create-avatar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image_url: upData.url, user_id: portalClient.user_id, avatar_name: portalClient.nombre || 'Asistente' })
+    });
+    const avData = await avRes.json();
+    if (!avData.ok) { if (status) status.textContent = '❌ ' + (avData.error || 'Error creando avatar'); if (btn) btn.disabled = false; return; }
+    // 3. Actualizar UI
+    if (status) status.textContent = '✅ Avatar creado: ' + avData.avatar_id;
+    portalClient.heygen_avatar_id = avData.avatar_id;
+    populateSettings(portalClient);
+    if (btn) { btn.disabled = false; btn.textContent = '✅ Creado'; }
+  } catch(e) {
+    if (status) status.textContent = '❌ Error: ' + e.message;
+    if (btn) btn.disabled = false;
+  }
 }
 
 async function loadPortalStats() {
