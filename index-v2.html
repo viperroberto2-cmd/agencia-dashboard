@@ -1608,13 +1608,13 @@ input, textarea { font-family: inherit; }
       <div class="nav-section">
         <div class="nav-label">Principal</div>
         <button class="nav-item active" data-section="home" onclick="goSection('home')"><span class="nav-icon">🏠</span> Home</button>
-        <button class="nav-item" data-section="inbox" onclick="goSection('inbox')"><span class="nav-icon">📥</span> Inbox<span class="nav-count alert" id="navInboxCount">3</span></button>
+        <button class="nav-item" data-section="inbox" onclick="goSection('inbox')"><span class="nav-icon">📥</span> Inbox<span class="nav-count alert" id="navInboxCount"></span></button>
         <button class="nav-item" data-section="chat" onclick="goSection('chat')"><span class="nav-icon">💬</span> Chat</button>
         <button class="nav-item" data-section="equipo" onclick="goSection('equipo')"><span class="nav-icon">🤖</span> Equipo<span class="nav-count">11</span></button>
       </div>
       <div class="nav-section">
         <div class="nav-label">Operación</div>
-        <button class="nav-item" data-section="crm" onclick="goSection('crm')"><span class="nav-icon">👥</span> CRM<span class="nav-count">12</span></button>
+        <button class="nav-item" data-section="crm" onclick="goSection('crm')"><span class="nav-icon">👥</span> CRM<span class="nav-count" id="navCrmCount"></span></button>
         <button class="nav-item" data-section="scheduler" onclick="goSection('scheduler')"><span class="nav-icon">📅</span> Scheduler</button>
         <button class="nav-item" data-section="grabaciones" onclick="goSection('grabaciones')"><span class="nav-icon">🎙️</span> Grabaciones</button>
         <button class="nav-item" data-section="drive" onclick="goSection('drive')"><span class="nav-icon">📂</span> Drive</button>
@@ -1719,7 +1719,7 @@ input, textarea { font-family: inherit; }
         <div class="chat-quick-actions">
           <button class="chat-chip" onclick="sendQuick('Estado de proyectos')">📊 Estado de proyectos</button>
           <button class="chat-chip" onclick="sendQuick('Reporte semanal')">📈 Reporte semanal</button>
-          <button class="chat-chip" onclick="sendQuick('Nueva campaña para Arranca')">🚀 Nueva campaña</button>
+          <button class="chat-chip" id="chipCampana" onclick="sendQuick('Nueva campaña para ' + (currentClient||'mi cliente'))">🚀 Nueva campaña</button>
           <button class="chat-chip" onclick="sendQuick('Revisar leads de hoy')">👥 Leads de hoy</button>
           <button class="chat-chip" onclick="sendQuick('¿Cómo está el Crew?')">🎨 Estado Crew</button>
         </div>
@@ -1747,7 +1747,7 @@ input, textarea { font-family: inherit; }
     <!-- CRM -->
     <section class="section" id="section-crm">
       <div class="section-header">
-        <div><div class="section-title">CRM · Leads</div><div class="section-subtitle" id="crmSubtitle">12 leads · Arranca Financial · esta semana</div></div>
+        <div><div class="section-title">CRM · Leads</div><div class="section-subtitle" id="crmSubtitle">Cargando leads…</div></div>
         <div style="display: flex; gap: 8px;">
           <div style="position: relative;">
             <button class="btn btn-ghost" onclick="toggleDropdown('exportDropdown', event)">📤 Exportar <span style="font-size:9px;margin-left:2px;">▼</span></button>
@@ -1935,9 +1935,9 @@ input, textarea { font-family: inherit; }
         <div class="config-pane" id="pane-usuarios">
           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;">
             <div class="users-stats">
-              <div class="user-stat"><div class="user-stat-icon green">✓</div><div><div class="user-stat-value">3</div><div class="user-stat-label">Activos</div></div></div>
-              <div class="user-stat"><div class="user-stat-icon amber">📧</div><div><div class="user-stat-value">2</div><div class="user-stat-label">Invitaciones pendientes</div></div></div>
-              <div class="user-stat"><div class="user-stat-icon red">🚫</div><div><div class="user-stat-value">1</div><div class="user-stat-label">Suspendido</div></div></div>
+              <div class="user-stat"><div class="user-stat-icon green">✓</div><div><div class="user-stat-value">—</div><div class="user-stat-label">Activos</div></div></div>
+              <div class="user-stat"><div class="user-stat-icon amber">📧</div><div><div class="user-stat-value">—</div><div class="user-stat-label">Invitaciones pendientes</div></div></div>
+              <div class="user-stat"><div class="user-stat-icon red">🚫</div><div><div class="user-stat-value">—</div><div class="user-stat-label">Suspendidos</div></div></div>
             </div>
             <div style="display: flex; gap: 8px;">
               <button class="btn btn-ghost" onclick="createUserManual()">＋ Crear manualmente</button>
@@ -1983,6 +1983,12 @@ input, textarea { font-family: inherit; }
             <pre id="bg_codigo" style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text);overflow-x:auto;max-height:400px;overflow-y:auto;white-space:pre-wrap"></pre>
             <div style="margin-top:12px;padding:12px 14px;background:var(--accent-dim);border-radius:8px;font-size:12px;color:var(--text-muted)">
               💡 <strong style="color:var(--text)">Siguiente paso:</strong> Sube este archivo a Railway como nuevo servicio Python. El bot ya incluye las variables de entorno necesarias.
+            </div>
+          </div>
+          <div style="margin-top:28px">
+            <div style="font-size:13px;font-weight:600;margin-bottom:12px">🟢 Estado de los bots</div>
+            <div id="systemStatusList" style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
+              <div style="color:var(--text-dim);">Verificando...</div>
             </div>
           </div>
         </div>
@@ -2083,7 +2089,7 @@ input, textarea { font-family: inherit; }
 
   <nav class="bottombar">
     <button class="tab-btn active" data-section="home" onclick="goSection('home')"><span class="tab-icon">🏠</span>Home</button>
-    <button class="tab-btn" data-section="inbox" onclick="goSection('inbox')"><span class="tab-icon">📥</span>Inbox<span class="tab-badge" id="tabInboxCount">3</span></button>
+    <button class="tab-btn" data-section="inbox" onclick="goSection('inbox')"><span class="tab-icon">📥</span>Inbox<span class="tab-badge" id="tabInboxCount"></span></button>
     <button class="tab-btn" data-section="chat" onclick="goSection('chat')"><span class="tab-icon">💬</span>Chat</button>
     <button class="tab-btn" data-section="crm" onclick="goSection('crm')"><span class="tab-icon">👥</span>CRM</button>
     <button class="tab-btn" onclick="toggleDrawer()"><span class="tab-icon">⋯</span>Más</button>
@@ -2165,8 +2171,7 @@ input, textarea { font-family: inherit; }
       <div>
         <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Cliente</div>
         <select id="sp-cliente" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;outline:none;">
-          <option value="arranca">Arranca Financial</option>
-          <option value="sofia">Sofía (clínica)</option>
+          <option value="">Seleccionar cliente…</option>
         </select>
       </div>
     </div>
@@ -2234,34 +2239,11 @@ const agents = [
 
 const leads = { new: [], contacted: [], interested: [], closed: [] };
 
-const inboxItems = [
-  { id: 1, channel: 'whatsapp', icon: '💚', from: 'María González', preview: 'Hola, vi tu post de Turo, ¿cómo funciona el curso?', time: '2 min', unread: true, client: 'arranca' },
-  { id: 2, channel: 'instagram', icon: '📸', from: 'carlos_ramirez_98', preview: 'DM: Me interesa el curso de $197. ¿Cuándo arranca?', time: '15 min', unread: true, client: 'arranca' },
-  { id: 3, channel: 'facebook', icon: '📘', from: 'Ana Torres', preview: 'Comentó en tu video: "Cuánto cuesta el programa?"', time: '1h', unread: true, client: 'arranca' },
-  { id: 4, channel: 'sms', icon: '💬', from: '+1 (323) 555-0142', preview: 'Sí, me interesa información sobre el tratamiento GLP-1', time: '2h', unread: false, client: 'sofia' },
-  { id: 5, channel: 'email', icon: '📧', from: 'jorge.martinez@gmail.com', preview: 'Recibí tu email, ¿podemos agendar llamada esta semana?', time: '3h', unread: false, client: 'arranca' },
-  { id: 6, channel: 'whatsapp', icon: '💚', from: '+1 (213) 555-0198', preview: 'Quiero pagar el curso pero tengo una pregunta antes', time: '5h', unread: false, client: 'arranca' },
-  { id: 7, channel: 'instagram', icon: '📸', from: 'patricia_ruiz', preview: 'DM: Gracias por la info, lo voy a pensar', time: 'ayer', unread: false, client: 'arranca' },
-  { id: 8, channel: 'facebook', icon: '📘', from: 'Daniel Soto', preview: 'Lead form: nombre, teléfono, email — completado', time: 'ayer', unread: false, client: 'arranca' },
-  { id: 9, channel: 'sms', icon: '💬', from: '+1 (818) 555-0234', preview: 'Hola, ¿es la clínica de pérdida de peso?', time: 'ayer', unread: false, client: 'sofia' }
-];
+let inboxItems = [];
 
 const recordings = [];
 
-const driveItems = [
-  { type: 'video', name: 'Reel_Turo_3errores_v2.mp4', size: '28 MB', source: 'Crew', date: 'Hoy', icon: '🎬' },
-  { type: 'video', name: 'Testimonio_Daniel_Module1.mp4', size: '64 MB', source: 'Crew', date: 'Hoy', icon: '🎥' },
-  { type: 'image', name: 'Hero_Arranca_Landing.png', size: '1.8 MB', source: 'Crew (Flux)', date: 'Hoy', icon: '🖼️' },
-  { type: 'audio', name: 'Score_Cinematic_Drama.mp3', size: '4.2 MB', source: 'CompositorBot', date: 'Hoy', icon: '🎵' },
-  { type: 'video', name: 'Carrusel_Crédito_USA.mp4', size: '15 MB', source: 'Motion Bot', date: 'Ayer', icon: '🎞️' },
-  { type: 'audio', name: 'BGM_Hipnotic_Sales.mp3', size: '3.8 MB', source: 'Suno AI', date: 'Ayer', icon: '🎶' },
-  { type: 'image', name: 'Avatar_Marco_LUMINAE.png', size: '2.4 MB', source: 'HeyGen', date: 'Ayer', icon: '👤' },
-  { type: 'image', name: 'Carousel_FB_Slide1.png', size: '1.1 MB', source: 'Crew', date: 'Ayer', icon: '🖼️' },
-  { type: 'audio', name: 'VoiceOver_VSL_Module2.mp3', size: '2.1 MB', source: 'ElevenLabs', date: 'Lun', icon: '🎙️' },
-  { type: 'image', name: 'Cinematic_Lighting_v3.png', size: '3.2 MB', source: 'Higgsfield', date: 'Lun', icon: '✨' },
-  { type: 'video', name: 'Promo_Curso_$197_60s.mp4', size: '42 MB', source: 'Crew', date: 'Lun', icon: '📹' },
-  { type: 'image', name: 'Producto_Sofia_Clinic.png', size: '2.7 MB', source: 'Crew', date: 'Sáb', icon: '💊' }
-];
+const driveItems = [];
 
 const playwrightEndpoints = [
   { method: 'POST', path: '/scrape', desc: 'Extrae texto completo de cualquier URL · Playwright primero, BS4 fallback', users: ['Organizador', 'Estratega'] },
@@ -2269,16 +2251,7 @@ const playwrightEndpoints = [
   { method: 'POST', path: '/search', desc: 'Búsqueda web headless · resultados estructurados con contexto', users: ['Analytics', 'Scraper'] }
 ];
 
-const playwrightRequests = [
-  { time: '14:32', endpoint: '/scrape', target: 'https://turo.com/los-angeles', status: 200, ms: 1240, bot: 'Estratega' },
-  { time: '14:18', endpoint: '/search', target: 'GLP-1 clinic Los Angeles', status: 200, ms: 890, bot: 'Scraper' },
-  { time: '13:55', endpoint: '/screenshot', target: 'arrancafinancial.com', status: 200, ms: 2100, bot: 'Web' },
-  { time: '13:42', endpoint: '/scrape', target: 'https://hyperdrive-rentals.com', status: 200, ms: 1580, bot: 'Estratega' },
-  { time: '13:20', endpoint: '/scrape', target: 'https://getaround.com/cars/los-angeles', status: 500, ms: 30000, bot: 'Estratega' },
-  { time: '12:48', endpoint: '/search', target: 'best GLP-1 weight loss USA', status: 200, ms: 720, bot: 'Scraper' },
-  { time: '12:30', endpoint: '/scrape', target: 'https://noom.com/glp-1', status: 200, ms: 980, bot: 'Estratega' },
-  { time: '12:05', endpoint: '/screenshot', target: 'instagram.com/arrancafinancial', status: 200, ms: 1890, bot: 'Director' }
-];
+const playwrightRequests = [];
 
 const globalIntegrations = [
   { name: 'Railway', icon: '🚂', status: 'connected', meta: 'Hosting de los bots' },
@@ -2292,36 +2265,7 @@ const globalIntegrations = [
   { name: 'HyperFrames', icon: '🎞️', status: 'disconnected', meta: 'Frames cinematográficos' }
 ];
 
-const clientIntegrations = {
-  arranca: [
-    { name: 'Twilio (María)', icon: '📞', status: 'connected', meta: '+1 714 844 8860' },
-    { name: 'Facebook + Instagram', icon: '📘', status: 'connected', meta: 'act_2622567464589584' },
-    { name: 'WhatsApp Business', icon: '💚', status: 'pending', meta: 'Verificando +1 657-707-4672' },
-    { name: 'Stripe', icon: '💳', status: 'connected', meta: 'Curso $197' },
-    { name: 'HeyGen', icon: '🎭', status: 'connected', meta: 'Avatares para curso' },
-    { name: 'Hostinger FTP', icon: '🌐', status: 'connected', meta: 'arrancafinancial.com' },
-    { name: 'Gmail / SendGrid', icon: '📧', status: 'pending', meta: 'Recepción de leads' },
-    { name: 'Google Calendar', icon: '📅', status: 'disconnected', meta: 'Para agendar' },
-    { name: 'YouTube', icon: '▶️', status: 'disconnected', meta: 'Canal de Arranca' },
-    { name: 'TikTok', icon: '🎵', status: 'disconnected', meta: 'Por configurar' },
-    { name: 'LinkedIn', icon: '💼', status: 'disconnected', meta: 'Por configurar' },
-    { name: 'Pinterest', icon: '📌', status: 'disconnected', meta: 'Por configurar' },
-    { name: 'Twitter / X', icon: '𝕏', status: 'disconnected', meta: 'Por configurar' },
-    { name: 'Google Ads', icon: '📊', status: 'disconnected', meta: 'Ads de Arranca' }
-  ],
-  sofia: [
-    { name: 'Twilio (Sofía)', icon: '📞', status: 'connected', meta: '+1 213 669 4427' },
-    { name: 'A2P 10DLC', icon: '📜', status: 'pending', meta: 'Registro SMS USA' },
-    { name: 'Facebook + Instagram', icon: '📘', status: 'pending', meta: 'Por configurar' },
-    { name: 'WhatsApp Business', icon: '💚', status: 'disconnected', meta: 'Por configurar' },
-    { name: 'TikTok', icon: '🎵', status: 'disconnected', meta: 'Por configurar' },
-    { name: 'LinkedIn', icon: '💼', status: 'disconnected', meta: 'Por configurar' },
-    { name: 'YouTube', icon: '▶️', status: 'disconnected', meta: 'Por configurar' },
-    { name: 'Stripe', icon: '💳', status: 'disconnected', meta: 'Pagos clínica GLP-1' },
-    { name: 'Google Calendar', icon: '📅', status: 'disconnected', meta: 'Citas con la clínica' },
-    { name: 'Gmail / SendGrid', icon: '📧', status: 'disconnected', meta: 'Bandeja de la clínica' }
-  ]
-};
+const clientIntegrations = {};
 
 let schedulerPosts = [];
 let calendarMonth = new Date(); calendarMonth.setDate(1);
@@ -3213,14 +3157,7 @@ function resetOnboarding() {
 }
 
 // ============ USERS / ACCESS ============
-const portalUsers = [
-  { name: 'Roberto González', email: 'roberto@rg-production.com', client: { name: 'Arranca Financial', emoji: '💰' }, role: 'owner', lastLogin: 'hace 2 min', status: 'active', initials: 'RG', color: 'linear-gradient(135deg, #f59e0b, #ef4444)' },
-  { name: 'Dra. Ana Ramírez', email: 'ana@clinicaramirez.com', client: { name: 'Clínica Ramírez', emoji: '💊' }, role: 'owner', lastLogin: 'hace 1 hora', status: 'active', initials: 'AR', color: 'linear-gradient(135deg, #10b981, #047857)' },
-  { name: 'María López', email: 'maria@clinicaramirez.com', client: { name: 'Clínica Ramírez', emoji: '💊' }, role: 'staff', lastLogin: 'hace 3 horas', status: 'active', initials: 'ML', color: 'linear-gradient(135deg, #3b82f6, #1e40af)' },
-  { name: 'Carlos Méndez', email: 'carlos@clinicaramirez.com', client: { name: 'Clínica Ramírez', emoji: '💊' }, role: 'staff', lastLogin: '—', status: 'pending', initials: 'CM', color: 'linear-gradient(135deg, #a78bfa, #6d28d9)' },
-  { name: 'Patricia Núñez', email: 'patricia@dentalsmile.com', client: { name: 'Dental Smile', emoji: '🦷' }, role: 'owner', lastLogin: '—', status: 'pending', initials: 'PN', color: 'linear-gradient(135deg, #ec4899, #be185d)' },
-  { name: 'Jorge Suárez', email: 'jorge@oldclient.com', client: { name: 'Arranca Financial', emoji: '💰' }, role: 'readonly', lastLogin: 'hace 30 días', status: 'suspended', initials: 'JS', color: 'linear-gradient(135deg, #6b7280, #374151)' }
-];
+const portalUsers = [];
 
 function roleLabel(r) { return r === 'owner' ? 'Owner' : r === 'staff' ? 'Staff' : 'Read-only'; }
 function userStatusLabel(s) { return s === 'active' ? 'Activo' : s === 'pending' ? 'Pendiente' : 'Suspendido'; }
@@ -3273,7 +3210,7 @@ renderClientIntegrations();
 renderAgentDropdown();
 renderStepper();
 renderStepContent();
-renderUsers();
+loadPortalUsers();
 
 // ── HEALTH CHECK ──────────────────────────────────────────────────
 async function loadHealth() {
@@ -3990,11 +3927,19 @@ function moveLead(fromCol, idx, toCol) {
   closeLeadModal();
   renderCRM();
   openLeadModal(toCol, leads[toCol].length - 1);
+  if (lead.id) {
+    fetch(`/api/leads/${lead.id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: toCol }) })
+      .catch(e => console.warn('moveLead API:', e.message));
+  }
 }
 
 function deleteLead(colId, idx) {
   const lead = leads[colId][idx];
   if (!confirm(`¿Borrar a ${lead.name}? Esta acción no se puede deshacer.`)) return;
+  if (lead.id) {
+    fetch(`/api/leads/${lead.id}`, { method: 'DELETE' })
+      .catch(e => console.warn('deleteLead API:', e.message));
+  }
   leads[colId].splice(idx, 1);
   closeLeadModal();
   renderCRM();
@@ -4063,7 +4008,7 @@ async function saveNewLead() {
 }
 
 // ============ SCHEDULE POST MODAL ============
-function openScheduleModal() {
+async function openScheduleModal() {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('sp-fecha').value = today;
   document.getElementById('sp-hora').value = '10:00';
@@ -4071,6 +4016,17 @@ function openScheduleModal() {
   document.getElementById('sp-error').style.display = 'none';
   document.getElementById('sp-btn').textContent = 'Enviar para aprobación →';
   document.getElementById('sp-btn').disabled = false;
+  // Poblar dropdown de clientes dinámicamente
+  const sel = document.getElementById('sp-cliente');
+  try {
+    const res = await fetch('/api/clientes');
+    const d = await res.json();
+    const clientes = d.ok ? d.clientes : [];
+    sel.innerHTML = '<option value="">Seleccionar cliente…</option>' +
+      clientes.map(c => `<option value="${c.user_id || c.nombre}" ${(c.nombre === currentClient) ? 'selected' : ''}>${c.nombre}</option>`).join('');
+  } catch(e) {
+    if (currentClient) sel.innerHTML = `<option value="${currentClient}" selected>${currentClient}</option>`;
+  }
   document.getElementById('scheduleModalOverlay').style.display = 'flex';
 }
 

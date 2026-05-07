@@ -1474,11 +1474,11 @@ input, textarea, select { font-family: inherit; }
     <div class="topbar-right">
       <button class="icon-btn" aria-label="Notificaciones">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <span class="badge">3</span>
+        <span class="badge" id="topbarNotifBadge" style="display:none"></span>
       </button>
       <button class="profile-btn">
-        <div class="profile-avatar">DR</div>
-        <span class="profile-name">Dra. Ramírez</span>
+        <div class="profile-avatar" id="topbarProfileAvatar">—</div>
+        <span class="profile-name" id="topbarProfileName">—</span>
       </button>
     </div>
   </header>
@@ -1488,9 +1488,9 @@ input, textarea, select { font-family: inherit; }
       <div class="nav-section">
         <div class="nav-label" data-i18n="nav.principal">Principal</div>
         <button class="nav-item active" data-section="home" onclick="goPortal('home')"><span class="nav-icon">🏠</span><span data-i18n="nav.home">Inicio</span></button>
-        <button class="nav-item" data-section="leads" onclick="goPortal('leads')"><span class="nav-icon">👥</span><span data-i18n="nav.leads">Mis leads</span><span class="nav-count alert">8</span></button>
-        <button class="nav-item" data-section="appointments" onclick="goPortal('appointments')"><span class="nav-icon">📅</span><span data-i18n="nav.appts">Citas</span><span class="nav-count">5</span></button>
-        <button class="nav-item" data-section="messages" onclick="goPortal('messages')"><span class="nav-icon">💬</span><span data-i18n="nav.messages">Mensajes</span><span class="nav-count alert">2</span></button>
+        <button class="nav-item" data-section="leads" onclick="goPortal('leads')"><span class="nav-icon">👥</span><span data-i18n="nav.leads">Mis leads</span><span class="nav-count alert" id="sidebarLeadsCount"></span></button>
+        <button class="nav-item" data-section="appointments" onclick="goPortal('appointments')"><span class="nav-icon">📅</span><span data-i18n="nav.appts">Citas</span><span class="nav-count" id="sidebarApptsCount"></span></button>
+        <button class="nav-item" data-section="messages" onclick="goPortal('messages')"><span class="nav-icon">💬</span><span data-i18n="nav.messages">Mensajes</span><span class="nav-count alert" id="sidebarMsgsCount"></span></button>
       </div>
       <div class="nav-section">
         <div class="nav-label" data-i18n="nav.account">Cuenta</div>
@@ -1511,14 +1511,14 @@ input, textarea, select { font-family: inherit; }
     <!-- HOME -->
     <section class="section active" id="portal-home">
       <div class="greeting">
-        <div class="greeting-hello" data-i18n="home.hello">Hola, Dra. Ramírez 👋</div>
+        <div class="greeting-hello" data-i18n="home.hello">Hola 👋</div>
         <div class="greeting-sub" data-i18n="home.sub">Esto es lo que pasó esta semana en tu negocio.</div>
       </div>
 
       <div class="status-banner">
         <div class="status-banner-icon">⚡</div>
         <div class="status-banner-content">
-          <div class="status-banner-title" data-i18n="status.title">Tu asistente Sofía está siendo configurado</div>
+          <div class="status-banner-title" data-i18n="status.title" id="bannerAgentName">Tu asistente está siendo configurado</div>
           <div class="status-banner-desc" data-i18n="status.desc">Día 4 de 7 · Tu número de WhatsApp se activa pronto. Te avisamos cuando esté listo.</div>
           <div class="status-banner-progress"><div class="status-banner-progress-fill"></div></div>
         </div>
@@ -1557,26 +1557,7 @@ input, textarea, select { font-family: inherit; }
             <div class="card-title" data-i18n="recent.title">Actividad reciente</div>
             <button class="card-link" data-i18n="recent.viewAll">Ver toda</button>
           </div>
-          <div class="activity-item">
-            <div class="activity-icon call">📞</div>
-            <div class="activity-text">Sofía atendió una llamada de <strong>María González</strong>. Lead calificado, agendó cita.<div class="activity-time">hace 32 min</div></div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-icon sms">💬</div>
-            <div class="activity-text"><strong>Carlos Ramírez</strong> respondió en WhatsApp pidiendo info sobre el tratamiento.<div class="activity-time">hace 1 h</div></div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-icon appt">📅</div>
-            <div class="activity-text">Nueva cita agendada con <strong>Ana Torres</strong> para mañana 10:00 AM.<div class="activity-time">hace 2 h</div></div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-icon payment">💳</div>
-            <div class="activity-text"><strong>Daniel Soto</strong> completó pago vía Stripe — $497.<div class="activity-time">hace 4 h</div></div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-icon review">⭐</div>
-            <div class="activity-text"><strong>Patricia R.</strong> dejó reseña de 5★ en Google: "Excelente atención…"<div class="activity-time">ayer</div></div>
-          </div>
+          <div id="activityList" style="color:#94a3b8;font-size:13px;padding:8px 0;text-align:center;">Sin actividad reciente.</div>
         </div>
 
         <div>
@@ -1585,11 +1566,11 @@ input, textarea, select { font-family: inherit; }
             <div class="agent-card-portal">
               <div class="agent-portal-avatar">💚</div>
               <div class="agent-portal-info">
-                <div class="agent-portal-name">Sofía</div>
+                <div class="agent-portal-name" id="portalAgentName">Tu asistente</div>
                 <div class="agent-portal-role" data-i18n="agent.role">Activa 24/7 · WhatsApp</div>
                 <div class="agent-portal-stats">
-                  <span><strong>38</strong> llamadas</span>
-                  <span><strong>4.8★</strong> calidad</span>
+                  <span><strong id="portalAgentCalls">—</strong> llamadas</span>
+                  <span><strong id="portalAgentQuality">—</strong> calidad</span>
                 </div>
               </div>
             </div>
@@ -1598,27 +1579,7 @@ input, textarea, select { font-family: inherit; }
 
           <div class="card">
             <div class="card-header"><div class="card-title" data-i18n="upcoming.title">Próximas citas</div></div>
-            <div class="appt-item">
-              <div class="appt-time"><div class="appt-day">MAY</div><div class="appt-hour">5</div></div>
-              <div class="appt-content">
-                <div class="appt-name">Ana Torres</div>
-                <div class="appt-meta">10:00 AM · Consulta inicial</div>
-              </div>
-            </div>
-            <div class="appt-item">
-              <div class="appt-time"><div class="appt-day">MAY</div><div class="appt-hour">6</div></div>
-              <div class="appt-content">
-                <div class="appt-name">Jorge Castro</div>
-                <div class="appt-meta">2:30 PM · Seguimiento</div>
-              </div>
-            </div>
-            <div class="appt-item">
-              <div class="appt-time"><div class="appt-day">MAY</div><div class="appt-hour">8</div></div>
-              <div class="appt-content">
-                <div class="appt-name">Patricia Ruiz</div>
-                <div class="appt-meta">11:15 AM · Tratamiento</div>
-              </div>
-            </div>
+            <div id="apptListHome" style="color:#94a3b8;font-size:13px;padding:8px 0;">Sin citas próximas.</div>
           </div>
         </div>
       </div>
@@ -1652,7 +1613,7 @@ input, textarea, select { font-family: inherit; }
       <div class="section-header">
         <div>
           <div class="section-title" data-i18n="appts.title">Citas</div>
-          <div class="section-subtitle" data-i18n="appts.sub">5 citas próximas · 12 esta semana</div>
+          <div class="section-subtitle" data-i18n="appts.sub" id="portalApptsSub">Sin citas próximas</div>
         </div>
         <button class="btn btn-primary" data-i18n="appts.add">＋ Nueva cita</button>
       </div>
@@ -1713,7 +1674,7 @@ input, textarea, select { font-family: inherit; }
           <div class="settings-section-title" data-i18n="set.services">Servicios conectados</div>
           <div class="settings-section-desc" data-i18n="set.servicesDesc">Estado de las herramientas integradas con tu cuenta</div>
           <div class="setting-row"><div class="setting-icon">💚</div><div class="setting-info"><div class="setting-label">WhatsApp Business</div><div class="setting-value" id="set-wa">—</div></div><span class="setting-status" id="set-wa-status">—</span></div>
-          <div class="setting-row"><div class="setting-icon">🤖</div><div class="setting-info"><div class="setting-label" data-i18n="set.voiceAgent">Agente de voz</div><div class="setting-value" id="set-agent">Sofía</div></div><span class="setting-status connected" data-i18n="set.connected">Activo</span></div>
+          <div class="setting-row"><div class="setting-icon">🤖</div><div class="setting-info"><div class="setting-label" data-i18n="set.voiceAgent">Agente de voz</div><div class="setting-value" id="set-agent">—</div></div><span class="setting-status" id="set-agent-status">—</span></div>
           <div class="setting-row"><div class="setting-icon">📅</div><div class="setting-info"><div class="setting-label">Google Calendar</div><div class="setting-value" id="set-calendar">—</div></div><span class="setting-status" id="set-calendar-status">—</span></div>
         </div>
         <div class="settings-section">
@@ -1758,9 +1719,9 @@ input, textarea, select { font-family: inherit; }
 
   <nav class="bottombar">
     <button class="tab-btn active" data-section="home" onclick="goPortal('home')"><span class="tab-icon">🏠</span><span data-i18n="nav.home">Inicio</span></button>
-    <button class="tab-btn" data-section="leads" onclick="goPortal('leads')"><span class="tab-icon">👥</span><span data-i18n="nav.leads">Leads</span><span class="tab-badge">8</span></button>
+    <button class="tab-btn" data-section="leads" onclick="goPortal('leads')"><span class="tab-icon">👥</span><span data-i18n="nav.leads">Leads</span><span class="tab-badge" id="portalLeadsBadge"></span></button>
     <button class="tab-btn" data-section="appointments" onclick="goPortal('appointments')"><span class="tab-icon">📅</span><span data-i18n="nav.apptsShort">Citas</span></button>
-    <button class="tab-btn" data-section="messages" onclick="goPortal('messages')"><span class="tab-icon">💬</span><span data-i18n="nav.msg">Mensajes</span><span class="tab-badge">2</span></button>
+    <button class="tab-btn" data-section="messages" onclick="goPortal('messages')"><span class="tab-icon">💬</span><span data-i18n="nav.msg">Mensajes</span><span class="tab-badge" id="portalMsgBadge"></span></button>
     <button class="tab-btn" data-section="settings" onclick="goPortal('settings')"><span class="tab-icon">⚙️</span><span data-i18n="nav.more">Más</span></button>
   </nav>
 
@@ -1833,9 +1794,9 @@ const i18n = {
     'cta.title': 'Aumenta tus resultados',
     'cta.desc': 'Agrega producción de video, ads gestionadas y más.',
     'cta.btn': 'Ver servicios',
-    'home.hello': 'Hola, Dra. Ramírez 👋',
+    'home.hello': 'Hola 👋',
     'home.sub': 'Esto es lo que pasó esta semana en tu negocio.',
-    'status.title': 'Tu asistente Sofía está siendo configurado',
+    'status.title': 'Tu asistente está siendo configurado',
     'status.desc': 'Día 4 de 7 · Tu número de WhatsApp se activa pronto. Te avisamos cuando esté listo.',
     'kpi.leads': 'Nuevos leads',
     'kpi.calls': 'Llamadas atendidas',
@@ -1848,14 +1809,14 @@ const i18n = {
     'agent.config': '⚙️ Configurar asistente',
     'upcoming.title': 'Próximas citas',
     'leads.title': 'Mis leads',
-    'leads.sub': '12 leads esta semana · 8 sin contactar',
+    'leads.sub': 'Cargando leads…',
     'leads.add': '＋ Agregar lead',
     'leads.new': 'Nuevos',
     'leads.contacted': 'Contactados',
     'leads.qualified': 'Calificados',
     'leads.converted': 'Convertidos',
     'appts.title': 'Citas',
-    'appts.sub': '5 citas próximas · 12 esta semana',
+    'appts.sub': 'Sin citas próximas',
     'appts.add': '＋ Nueva cita',
     'appts.thisWeek': 'Esta semana',
     'msg.title': 'Mensajes con tu equipo',
@@ -1944,14 +1905,14 @@ const i18n = {
     'agent.config': '⚙️ Configure assistant',
     'upcoming.title': 'Upcoming appointments',
     'leads.title': 'My leads',
-    'leads.sub': '12 leads this week · 8 not contacted',
+    'leads.sub': 'Loading leads…',
     'leads.add': '＋ Add lead',
     'leads.new': 'New',
     'leads.contacted': 'Contacted',
     'leads.qualified': 'Qualified',
     'leads.converted': 'Converted',
     'appts.title': 'Appointments',
-    'appts.sub': '5 upcoming · 12 this week',
+    'appts.sub': 'No upcoming appointments',
     'appts.add': '＋ New appointment',
     'appts.thisWeek': 'This week',
     'msg.title': 'Messages with your team',
@@ -1970,7 +1931,7 @@ const i18n = {
     'set.activating': 'Activating',
     'set.connected': 'Connected',
     'set.assistant': 'Your assistant',
-    'set.assistantDesc': 'Configuration of Sofía, your voice agent',
+    'set.assistantDesc': 'Configuration of your voice agent',
     'set.aname': 'Assistant name',
     'set.alang': 'Language',
     'set.bilingual': 'Bilingual (Spanish + English)',
@@ -2182,18 +2143,18 @@ function stepContent(step) {
       </div>
       <div class="field-group" style="margin-top: 20px;">
         <label class="field-label">${es ? 'Presupuesto mensual de marketing (USD)' : 'Monthly marketing budget (USD)'}</label>
-        <select class="field-select">
-          <option>${es ? 'Prefiero no decir' : 'Prefer not to say'}</option>
-          <option>${es ? 'Menos de $500' : 'Under $500'}</option>
-          <option>$500 - $1,000</option>
-          <option>$1,000 - $2,500</option>
-          <option>$2,500 - $5,000</option>
-          <option>$5,000+</option>
+        <select class="field-select" onchange="wizardData.presupuesto=this.value">
+          <option value="">${es ? 'Prefiero no decir' : 'Prefer not to say'}</option>
+          <option value="under500" ${wizardData.presupuesto==='under500'?'selected':''}>${es ? 'Menos de $500' : 'Under $500'}</option>
+          <option value="500-1000" ${wizardData.presupuesto==='500-1000'?'selected':''}>$500 - $1,000</option>
+          <option value="1000-2500" ${wizardData.presupuesto==='1000-2500'?'selected':''}>$1,000 - $2,500</option>
+          <option value="2500-5000" ${wizardData.presupuesto==='2500-5000'?'selected':''}>$2,500 - $5,000</option>
+          <option value="5000plus" ${wizardData.presupuesto==='5000plus'?'selected':''}>$5,000+</option>
         </select>
       </div>
       <div class="field-group">
         <label class="field-label">${es ? '¿Algo más que debamos saber?' : 'Anything else we should know?'}</label>
-        <textarea class="field-textarea" placeholder="${es ? 'Opcional...' : 'Optional...'}"></textarea>
+        <textarea class="field-textarea" placeholder="${es ? 'Opcional...' : 'Optional...'}" oninput="wizardData.notas=this.value">${wizardData.notas||''}</textarea>
       </div>
     </div>`;
   }
@@ -2457,6 +2418,19 @@ function populatePortal(d) {
   const sidebarRole = document.querySelector('.profile-role');
   if (sidebarName) sidebarName.textContent = d.owner || d.nombre;
   if (sidebarRole) sidebarRole.textContent = d.industria || 'Cliente';
+  // Topbar profile
+  const initials = (d.owner || d.nombre || '?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const topAvatar = document.getElementById('topbarProfileAvatar');
+  const topName   = document.getElementById('topbarProfileName');
+  if (topAvatar) topAvatar.textContent = initials;
+  if (topName)   topName.textContent = firstName;
+  // Set nombre del asistente desde configuracion
+  const cfg = typeof d.configuracion === 'string' ? JSON.parse(d.configuracion || '{}') : (d.configuracion || {});
+  const aName = cfg.asistente_nombre || 'Tu asistente';
+  const agentNameEl = document.getElementById('portalAgentName');
+  if (agentNameEl) agentNameEl.textContent = aName;
+  const bannerEl = document.getElementById('bannerAgentName');
+  if (bannerEl) bannerEl.textContent = `Tu asistente ${aName} está siendo configurado`;
   // Poblar sección settings con datos reales
   populateSettings(d);
   // Cargar datos reales del cliente
@@ -2470,10 +2444,16 @@ function populateSettings(d) {
     const el = document.getElementById(id);
     if (el && val) el.textContent = val;
   };
+  // Parse JSONB fields — Supabase may return them as objects or strings
+  const cfg = typeof d.configuracion === 'string' ? JSON.parse(d.configuracion || '{}') : (d.configuracion || {});
+  const redes = typeof d.redes_sociales === 'string' ? JSON.parse(d.redes_sociales || '{}') : (d.redes_sociales || {});
+
   set('set-biz-name', d.nombre || '—');
   set('set-industry',  d.industria || '—');
   set('set-email',     d.email || '—');
   set('set-phone',     d.telefono || d.whatsapp_number || '—');
+  set('set-city',      d.ciudad || '—');
+
   // WhatsApp
   const wa = d.whatsapp_number || d.telefono || '';
   set('set-wa', wa || 'Sin configurar');
@@ -2489,6 +2469,23 @@ function populateSettings(d) {
     calStatus.textContent = d.email ? 'Conectado' : 'Pendiente';
     calStatus.className = 'setting-status ' + (d.email ? 'connected' : 'pending');
   }
+  // Configuracion — asistente, idioma, tono, horario
+  set('set-assistant-name', cfg.asistente_nombre || '—');
+  set('set-assistant-lang', cfg.idioma || '—');
+  set('set-assistant-tone', cfg.tono || '—');
+  set('set-assistant-hours', cfg.horario || '—');
+  // Nombre del agente en settings row
+  set('set-agent', cfg.asistente_nombre || '—');
+  const agentSt = document.getElementById('set-agent-status');
+  if (agentSt) {
+    const isActive = cfg.asistente_nombre && cfg.wa_status === 'activo';
+    agentSt.textContent = isActive ? 'Activo' : 'Pendiente';
+    agentSt.className = 'setting-status ' + (isActive ? 'connected' : 'pending');
+  }
+  // Redes sociales
+  set('set-facebook', redes.facebook || '—');
+  set('set-instagram', redes.instagram || '—');
+  set('set-website', redes.website || '—');
   // Avatar HeyGen
   if (d.heygen_avatar_id) {
     set('set-avatar-id', d.heygen_avatar_id);
@@ -2589,6 +2586,11 @@ async function loadPortalLeads() {
     set('psInterested',d.leads.interested.length);
     set('psClosed',    d.leads.closed.length);
     set('portalLeadsSub', `${d.total} leads · ${d.leads.new.length} nuevos`);
+    const newCount = d.leads.new.length;
+    const badge = document.getElementById('portalLeadsBadge');
+    if (badge) badge.textContent = newCount > 0 ? newCount : '';
+    const sidebarBadge = document.getElementById('sidebarLeadsCount');
+    if (sidebarBadge) sidebarBadge.textContent = newCount > 0 ? newCount : '';
   } catch(e) {}
 }
 
