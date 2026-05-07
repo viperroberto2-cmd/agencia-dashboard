@@ -227,26 +227,33 @@ app.get('/api/portal/recordings', async (req, res) => {
 
 // ── PORTAL ONBOARDING SUBMIT ─────────────────────────────────────
 app.post('/api/portal/onboarding-submit', async (req, res) => {
-  const { user_id, whatsapp, asistente, idioma, tono, horario,
+  const { user_id, whatsapp, asistente, idioma, tono, horario, wa_status,
           facebook, instagram, youtube, tiktok, website, google_business,
-          goals, presupuesto, notas, ciudad } = req.body;
+          goals, presupuesto, notas, ciudad,
+          negocio, nombre, email, telefono } = req.body;
   if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
   try {
     const update = {
       whatsapp_number: whatsapp || null,
       ciudad: ciudad || null,
-      redes_sociales: JSON.stringify({ facebook, instagram, youtube, tiktok, website, google_business }),
-      configuracion: JSON.stringify({
-        asistente_nombre: asistente,
+      // Use plain objects — Supabase JSONB stores them correctly without JSON.stringify
+      redes_sociales: { facebook: facebook||null, instagram: instagram||null, youtube: youtube||null, tiktok: tiktok||null, website: website||null, google_business: google_business||null },
+      configuracion: {
+        asistente_nombre: asistente || null,
         idioma: idioma || 'bilingue',
         tono: tono || 'calido',
         horario: horario || '24/7',
+        wa_status: wa_status || 'activo',
         goals: goals || [],
         presupuesto: presupuesto || '',
         notas: notas || ''
-      }),
+      },
       onboarding_completado: true
     };
+    // Save basic info if client filled step 1
+    if (email)    update.email    = email;
+    if (telefono) update.telefono = telefono;
+    if (negocio || nombre) update.nombre = negocio || nombre;
     const r = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}`, {
       method: 'PATCH',
       body: JSON.stringify(update),
@@ -553,6 +560,13 @@ app.patch('/api/leads/:id/status', async (req, res) => {
       method: 'PATCH', body: JSON.stringify({ status }),
       headers: { 'Prefer': 'return=minimal' }
     });
+    res.json({ ok: true });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.delete('/api/leads/:id', async (req, res) => {
+  try {
+    await sbFetch(`/voice_leads?id=eq.${req.params.id}`, { method: 'DELETE' });
     res.json({ ok: true });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
