@@ -780,10 +780,10 @@ input, textarea { font-family: inherit; }
   color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
-  cursor: pointer;
+  cursor: default;
   transition: all 0.15s;
 }
-.step-pill:hover { border-color: var(--border-bright); color: var(--text); }
+.step-pill:hover { border-color: var(--border); color: var(--text-dim); }
 .step-pill.active {
   background: var(--accent-dim);
   border-color: var(--accent);
@@ -3041,7 +3041,7 @@ function renderStepper() {
   s.innerHTML = onboardingSteps.map((step, i) => {
     const cls = step.id === currentStep ? 'active' : step.id < currentStep ? 'done' : '';
     const connector = i < onboardingSteps.length - 1 ? '<div class="step-connector"></div>' : '';
-    return `<button class="step-pill ${cls}" onclick="goStep(${step.id})"><span class="step-num">${step.id < currentStep ? '✓' : step.id}</span><span>${step.label}</span></button>${connector}`;
+    return `<div class="step-pill ${cls}"><span class="step-num">${step.id < currentStep ? '✓' : step.id}</span><span>${step.label}</span></div>${connector}`;
   }).join('');
   document.getElementById('stepLabel').textContent = `Paso ${currentStep} de ${onboardingSteps.length}`;
   document.getElementById('prevBtn').style.visibility = currentStep === 1 ? 'hidden' : 'visible';
