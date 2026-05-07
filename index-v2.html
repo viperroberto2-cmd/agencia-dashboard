@@ -3029,7 +3029,7 @@ const onboardingSteps = [
 ];
 let currentStep = 1;
 const onboardingData = {
-  nombre: '', industria: '', email: '', telefono: '', precio_producto: 197, descripcion: '',
+  nombre: '', industria: '', email: '', telefono: '', precio_producto: '', descripcion: '',
   whatsapp_option: '', respond_io_key: '', whatsapp_number: '',
   heygen_avatar_id: '', heygen_voice_id: '',
   objetivo: '', presupuesto_ads: '', mensaje_principal: '',
@@ -3056,6 +3056,7 @@ function renderStepContent() {
     <div class="field-group"><label class="field-label">Nombre del cliente *</label><input id="ob_nombre" class="field-input" placeholder="Ej: Arranca Financial" value="${onboardingData.nombre}" oninput="onboardingData.nombre=this.value" /></div>
     <div class="field-group"><label class="field-label">Sector</label>
       <select id="ob_industria" class="field-select" onchange="onboardingData.industria=this.value">
+        <option value="" ${onboardingData.industria===''?'selected':''} disabled>— Selecciona sector —</option>
         <option value="educacion" ${onboardingData.industria==='educacion'?'selected':''}>Educación financiera</option>
         <option value="salud" ${onboardingData.industria==='salud'?'selected':''}>Clínica / Salud</option>
         <option value="restaurante" ${onboardingData.industria==='restaurante'?'selected':''}>Restaurante</option>
@@ -3068,7 +3069,7 @@ function renderStepContent() {
       </select></div>
     <div class="field-group"><label class="field-label">Email</label><input id="ob_email" class="field-input" placeholder="cliente@empresa.com" value="${onboardingData.email}" oninput="onboardingData.email=this.value" /></div>
     <div class="field-group"><label class="field-label">Teléfono</label><input id="ob_telefono" class="field-input" placeholder="+1 714 000 0000" value="${onboardingData.telefono}" oninput="onboardingData.telefono=this.value" /></div>
-    <div class="field-group"><label class="field-label">Precio de su producto / curso ($)</label><input id="ob_precio" class="field-input" type="number" placeholder="197" value="${onboardingData.precio_producto}" oninput="onboardingData.precio_producto=+this.value" /></div>`;
+    <div class="field-group"><label class="field-label">Precio de su producto / curso ($)</label><input id="ob_precio" class="field-input" type="number" placeholder="Ej: 197" value="${onboardingData.precio_producto||''}" oninput="onboardingData.precio_producto=this.value?+this.value:''" /></div>`;
 
   if (currentStep === 2) c.innerHTML = `
     <div class="step-title">📡 Canal WhatsApp</div>
