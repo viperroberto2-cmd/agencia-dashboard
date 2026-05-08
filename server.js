@@ -98,8 +98,8 @@ app.get('/v2', (req, res) => {
 
 app.post('/api/onboard-cliente', async (req, res) => {
   const data = req.body;
-  const SUPABASE_URL = process.env.SUPABASE_PROJECT_URL;
-  const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY;
+  const SUPABASE_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   try {
     const existing = await fetch(
       `${SUPABASE_URL}/rest/v1/clientes?user_id=eq.roberto_agencia&select=data`,
@@ -141,8 +141,8 @@ app.get('/index.html', (req, res) => serveIndex(res));
 // ── Portal del cliente ─────────────────────────────────────────────────────
 function servePortal(res) {
   const html = fs.readFileSync(path.join(__dirname, 'rg-production-client-portal.html'), 'utf8')
-    .replace(/__SUPABASE_URL__/g, process.env.SUPABASE_PROJECT_URL || '')
-    .replace(/__SUPABASE_ANON_KEY__/g, process.env.SUPABASE_ANON_KEY || '');
+    .replace(/__SUPABASE_URL__/g, process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '')
+    .replace(/__SUPABASE_ANON_KEY__/g, process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
   res.setHeader('Content-Type', 'text/html');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.send(html);
@@ -154,8 +154,8 @@ app.get('/client-portal', (req, res) => servePortal(res));
 app.post('/api/auth/magic-link', async (req, res) => {
   const { email } = req.body || {};
   if (!email) return res.status(400).json({ ok: false, error: 'email requerido' });
-  const SB_URL = process.env.SUPABASE_PROJECT_URL;
-  const SB_KEY = process.env.SUPABASE_SECRET_KEY;
+  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   try {
     const siteUrl = process.env.SITE_URL || 'https://web-production-3d2c.up.railway.app';
     const authRes = await fetch(`${SB_URL}/auth/v1/otp`, {
@@ -178,8 +178,8 @@ app.post('/api/auth/magic-link', async (req, res) => {
 app.post('/api/auth/user-info', async (req, res) => {
   const { access_token } = req.body || {};
   if (!access_token) return res.status(400).json({ ok: false, error: 'token requerido' });
-  const SB_URL = process.env.SUPABASE_PROJECT_URL;
-  const SB_KEY = process.env.SUPABASE_SECRET_KEY;
+  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   try {
     const userRes = await fetch(`${SB_URL}/auth/v1/user`, {
       headers: { apikey: SB_KEY, Authorization: `Bearer ${access_token}` }
@@ -322,8 +322,18 @@ app.get('/api/portal/stats', async (req, res) => {
 
 // ── Supabase helper (server-side, uses secret key) ───────────────────────────
 async function sbFetch(path, opts = {}) {
-  const url = `${process.env.SUPABASE_PROJECT_URL}/rest/v1${path}`;
-  const key  = process.env.SUPABASE_SECRET_KEY;
+  // Accept multiple Railway env var naming conventions
+  const base = process.env.SUPABASE_PROJECT_URL
+             || process.env.SUPABASE_URL
+             || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key  = process.env.SUPABASE_SECRET_KEY
+             || process.env.SUPABASE_SERVICE_ROLE_KEY
+             || process.env.SUPABASE_SERVICE_KEY
+             || process.env.SUPABASE_ANON_KEY
+             || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!base) throw new Error('Supabase URL not set — add SUPABASE_PROJECT_URL to Railway env vars');
+  if (!key)  throw new Error('Supabase Key not set — add SUPABASE_SECRET_KEY to Railway env vars');
+  const url = `${base}/rest/v1${path}`;
   const headers = {
     apikey: key, Authorization: `Bearer ${key}`,
     'Content-Type': 'application/json',
@@ -372,6 +382,21 @@ app.post('/api/ms/jobs', async (req, res) => {
     });
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Endpoint diagnóstico — muestra qué vars de Supabase están seteadas en Railway
+app.get('/api/env-check', (req, res) => {
+  const vars = [
+    'SUPABASE_URL','SUPABASE_PROJECT_URL','NEXT_PUBLIC_SUPABASE_URL',
+    'SUPABASE_ANON_KEY','NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    'SUPABASE_SECRET_KEY','SUPABASE_SERVICE_ROLE_KEY','SUPABASE_SERVICE_KEY',
+  ];
+  const result = {};
+  vars.forEach(v => {
+    const val = process.env[v];
+    result[v] = val ? `SET (${val.slice(0,30)}...)` : 'NOT SET';
+  });
+  res.json(result);
 });
 
 app.get('/api/health', async (req, res) => {
@@ -984,8 +1009,8 @@ app.post('/api/portal/create-avatar', async (req, res) => {
 // ── Portal: subir imagen a Supabase Storage para avatar ─────────────────────
 app.post('/api/portal/upload-photo', async (req, res) => {
   try {
-    const SUPABASE_URL  = process.env.SUPABASE_PROJECT_URL;
-    const SUPABASE_KEY  = process.env.SUPABASE_SECRET_KEY;
+    const SUPABASE_URL  = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const SUPABASE_KEY  = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!SUPABASE_URL || !SUPABASE_KEY) return res.json({ ok: false, error: 'Supabase no configurado' });
 
     // Recibir base64 del cliente
