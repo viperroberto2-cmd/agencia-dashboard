@@ -256,17 +256,6 @@ app.post('/api/auth/set-password', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-// ── TEMP: delete client by email (admin only) ────────────────────────────────
-app.delete('/api/admin/delete-client', async (req, res) => {
-  const { email, secret } = req.body || {};
-  if (secret !== 'rg_delete_2026') return res.status(403).json({ ok: false });
-  if (!email) return res.status(400).json({ ok: false, error: 'email requerido' });
-  try {
-    const r = await sbFetch(`/clientes?email=eq.${encodeURIComponent(email)}`, { method: 'DELETE' });
-    res.json({ ok: true, status: r.status });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
-});
-
 // ── Portal cliente — datos reales filtrados por user_id ──────────────────────
 app.get('/api/portal/leads', async (req, res) => {
   const { user_id } = req.query;
