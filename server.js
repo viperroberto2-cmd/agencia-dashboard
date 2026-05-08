@@ -259,15 +259,7 @@ app.post('/api/auth/user-info', async (req, res) => {
     if (!rows || rows.length === 0)
       return res.status(404).json({ ok: false, error: 'No encontramos tu cuenta. Contacta a tu agencia.' });
     const row = rows[0];
-    const dataCol = row.data || {};
-    // Merge fields from data column if direct columns don't exist in schema
-    res.json({
-      ok: true,
-      ...row,
-      ciudad:        row.ciudad        !== undefined ? row.ciudad        : (dataCol.ciudad || null),
-      redes_sociales: row.redes_sociales !== undefined ? row.redes_sociales : (dataCol.redes_sociales || null),
-      configuracion:  row.configuracion  !== undefined ? row.configuracion  : (dataCol.configuracion || null)
-    });
+    res.json({ ok: true, ..._mergeDataCol(row) });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
@@ -309,6 +301,45 @@ app.post('/api/portal/onboarding-new', async (req, res) => {
           goals, presupuesto, notas } = req.body;
   if (!email) return res.status(400).json({ ok: false, error: 'email requerido' });
   try {
+    const newData = {
+      ciudad: ciudad || null,
+      redes_sociales: { facebook: facebook||null, instagram: instagram||null, youtube: youtube||null, tiktok: tiktok||null, website: website||null, google_business: google_business||null },
+      configuracion: {
+        asistente_nombre: asistente || null,
+        idioma: idioma || 'bilingue',
+        tono: tono || 'calido',
+        horario: horario || '24/7',
+        wa_status: wa_status || 'nuevo',
+        goals: goals || [],
+        presupuesto: presupuesto || '',
+        notas: notas || ''
+      }
+    };
+    // Check if email already exists → update instead of creating duplicate
+    const existingR = await sbFetch(`/clientes?email=eq.${encodeURIComponent(email)}&select=user_id,data`);
+    const existingRows = await existingR.json();
+    if (Array.isArray(existingRows) && existingRows[0]) {
+      const existing = existingRows[0];
+      const mergedData = { ...(existing.data || {}), ...newData };
+      const update = {
+        nombre: nombre || email,
+        industria: industria || null,
+        telefono: telefono || null,
+        whatsapp_number: whatsapp || null,
+        data: mergedData,
+        onboarding_completado: true
+      };
+      await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(existing.user_id)}`, {
+        method: 'PATCH',
+        body: JSON.stringify(update),
+      });
+      // Fetch updated row
+      const updR = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(existing.user_id)}&select=*`);
+      const updRows = await updR.json();
+      const row = (Array.isArray(updRows) && updRows[0]) || { user_id: existing.user_id, email };
+      return res.json({ ok: true, user_id: row.user_id, cliente: _mergeDataCol(row) });
+    }
+    // New client
     const user_id = (nombre || email).toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_@.]/g, '').slice(0, 40) + '_' + Date.now().toString(36);
     const record = {
       user_id,
@@ -317,21 +348,7 @@ app.post('/api/portal/onboarding-new', async (req, res) => {
       email,
       telefono: telefono || null,
       whatsapp_number: whatsapp || null,
-      // Store ciudad, redes_sociales, configuracion inside data JSONB (those columns don't exist in schema)
-      data: {
-        ciudad: ciudad || null,
-        redes_sociales: { facebook: facebook||null, instagram: instagram||null, youtube: youtube||null, tiktok: tiktok||null, website: website||null, google_business: google_business||null },
-        configuracion: {
-          asistente_nombre: asistente || null,
-          idioma: idioma || 'bilingue',
-          tono: tono || 'calido',
-          horario: horario || '24/7',
-          wa_status: wa_status || 'nuevo',
-          goals: goals || [],
-          presupuesto: presupuesto || '',
-          notas: notas || ''
-        }
-      },
+      data: newData,
       onboarding_completado: true
     };
     const r = await sbFetch('/clientes', {
@@ -341,7 +358,7 @@ app.post('/api/portal/onboarding-new', async (req, res) => {
     });
     const data = await r.json();
     if (Array.isArray(data) && data[0]) {
-      res.json({ ok: true, user_id: data[0].user_id, cliente: data[0] });
+      res.json({ ok: true, user_id: data[0].user_id, cliente: _mergeDataCol(data[0]) });
     } else {
       res.json({ ok: false, error: data.message || 'No se pudo crear el cliente', raw: data });
     }
@@ -394,12 +411,15 @@ app.post('/api/portal/onboarding-submit', async (req, res) => {
     if (email)    update.email    = email;
     if (telefono) update.telefono = telefono;
     if (negocio || nombre) update.nombre = negocio || nombre;
-    const r = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}`, {
+    await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}`, {
       method: 'PATCH',
       body: JSON.stringify(update),
-      headers: { 'Prefer': 'return=representation' }
     });
-    res.json({ ok: true });
+    // Return updated client so portal can sync
+    const updR = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=*`);
+    const updRows = await updR.json();
+    const row = (Array.isArray(updRows) && updRows[0]) || { user_id };
+    res.json({ ok: true, cliente: _mergeDataCol(row) });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
@@ -415,6 +435,17 @@ app.get('/api/portal/stats', async (req, res) => {
     res.json({ ok: true, total_leads: total, cerrados: closed, revenue: closed * 197 });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
+
+// ── Merge data JSONB column into top-level keys for portal consumption ───────
+function _mergeDataCol(row) {
+  const d = row.data || {};
+  return {
+    ...row,
+    ciudad:        row.ciudad        !== undefined ? row.ciudad        : (d.ciudad        || null),
+    redes_sociales: row.redes_sociales !== undefined ? row.redes_sociales : (d.redes_sociales || null),
+    configuracion:  row.configuracion  !== undefined ? row.configuracion  : (d.configuracion  || null),
+  };
+}
 
 // ── Supabase helper (server-side, uses secret key) ───────────────────────────
 async function sbFetch(path, opts = {}) {

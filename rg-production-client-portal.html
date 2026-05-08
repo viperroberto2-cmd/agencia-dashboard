@@ -1738,7 +1738,7 @@ input, textarea, select { font-family: inherit; }
             </div>
             <div style="display:flex;align-items:center;gap:8px">
               <span id="li-status-badge" class="setting-status" style="display:none"></span>
-              <button id="li-connect-btn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="connectLinkedIn()">Conectar →</button>
+              <button id="li-connect-btn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px;opacity:0.5;cursor:not-allowed" disabled title="Próximamente">Próximamente</button>
               <button id="li-disconnect-btn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px;color:#ef4444;display:none" onclick="disconnectLinkedIn()">Desconectar</button>
             </div>
           </div>
@@ -2108,13 +2108,15 @@ async function nextStep() {
     try {
       if (portalClient?.user_id) {
         // Cliente existente — actualizar sus datos
-        await fetch('/api/portal/onboarding-submit', {
+        const res = await fetch('/api/portal/onboarding-submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: portalClient.user_id, ...wizardData })
         });
+        const d = await res.json();
+        if (d.ok && d.cliente) portalClient = d.cliente;
       } else {
-        // Cliente nuevo — crear registro en Supabase
+        // Cliente nuevo (o existente sin sesión) — crear/actualizar en Supabase
         const negocioNombre = wizardData.negocio || wizardData.nombre || 'Nuevo cliente';
         if (!wizardData.email) {
           btn.textContent = currentLang === 'es' ? '🚀 Enviar' : '🚀 Submit';
@@ -2128,8 +2130,10 @@ async function nextStep() {
           body: JSON.stringify({ ...wizardData, nombre: negocioNombre })
         });
         const d = await res.json();
-        if (d.ok && d.user_id) {
-          portalClient = d.cliente || { user_id: d.user_id, nombre: negocioNombre, email: wizardData.email };
+        if (d.ok && d.cliente) {
+          portalClient = d.cliente;
+        } else if (d.ok && d.user_id) {
+          portalClient = { user_id: d.user_id, nombre: negocioNombre, email: wizardData.email };
         }
       }
     } catch(e) { console.warn('onboarding-submit error:', e); }
@@ -2619,21 +2623,25 @@ async function saveSettingsEdit() {
     });
     const d = await r.json();
     if (d.ok) {
-      // Sync changes back to portalClient
-      if (body.nombre)    portalClient.nombre = body.nombre;
-      if (body.industria) portalClient.industria = body.industria;
-      if (body.telefono)  portalClient.telefono = body.telefono;
-      if (body.ciudad)    portalClient.ciudad = body.ciudad;
-      if (body.whatsapp)  portalClient.whatsapp_number = body.whatsapp;
-      if (!portalClient.configuracion) portalClient.configuracion = {};
-      if (body.asistente) portalClient.configuracion.asistente_nombre = body.asistente;
-      if (body.idioma)    portalClient.configuracion.idioma = body.idioma;
-      if (body.tono)      portalClient.configuracion.tono = body.tono;
-      if (body.horario)   portalClient.configuracion.horario = body.horario;
-      if (!portalClient.redes_sociales) portalClient.redes_sociales = {};
-      if (body.facebook)  portalClient.redes_sociales.facebook = body.facebook;
-      if (body.instagram) portalClient.redes_sociales.instagram = body.instagram;
-      if (body.website)   portalClient.redes_sociales.website = body.website;
+      // Use server-returned cliente if available (source of truth), else patch locally
+      if (d.cliente) {
+        portalClient = d.cliente;
+      } else {
+        if (body.nombre)    portalClient.nombre = body.nombre;
+        if (body.industria) portalClient.industria = body.industria;
+        if (body.telefono)  portalClient.telefono = body.telefono;
+        if (body.ciudad)    { if (!portalClient.data) portalClient.data = {}; portalClient.data.ciudad = body.ciudad; portalClient.ciudad = body.ciudad; }
+        if (body.whatsapp)  portalClient.whatsapp_number = body.whatsapp;
+        if (!portalClient.configuracion) portalClient.configuracion = {};
+        if (body.asistente) portalClient.configuracion.asistente_nombre = body.asistente;
+        if (body.idioma)    portalClient.configuracion.idioma = body.idioma;
+        if (body.tono)      portalClient.configuracion.tono = body.tono;
+        if (body.horario)   portalClient.configuracion.horario = body.horario;
+        if (!portalClient.redes_sociales) portalClient.redes_sociales = {};
+        if (body.facebook)  portalClient.redes_sociales.facebook = body.facebook;
+        if (body.instagram) portalClient.redes_sociales.instagram = body.instagram;
+        if (body.website)   portalClient.redes_sociales.website = body.website;
+      }
       exitSettingsEdit();
       populateSettings(portalClient);
     } else {
@@ -2651,15 +2659,19 @@ function populateSettings(d) {
     const el = document.getElementById(id);
     if (el && val) el.textContent = val;
   };
-  // Parse JSONB fields — Supabase may return them as objects or strings
-  const cfg = typeof d.configuracion === 'string' ? JSON.parse(d.configuracion || '{}') : (d.configuracion || {});
-  const redes = typeof d.redes_sociales === 'string' ? JSON.parse(d.redes_sociales || '{}') : (d.redes_sociales || {});
+  // Fields may be top-level (from /api/auth/user-info) or inside d.data (raw Supabase row)
+  const dataCol = d.data || {};
+  const rawCfg   = d.configuracion  || dataCol.configuracion  || {};
+  const rawRedes  = d.redes_sociales || dataCol.redes_sociales || {};
+  const rawCiudad = d.ciudad         || dataCol.ciudad         || null;
+  const cfg   = typeof rawCfg   === 'string' ? JSON.parse(rawCfg   || '{}') : rawCfg;
+  const redes = typeof rawRedes === 'string' ? JSON.parse(rawRedes || '{}') : rawRedes;
 
   set('set-biz-name', d.nombre || '—');
   set('set-industry',  d.industria || '—');
   set('set-email',     d.email || '—');
   set('set-phone',     d.telefono || d.whatsapp_number || '—');
-  set('set-city',      d.ciudad || '—');
+  set('set-city',      rawCiudad || '—');
 
   // WhatsApp
   const wa = d.whatsapp_number || d.telefono || '';
