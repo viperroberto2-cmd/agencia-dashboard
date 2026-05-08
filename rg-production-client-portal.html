@@ -1701,9 +1701,49 @@ input, textarea, select { font-family: inherit; }
         <!-- Redes sociales -->
         <div class="settings-section">
           <div class="settings-section-title">Redes sociales</div>
-          <div class="settings-section-desc">Tus perfiles y presencia en línea</div>
-          <div class="setting-row"><div class="setting-icon">📘</div><div class="setting-info"><div class="setting-label">Facebook</div><div class="setting-value" id="set-facebook">—</div></div></div>
-          <div class="setting-row"><div class="setting-icon">📸</div><div class="setting-info"><div class="setting-label">Instagram</div><div class="setting-value" id="set-instagram">—</div></div></div>
+          <div class="settings-section-desc">Conecta tus cuentas para que los bots publiquen automáticamente</div>
+
+          <!-- Facebook -->
+          <div class="setting-row">
+            <div class="setting-icon">📘</div>
+            <div class="setting-info">
+              <div class="setting-label">Facebook</div>
+              <div class="setting-value" id="set-facebook">—</div>
+            </div>
+            <div id="fb-connect-area" style="display:flex;align-items:center;gap:8px">
+              <span id="fb-status-badge" class="setting-status" style="display:none"></span>
+              <button id="fb-connect-btn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="connectFacebook()">Conectar →</button>
+              <button id="fb-disconnect-btn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px;color:#ef4444;display:none" onclick="disconnectFacebook()">Desconectar</button>
+            </div>
+          </div>
+
+          <!-- Instagram -->
+          <div class="setting-row">
+            <div class="setting-icon">📸</div>
+            <div class="setting-info">
+              <div class="setting-label">Instagram</div>
+              <div class="setting-value" id="set-instagram">—</div>
+            </div>
+            <div id="ig-connect-area" style="display:flex;align-items:center;gap:8px">
+              <span id="ig-status-badge" class="setting-status" style="display:none"></span>
+            </div>
+          </div>
+
+          <!-- LinkedIn -->
+          <div class="setting-row">
+            <div class="setting-icon">💼</div>
+            <div class="setting-info">
+              <div class="setting-label">LinkedIn</div>
+              <div class="setting-value" id="set-linkedin">—</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="li-status-badge" class="setting-status" style="display:none"></span>
+              <button id="li-connect-btn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="connectLinkedIn()">Conectar →</button>
+              <button id="li-disconnect-btn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px;color:#ef4444;display:none" onclick="disconnectLinkedIn()">Desconectar</button>
+            </div>
+          </div>
+
+          <!-- Website -->
           <div class="setting-row"><div class="setting-icon">🌐</div><div class="setting-info"><div class="setting-label">Sitio web</div><div class="setting-value" id="set-website">—</div></div></div>
         </div>
 
@@ -2483,6 +2523,7 @@ function populatePortal(d) {
   if (bannerEl) bannerEl.textContent = `Tu asistente ${aName} está siendo configurado`;
   // Poblar sección settings con datos reales
   populateSettings(d);
+  populateSocialStatus(d);
   // Cargar datos reales del cliente
   loadPortalStats();
   loadPortalLeads();
@@ -2812,8 +2853,81 @@ function _authWithToken(token) {
   });
 }
 
-// Al cargar la página: magic link hash → o bien sesión guardada
+// ── Social Connect ─────────────────────────────────────────────────────────
+function connectFacebook() {
+  if (!portalClient?.user_id) return;
+  window.location.href = `/api/auth/facebook?user_id=${encodeURIComponent(portalClient.user_id)}`;
+}
+function connectLinkedIn() {
+  if (!portalClient?.user_id) return;
+  window.location.href = `/api/auth/linkedin?user_id=${encodeURIComponent(portalClient.user_id)}`;
+}
+async function disconnectFacebook() {
+  if (!portalClient?.user_id) return;
+  await fetch(`/api/auth/facebook/disconnect?user_id=${encodeURIComponent(portalClient.user_id)}`);
+  if (!portalClient.data) portalClient.data = {};
+  delete portalClient.data.facebook_token;
+  delete portalClient.data.facebook_pages;
+  delete portalClient.data.instagram_accounts;
+  populateSocialStatus(portalClient);
+}
+async function disconnectLinkedIn() {
+  if (!portalClient?.user_id) return;
+  await fetch(`/api/auth/linkedin/disconnect?user_id=${encodeURIComponent(portalClient.user_id)}`);
+  if (!portalClient.data) portalClient.data = {};
+  delete portalClient.data.linkedin_token;
+  populateSocialStatus(portalClient);
+}
+
+function populateSocialStatus(d) {
+  const data = d.data || {};
+  const pages = data.facebook_pages || [];
+  const igAccounts = data.instagram_accounts || [];
+
+  // Facebook
+  const fbConnected = !!data.facebook_token && pages.length > 0;
+  const fbName = pages[0]?.name || '';
+  document.getElementById('set-facebook').textContent = fbConnected ? fbName : '—';
+  const fbBadge = document.getElementById('fb-status-badge');
+  const fbBtn   = document.getElementById('fb-connect-btn');
+  const fbDisc  = document.getElementById('fb-disconnect-btn');
+  if (fbBadge) { fbBadge.textContent = fbConnected ? '● Conectado' : ''; fbBadge.style.display = fbConnected ? '' : 'none'; fbBadge.className = 'setting-status ' + (fbConnected ? 'connected' : ''); }
+  if (fbBtn)  fbBtn.style.display  = fbConnected ? 'none' : '';
+  if (fbDisc) fbDisc.style.display = fbConnected ? '' : 'none';
+
+  // Instagram
+  const igConnected = igAccounts.length > 0;
+  const igName = igAccounts[0]?.username ? '@' + igAccounts[0].username : '';
+  document.getElementById('set-instagram').textContent = igConnected ? igName : '—';
+  const igBadge = document.getElementById('ig-status-badge');
+  if (igBadge) { igBadge.textContent = igConnected ? '● Conectado' : ''; igBadge.style.display = igConnected ? '' : 'none'; igBadge.className = 'setting-status ' + (igConnected ? 'connected' : ''); }
+
+  // LinkedIn
+  const liConnected = !!data.linkedin_token;
+  const liName = data.linkedin_name || '';
+  const liEl = document.getElementById('set-linkedin');
+  if (liEl) liEl.textContent = liConnected ? liName : '—';
+  const liBadge = document.getElementById('li-status-badge');
+  const liBtn   = document.getElementById('li-connect-btn');
+  const liDisc  = document.getElementById('li-disconnect-btn');
+  if (liBadge) { liBadge.textContent = liConnected ? '● Conectado' : ''; liBadge.style.display = liConnected ? '' : 'none'; liBadge.className = 'setting-status ' + (liConnected ? 'connected' : ''); }
+  if (liBtn)  liBtn.style.display  = liConnected ? 'none' : '';
+  if (liDisc) liDisc.style.display = liConnected ? '' : 'none';
+}
+
+// ── Al cargar la página: magic link hash → sesión guardada → OAuth return ──
 (function() {
+  // Handle OAuth returns (?fb_connected=1 etc)
+  const params = new URLSearchParams(location.search);
+  if (params.get('fb_connected')) {
+    history.replaceState(null, '', location.pathname);
+    // Will populate after auth
+  }
+  if (params.get('fb_error')) {
+    history.replaceState(null, '', location.pathname);
+    console.warn('Facebook OAuth error:', params.get('fb_error'));
+  }
+
   const hash  = new URLSearchParams(location.hash.slice(1));
   const token = hash.get('access_token');
   const type  = hash.get('type');

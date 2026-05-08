@@ -150,6 +150,73 @@ function servePortal(res) {
 app.get('/portal', (req, res) => servePortal(res));
 app.get('/client-portal', (req, res) => servePortal(res));
 
+// ── Facebook / Instagram OAuth ─────────────────────────────────────────────
+const FB_APP_ID     = process.env.FB_APP_ID     || '963018313370305';
+const FB_APP_SECRET = process.env.FB_APP_SECRET || '';
+const SITE_URL      = process.env.SITE_URL      || 'https://web-production-3d2c.up.railway.app';
+const FB_CALLBACK   = `${SITE_URL}/api/auth/facebook/callback`;
+const FB_SCOPES     = 'pages_manage_posts,pages_read_engagement,pages_show_list,instagram_content_publish,instagram_basic';
+
+app.get('/api/auth/facebook', (req, res) => {
+  const { user_id } = req.query;
+  if (!user_id) return res.status(400).send('user_id requerido');
+  const url = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(FB_CALLBACK)}&scope=${FB_SCOPES}&state=${encodeURIComponent(user_id)}`;
+  res.redirect(url);
+});
+
+app.get('/api/auth/facebook/callback', async (req, res) => {
+  const { code, state, error } = req.query;
+  const user_id = decodeURIComponent(state || '');
+  if (error || !code || !user_id) return res.redirect(`${SITE_URL}/portal?fb_error=cancelled`);
+  try {
+    // Short-lived token
+    const t1 = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(FB_CALLBACK)}&client_secret=${FB_APP_SECRET}&code=${code}`).then(r=>r.json());
+    if (!t1.access_token) return res.redirect(`${SITE_URL}/portal?fb_error=token`);
+    // Long-lived token
+    const t2 = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${FB_APP_ID}&client_secret=${FB_APP_SECRET}&fb_exchange_token=${t1.access_token}`).then(r=>r.json());
+    const longToken = t2.access_token || t1.access_token;
+    // Pages
+    const pagesData = await fetch(`https://graph.facebook.com/v19.0/me/accounts?access_token=${longToken}`).then(r=>r.json());
+    const pages = (pagesData.data || []).map(p => ({ id: p.id, name: p.name, token: p.access_token }));
+    // Instagram accounts linked to pages
+    const igAccounts = [];
+    for (const page of pages) {
+      const igData = await fetch(`https://graph.facebook.com/v19.0/${page.id}?fields=instagram_business_account&access_token=${page.token}`).then(r=>r.json());
+      if (igData.instagram_business_account?.id) {
+        const igInfo = await fetch(`https://graph.facebook.com/v19.0/${igData.instagram_business_account.id}?fields=username&access_token=${page.token}`).then(r=>r.json());
+        igAccounts.push({ id: igData.instagram_business_account.id, username: igInfo.username || '', page_id: page.id });
+      }
+    }
+    // Merge into data column
+    const curRows = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data`).then(r=>r.json());
+    const curData = (Array.isArray(curRows) && curRows[0]?.data) || {};
+    await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ data: { ...curData, facebook_token: longToken, facebook_pages: pages, instagram_accounts: igAccounts, facebook_connected_at: new Date().toISOString() } }),
+      headers: { 'Prefer': 'return=minimal' }
+    });
+    const pageName = pages[0]?.name || 'conectado';
+    res.redirect(`${SITE_URL}/portal?fb_connected=1&page=${encodeURIComponent(pageName)}`);
+  } catch(e) {
+    console.error('[fb-callback]', e.message);
+    res.redirect(`${SITE_URL}/portal?fb_error=server`);
+  }
+});
+
+app.get('/api/auth/facebook/disconnect', async (req, res) => {
+  const { user_id } = req.query;
+  if (!user_id) return res.status(400).json({ ok: false });
+  try {
+    const curRows = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data`).then(r=>r.json());
+    const curData = (Array.isArray(curRows) && curRows[0]?.data) || {};
+    const { facebook_token, facebook_pages, instagram_accounts, facebook_connected_at, ...rest } = curData;
+    await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}`, {
+      method: 'PATCH', body: JSON.stringify({ data: rest }), headers: { 'Prefer': 'return=minimal' }
+    });
+    res.json({ ok: true });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 // ── Magic Link Auth ────────────────────────────────────────────────────────
 app.post('/api/auth/magic-link', async (req, res) => {
   const { email } = req.body || {};
