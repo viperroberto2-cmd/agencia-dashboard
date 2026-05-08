@@ -225,6 +225,50 @@ app.get('/api/portal/recordings', async (req, res) => {
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
+// ── PORTAL ONBOARDING NUEVO CLIENTE (sin auth previa) ────────────
+app.post('/api/portal/onboarding-new', async (req, res) => {
+  const { nombre, industria, email, telefono, ciudad,
+          whatsapp, asistente, idioma, tono, horario, wa_status,
+          facebook, instagram, youtube, tiktok, website, google_business,
+          goals, presupuesto, notas } = req.body;
+  if (!email) return res.status(400).json({ ok: false, error: 'email requerido' });
+  try {
+    const user_id = (nombre || email).toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_@.]/g, '').slice(0, 40) + '_' + Date.now().toString(36);
+    const record = {
+      user_id,
+      nombre: nombre || email,
+      industria: industria || null,
+      email,
+      telefono: telefono || null,
+      ciudad: ciudad || null,
+      whatsapp_number: whatsapp || null,
+      redes_sociales: { facebook: facebook||null, instagram: instagram||null, youtube: youtube||null, tiktok: tiktok||null, website: website||null, google_business: google_business||null },
+      configuracion: {
+        asistente_nombre: asistente || null,
+        idioma: idioma || 'bilingue',
+        tono: tono || 'calido',
+        horario: horario || '24/7',
+        wa_status: wa_status || 'nuevo',
+        goals: goals || [],
+        presupuesto: presupuesto || '',
+        notas: notas || ''
+      },
+      onboarding_completado: true
+    };
+    const r = await sbFetch('/clientes', {
+      method: 'POST',
+      body: JSON.stringify(record),
+      headers: { 'Prefer': 'return=representation' }
+    });
+    const data = await r.json();
+    if (Array.isArray(data) && data[0]) {
+      res.json({ ok: true, user_id: data[0].user_id, cliente: data[0] });
+    } else {
+      res.json({ ok: false, error: data.message || 'No se pudo crear el cliente', raw: data });
+    }
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 // ── PORTAL ONBOARDING SUBMIT ─────────────────────────────────────
 app.post('/api/portal/onboarding-submit', async (req, res) => {
   const { user_id, whatsapp, asistente, idioma, tono, horario, wa_status,

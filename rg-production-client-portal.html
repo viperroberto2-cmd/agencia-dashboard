@@ -2036,11 +2036,30 @@ async function nextStep() {
     btn.disabled = true;
     try {
       if (portalClient?.user_id) {
+        // Cliente existente — actualizar sus datos
         await fetch('/api/portal/onboarding-submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: portalClient.user_id, ...wizardData })
         });
+      } else {
+        // Cliente nuevo — crear registro en Supabase
+        const negocioNombre = wizardData.negocio || wizardData.nombre || 'Nuevo cliente';
+        if (!wizardData.email) {
+          btn.textContent = currentLang === 'es' ? '🚀 Enviar' : '🚀 Submit';
+          btn.disabled = false;
+          alert(currentLang === 'es' ? 'Por favor ingresa tu email en el paso 1.' : 'Please enter your email in step 1.');
+          currentStep = 1; renderWizardStep(); return;
+        }
+        const res = await fetch('/api/portal/onboarding-new', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...wizardData, nombre: negocioNombre })
+        });
+        const d = await res.json();
+        if (d.ok && d.user_id) {
+          portalClient = { user_id: d.user_id, nombre: negocioNombre, email: wizardData.email };
+        }
       }
     } catch(e) { console.warn('onboarding-submit error:', e); }
     goScreen('welcome');
