@@ -591,7 +591,8 @@ app.get('/api/clientes', async (req, res) => {
   try {
     const r = await sbFetch('/clientes?select=*&order=nombre.asc');
     const data = await r.json();
-    res.json({ ok: true, clientes: Array.isArray(data) ? data.filter(c => c.user_id !== 'ms_jobs_dashboard') : [] });
+    const rows = Array.isArray(data) ? data.filter(c => c.user_id !== 'ms_jobs_dashboard') : [];
+    res.json({ ok: true, clientes: rows.map(_mergeDataCol) });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
