@@ -217,49 +217,42 @@ app.get('/api/auth/facebook/disconnect', async (req, res) => {
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
-// ── Magic Link Auth ────────────────────────────────────────────────────────
-app.post('/api/auth/magic-link', async (req, res) => {
-  const { email } = req.body || {};
-  if (!email) return res.status(400).json({ ok: false, error: 'email requerido' });
-  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  try {
-    const siteUrl = process.env.SITE_URL || 'https://web-production-3d2c.up.railway.app';
-    const authRes = await fetch(`${SB_URL}/auth/v1/otp`, {
-      method: 'POST',
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, create_user: true, options: { emailRedirectTo: `${siteUrl}/portal` } })
-    });
-    if (!authRes.ok) {
-      const errText = await authRes.text();
-      console.error('[magic-link] Supabase error:', authRes.status, errText);
-      return res.status(500).json({ ok: false, error: 'Error enviando el link. Intenta de nuevo.' });
-    }
-    res.json({ ok: true });
-  } catch(e) {
-    console.error('[magic-link] Exception:', e.message);
-    res.status(500).json({ ok: false, error: e.message });
-  }
-});
+// ── Password Auth (replaces magic link) ───────────────────────────────────
+const crypto = require('crypto');
+function hashPassword(pw) {
+  const salt = process.env.PW_SALT || 'rg_production_2026';
+  return crypto.createHmac('sha256', salt).update(pw).digest('hex');
+}
 
-app.post('/api/auth/user-info', async (req, res) => {
-  const { access_token } = req.body || {};
-  if (!access_token) return res.status(400).json({ ok: false, error: 'token requerido' });
-  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body || {};
+  if (!email || !password) return res.status(400).json({ ok: false, error: 'Email y contraseña requeridos' });
   try {
-    const userRes = await fetch(`${SB_URL}/auth/v1/user`, {
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${access_token}` }
-    });
-    if (!userRes.ok) return res.status(401).json({ ok: false, error: 'Link inválido o expirado. Solicita uno nuevo.' });
-    const userData = await userRes.json();
-    const email = userData.email;
     const r = await sbFetch(`/clientes?email=eq.${encodeURIComponent(email)}&select=*`);
     const rows = await r.json();
     if (!rows || rows.length === 0)
-      return res.status(404).json({ ok: false, error: 'No encontramos tu cuenta. Contacta a tu agencia.' });
+      return res.status(404).json({ ok: false, error: 'No encontramos tu cuenta. Verifica tu email.' });
     const row = rows[0];
+    const stored = (row.data || {}).password_hash;
+    if (!stored) return res.status(401).json({ ok: false, error: 'Esta cuenta no tiene contraseña. Usa el onboarding para configurarla.' });
+    if (stored !== hashPassword(password))
+      return res.status(401).json({ ok: false, error: 'Contraseña incorrecta.' });
     res.json({ ok: true, ..._mergeDataCol(row) });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+app.post('/api/auth/set-password', async (req, res) => {
+  const { user_id, password } = req.body || {};
+  if (!user_id || !password) return res.status(400).json({ ok: false, error: 'user_id y contraseña requeridos' });
+  try {
+    const curR = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data`);
+    const curRows = await curR.json();
+    const curData = (Array.isArray(curRows) && curRows[0]?.data) || {};
+    await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ data: { ...curData, password_hash: hashPassword(password) } }),
+    });
+    res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
@@ -298,10 +291,11 @@ app.post('/api/portal/onboarding-new', async (req, res) => {
   const { nombre, industria, email, telefono, ciudad,
           whatsapp, asistente, idioma, tono, horario, wa_status,
           facebook, instagram, youtube, tiktok, website, google_business,
-          goals, presupuesto, notas } = req.body;
+          goals, presupuesto, notas, password } = req.body;
   if (!email) return res.status(400).json({ ok: false, error: 'email requerido' });
   try {
     const newData = {
+      ...(password ? { password_hash: hashPassword(password) } : {}),
       ciudad: ciudad || null,
       redes_sociales: { facebook: facebook||null, instagram: instagram||null, youtube: youtube||null, tiktok: tiktok||null, website: website||null, google_business: google_business||null },
       configuracion: {
