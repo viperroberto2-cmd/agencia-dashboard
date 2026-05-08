@@ -321,13 +321,13 @@ app.post('/api/portal/onboarding-new', async (req, res) => {
     if (Array.isArray(existingRows) && existingRows[0]) {
       const existing = existingRows[0];
       const mergedData = { ...(existing.data || {}), ...newData };
+      const mergedData2 = { ...mergedData, onboarding_completado: true };
       const update = {
         nombre: nombre || email,
         industria: industria || null,
         telefono: telefono || null,
         whatsapp_number: whatsapp || null,
-        data: mergedData,
-        onboarding_completado: true
+        data: mergedData2,
       };
       await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(existing.user_id)}`, {
         method: 'PATCH',
@@ -348,8 +348,7 @@ app.post('/api/portal/onboarding-new', async (req, res) => {
       email,
       telefono: telefono || null,
       whatsapp_number: whatsapp || null,
-      data: newData,
-      onboarding_completado: true
+      data: { ...newData, onboarding_completado: true },
     };
     const r = await sbFetch('/clientes', {
       method: 'POST',
@@ -405,8 +404,7 @@ app.post('/api/portal/onboarding-submit', async (req, res) => {
 
     const update = {
       whatsapp_number: whatsapp || null,
-      data: newData,
-      onboarding_completado: true
+      data: { ...newData, onboarding_completado: true },
     };
     if (email)    update.email    = email;
     if (telefono) update.telefono = telefono;
