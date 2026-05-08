@@ -1662,21 +1662,52 @@ input, textarea, select { font-family: inherit; }
         </div>
       </div>
       <div class="settings-grid">
+        <!-- Edit bar -->
+        <div style="display:flex;justify-content:flex-end;padding:0 0 4px 0">
+          <button class="btn btn-ghost" id="settingsEditBtn" onclick="toggleSettingsEdit()" style="font-size:13px">✏️ Editar</button>
+          <button class="btn btn-ghost" id="settingsCancelBtn" onclick="cancelSettingsEdit()" style="font-size:13px;display:none;margin-left:8px;color:var(--text-muted)">Cancelar</button>
+        </div>
+
+        <!-- Negocio -->
         <div class="settings-section">
           <div class="settings-section-title" data-i18n="set.business">Información de tu negocio</div>
           <div class="settings-section-desc" data-i18n="set.businessDesc">La que registraste durante el onboarding</div>
-          <div class="setting-row"><div class="setting-icon">🏢</div><div class="setting-info"><div class="setting-label" data-i18n="set.bizName">Nombre del negocio</div><div class="setting-value" id="set-biz-name">—</div></div></div>
-          <div class="setting-row"><div class="setting-icon">🏭</div><div class="setting-info"><div class="setting-label" data-i18n="set.industry">Industria</div><div class="setting-value" id="set-industry">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">🏢</div><div class="setting-info"><div class="setting-label">Nombre del negocio</div><div class="setting-value" id="set-biz-name">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">🏭</div><div class="setting-info"><div class="setting-label">Industria</div><div class="setting-value" id="set-industry">—</div></div></div>
           <div class="setting-row"><div class="setting-icon">📧</div><div class="setting-info"><div class="setting-label">Email</div><div class="setting-value" id="set-email">—</div></div></div>
-          <div class="setting-row"><div class="setting-icon">📞</div><div class="setting-info"><div class="setting-label" data-i18n="set.phone">Teléfono</div><div class="setting-value" id="set-phone">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">📞</div><div class="setting-info"><div class="setting-label">Teléfono</div><div class="setting-value" id="set-phone">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">📍</div><div class="setting-info"><div class="setting-label">Ciudad</div><div class="setting-value" id="set-city">—</div></div></div>
         </div>
+
+        <!-- Servicios conectados -->
         <div class="settings-section">
           <div class="settings-section-title" data-i18n="set.services">Servicios conectados</div>
           <div class="settings-section-desc" data-i18n="set.servicesDesc">Estado de las herramientas integradas con tu cuenta</div>
           <div class="setting-row"><div class="setting-icon">💚</div><div class="setting-info"><div class="setting-label">WhatsApp Business</div><div class="setting-value" id="set-wa">—</div></div><span class="setting-status" id="set-wa-status">—</span></div>
-          <div class="setting-row"><div class="setting-icon">🤖</div><div class="setting-info"><div class="setting-label" data-i18n="set.voiceAgent">Agente de voz</div><div class="setting-value" id="set-agent">—</div></div><span class="setting-status" id="set-agent-status">—</span></div>
+          <div class="setting-row"><div class="setting-icon">🤖</div><div class="setting-info"><div class="setting-label">Agente de voz</div><div class="setting-value" id="set-agent">—</div></div><span class="setting-status" id="set-agent-status">—</span></div>
           <div class="setting-row"><div class="setting-icon">📅</div><div class="setting-info"><div class="setting-label">Google Calendar</div><div class="setting-value" id="set-calendar">—</div></div><span class="setting-status" id="set-calendar-status">—</span></div>
         </div>
+
+        <!-- Tu asistente -->
+        <div class="settings-section">
+          <div class="settings-section-title">Tu asistente</div>
+          <div class="settings-section-desc">Configuración del agente de IA para tu negocio</div>
+          <div class="setting-row"><div class="setting-icon">🤖</div><div class="setting-info"><div class="setting-label">Nombre del asistente</div><div class="setting-value" id="set-assistant-name">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">🌐</div><div class="setting-info"><div class="setting-label">Idioma</div><div class="setting-value" id="set-assistant-lang">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">💬</div><div class="setting-info"><div class="setting-label">Tono</div><div class="setting-value" id="set-assistant-tone">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">🕐</div><div class="setting-info"><div class="setting-label">Horario</div><div class="setting-value" id="set-assistant-hours">—</div></div></div>
+        </div>
+
+        <!-- Redes sociales -->
+        <div class="settings-section">
+          <div class="settings-section-title">Redes sociales</div>
+          <div class="settings-section-desc">Tus perfiles y presencia en línea</div>
+          <div class="setting-row"><div class="setting-icon">📘</div><div class="setting-info"><div class="setting-label">Facebook</div><div class="setting-value" id="set-facebook">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">📸</div><div class="setting-info"><div class="setting-label">Instagram</div><div class="setting-value" id="set-instagram">—</div></div></div>
+          <div class="setting-row"><div class="setting-icon">🌐</div><div class="setting-info"><div class="setting-label">Sitio web</div><div class="setting-value" id="set-website">—</div></div></div>
+        </div>
+
+        <!-- Avatar IA -->
         <div class="settings-section">
           <div class="settings-section-title" data-i18n="set.assistant">Tu avatar de IA</div>
           <div class="settings-section-desc">Sube una foto para crear tu avatar personalizado de video</div>
@@ -2458,6 +2489,122 @@ function populatePortal(d) {
   loadPortalRecordings();
 }
 
+// ── Settings Edit Mode ────────────────────────────────────────────────────────
+const EDITABLE_IDS = [
+  'set-biz-name','set-industry','set-phone','set-city','set-wa',
+  'set-assistant-name','set-assistant-lang','set-assistant-tone','set-assistant-hours',
+  'set-facebook','set-instagram','set-website'
+];
+let _settingsEditing = false;
+
+function toggleSettingsEdit() {
+  if (_settingsEditing) {
+    saveSettingsEdit();
+  } else {
+    enterSettingsEdit();
+  }
+}
+
+function enterSettingsEdit() {
+  _settingsEditing = true;
+  const btn = document.getElementById('settingsEditBtn');
+  const cancel = document.getElementById('settingsCancelBtn');
+  if (btn) btn.textContent = '💾 Guardar cambios';
+  if (cancel) cancel.style.display = '';
+  EDITABLE_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = el.textContent === '—' ? '' : el.textContent;
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = val;
+    inp.id = 'inp-' + id;
+    inp.placeholder = '—';
+    inp.style.cssText = 'width:100%;font-size:13px;padding:5px 8px;border:1px solid var(--accent);border-radius:6px;background:var(--card-bg);color:var(--text);outline:none';
+    el.parentNode.replaceChild(inp, el);
+  });
+  // email is read-only — skip
+}
+
+function exitSettingsEdit() {
+  _settingsEditing = false;
+  const btn = document.getElementById('settingsEditBtn');
+  const cancel = document.getElementById('settingsCancelBtn');
+  if (btn) { btn.disabled = false; btn.textContent = '✏️ Editar'; }
+  if (cancel) cancel.style.display = 'none';
+  EDITABLE_IDS.forEach(id => {
+    const inp = document.getElementById('inp-' + id);
+    if (!inp) return;
+    const div = document.createElement('div');
+    div.className = 'setting-value';
+    div.id = id;
+    div.textContent = '—';
+    inp.parentNode.replaceChild(div, inp);
+  });
+}
+
+function cancelSettingsEdit() {
+  exitSettingsEdit();
+  if (portalClient) populateSettings(portalClient);
+}
+
+async function saveSettingsEdit() {
+  if (!portalClient?.user_id) return;
+  const btn = document.getElementById('settingsEditBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Guardando...'; }
+  const getInp = id => {
+    const el = document.getElementById('inp-' + id);
+    return el ? el.value.trim() : '';
+  };
+  const body = {
+    user_id: portalClient.user_id,
+    nombre:   getInp('set-biz-name'),
+    industria: getInp('set-industry'),
+    telefono:  getInp('set-phone'),
+    ciudad:    getInp('set-city'),
+    whatsapp:  getInp('set-wa'),
+    asistente: getInp('set-assistant-name'),
+    idioma:    getInp('set-assistant-lang'),
+    tono:      getInp('set-assistant-tone'),
+    horario:   getInp('set-assistant-hours'),
+    facebook:  getInp('set-facebook'),
+    instagram: getInp('set-instagram'),
+    website:   getInp('set-website'),
+  };
+  try {
+    const r = await fetch('/api/portal/onboarding-submit', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (d.ok) {
+      // Sync changes back to portalClient
+      if (body.nombre)    portalClient.nombre = body.nombre;
+      if (body.industria) portalClient.industria = body.industria;
+      if (body.telefono)  portalClient.telefono = body.telefono;
+      if (body.ciudad)    portalClient.ciudad = body.ciudad;
+      if (body.whatsapp)  portalClient.whatsapp_number = body.whatsapp;
+      if (!portalClient.configuracion) portalClient.configuracion = {};
+      if (body.asistente) portalClient.configuracion.asistente_nombre = body.asistente;
+      if (body.idioma)    portalClient.configuracion.idioma = body.idioma;
+      if (body.tono)      portalClient.configuracion.tono = body.tono;
+      if (body.horario)   portalClient.configuracion.horario = body.horario;
+      if (!portalClient.redes_sociales) portalClient.redes_sociales = {};
+      if (body.facebook)  portalClient.redes_sociales.facebook = body.facebook;
+      if (body.instagram) portalClient.redes_sociales.instagram = body.instagram;
+      if (body.website)   portalClient.redes_sociales.website = body.website;
+      exitSettingsEdit();
+      populateSettings(portalClient);
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar cambios'; }
+      alert('Error al guardar: ' + (d.error || 'Intenta de nuevo'));
+    }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar cambios'; }
+    alert('Error de conexión. Intenta de nuevo.');
+  }
+}
+
 function populateSettings(d) {
   const set = (id, val) => {
     const el = document.getElementById(id);
@@ -2636,40 +2783,46 @@ async function loadPortalRecordings() {
   } catch(e) {}
 }
 
-// Al cargar la página: detectar token del magic link en el hash de la URL
-(function() {
-  const hash   = new URLSearchParams(location.hash.slice(1));
-  const token  = hash.get('access_token');
-  const type   = hash.get('type');
-  if (token && type === 'magiclink') {
-    // Limpiar hash de la URL sin recargar
-    history.replaceState(null, '', location.pathname);
-    document.getElementById('login-step-form').style.display = 'none';
-    document.getElementById('login-step-verifying').style.display = '';
-    fetch('/api/auth/user-info', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ access_token: token })
-    })
-    .then(r => r.json())
-    .then(d => {
-      if (!d.ok) {
-        document.getElementById('login-step-verifying').style.display = 'none';
-        document.getElementById('login-step-form').style.display = '';
-        const errEl = document.getElementById('rg-login-error');
-        errEl.textContent = d.error || 'Link inválido. Solicita uno nuevo.';
-        errEl.style.display = 'block';
-        return;
-      }
-      populatePortal(d);
-      goScreen('portal');
-    })
-    .catch(() => {
+// ── Auth helper ──────────────────────────────────────────────────────────────
+function _authWithToken(token) {
+  document.getElementById('login-step-form').style.display = 'none';
+  document.getElementById('login-step-verifying').style.display = '';
+  return fetch('/api/auth/user-info', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ access_token: token })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (!d.ok) {
+      sessionStorage.removeItem('rg_token');
       document.getElementById('login-step-verifying').style.display = 'none';
       document.getElementById('login-step-form').style.display = '';
       const errEl = document.getElementById('rg-login-error');
-      errEl.textContent = 'Error de conexión. Intenta de nuevo.';
-      errEl.style.display = 'block';
-    });
+      if (errEl) { errEl.textContent = d.error || 'Sesión expirada. Solicita un nuevo link.'; errEl.style.display = 'block'; }
+      return;
+    }
+    sessionStorage.setItem('rg_token', token);
+    populatePortal(d);
+    goScreen('portal');
+  })
+  .catch(() => {
+    sessionStorage.removeItem('rg_token');
+    document.getElementById('login-step-verifying').style.display = 'none';
+    document.getElementById('login-step-form').style.display = '';
+  });
+}
+
+// Al cargar la página: magic link hash → o bien sesión guardada
+(function() {
+  const hash  = new URLSearchParams(location.hash.slice(1));
+  const token = hash.get('access_token');
+  const type  = hash.get('type');
+  if (token && type === 'magiclink') {
+    history.replaceState(null, '', location.pathname);
+    _authWithToken(token);
+  } else {
+    const saved = sessionStorage.getItem('rg_token');
+    if (saved) _authWithToken(saved);
   }
 })();
 </script>

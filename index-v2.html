@@ -4327,17 +4327,17 @@ async function guardarEditarCliente(userId) {
     email:            g('ec_email')    || null,
     telefono:         g('ec_tel')      || null,
     precio_producto:  g('ec_precio')   ? +g('ec_precio') : null,
-    redes_sociales:   JSON.stringify({
+    redes_sociales: {
       facebook: g('ec_fb'), instagram: g('ec_ig'),
       youtube:  g('ec_yt'), tiktok:    g('ec_tt'),
       website:  g('ec_web')
-    }),
-    configuracion: JSON.stringify({
+    },
+    configuracion: {
       ...(_editClienteData?.configuracion || {}),
       asistente_nombre: g('ec_asistente'),
       idioma:  document.getElementById('ec_idioma')?.value  || 'bilingue',
       horario: document.getElementById('ec_horario')?.value || '24/7'
-    })
+    }
   };
   // Quitar nulls para no sobreescribir con null innecesariamente
   Object.keys(update).forEach(k => { if (update[k] === null) delete update[k]; });
