@@ -2,10 +2,12 @@
 <html lang="es">
 <head>
 <script>
-// If Supabase redirects here with a magic link token, forward to client portal
+// If Supabase redirects here with an auth token, forward to client portal
 (function(){
   const hash = new URLSearchParams(location.hash.slice(1));
-  if (hash.get('access_token') && hash.get('type') === 'magiclink') {
+  const token = hash.get('access_token');
+  const type  = hash.get('type');
+  if (token && (type === 'magiclink' || type === 'signup' || type === 'recovery')) {
     location.replace('/portal' + location.hash);
   }
 })();

@@ -2936,7 +2936,7 @@ function populateSocialStatus(d) {
   const hash  = new URLSearchParams(location.hash.slice(1));
   const token = hash.get('access_token');
   const type  = hash.get('type');
-  if (token && type === 'magiclink') {
+  if (token && (type === 'magiclink' || type === 'signup' || type === 'recovery')) {
     history.replaceState(null, '', location.pathname);
     _authWithToken(token);
   } else {
