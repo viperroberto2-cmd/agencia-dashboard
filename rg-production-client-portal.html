@@ -1452,7 +1452,7 @@ input, textarea, select { font-family: inherit; }
     </div>
 
     <div class="welcome-actions">
-      <button class="btn btn-primary btn-block" onclick="goScreen('portal')" data-i18n="welcome.toPortal">Ir a mi portal →</button>
+      <button class="btn btn-primary btn-block" onclick="if(typeof populatePortal==='function'&&portalClient)populatePortal(portalClient);goScreen('portal')" data-i18n="welcome.toPortal">Ir a mi portal →</button>
       <button class="btn btn-ghost btn-block" data-i18n="welcome.whatsapp">💬 Mensaje por WhatsApp</button>
     </div>
   </div>
@@ -2089,7 +2089,7 @@ async function nextStep() {
         });
         const d = await res.json();
         if (d.ok && d.user_id) {
-          portalClient = { user_id: d.user_id, nombre: negocioNombre, email: wizardData.email };
+          portalClient = d.cliente || { user_id: d.user_id, nombre: negocioNombre, email: wizardData.email };
         }
       }
     } catch(e) { console.warn('onboarding-submit error:', e); }

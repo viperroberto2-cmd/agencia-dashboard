@@ -191,7 +191,16 @@ app.post('/api/auth/user-info', async (req, res) => {
     const rows = await r.json();
     if (!rows || rows.length === 0)
       return res.status(404).json({ ok: false, error: 'No encontramos tu cuenta. Contacta a tu agencia.' });
-    res.json({ ok: true, ...rows[0] });
+    const row = rows[0];
+    const dataCol = row.data || {};
+    // Merge fields from data column if direct columns don't exist in schema
+    res.json({
+      ok: true,
+      ...row,
+      ciudad:        row.ciudad        !== undefined ? row.ciudad        : (dataCol.ciudad || null),
+      redes_sociales: row.redes_sociales !== undefined ? row.redes_sociales : (dataCol.redes_sociales || null),
+      configuracion:  row.configuracion  !== undefined ? row.configuracion  : (dataCol.configuracion || null)
+    });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
@@ -240,18 +249,21 @@ app.post('/api/portal/onboarding-new', async (req, res) => {
       industria: industria || null,
       email,
       telefono: telefono || null,
-      ciudad: ciudad || null,
       whatsapp_number: whatsapp || null,
-      redes_sociales: { facebook: facebook||null, instagram: instagram||null, youtube: youtube||null, tiktok: tiktok||null, website: website||null, google_business: google_business||null },
-      configuracion: {
-        asistente_nombre: asistente || null,
-        idioma: idioma || 'bilingue',
-        tono: tono || 'calido',
-        horario: horario || '24/7',
-        wa_status: wa_status || 'nuevo',
-        goals: goals || [],
-        presupuesto: presupuesto || '',
-        notas: notas || ''
+      // Store ciudad, redes_sociales, configuracion inside data JSONB (those columns don't exist in schema)
+      data: {
+        ciudad: ciudad || null,
+        redes_sociales: { facebook: facebook||null, instagram: instagram||null, youtube: youtube||null, tiktok: tiktok||null, website: website||null, google_business: google_business||null },
+        configuracion: {
+          asistente_nombre: asistente || null,
+          idioma: idioma || 'bilingue',
+          tono: tono || 'calido',
+          horario: horario || '24/7',
+          wa_status: wa_status || 'nuevo',
+          goals: goals || [],
+          presupuesto: presupuesto || '',
+          notas: notas || ''
+        }
       },
       onboarding_completado: true
     };
@@ -277,24 +289,41 @@ app.post('/api/portal/onboarding-submit', async (req, res) => {
           negocio, nombre, email, telefono } = req.body;
   if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
   try {
+    // Fetch current data column to merge (ciudad, redes_sociales, configuracion live in data JSONB)
+    const curR = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data`);
+    const curRows = await curR.json();
+    const curData = (Array.isArray(curRows) && curRows[0]?.data) || {};
+
+    const newData = {
+      ...curData,
+      ciudad: ciudad || curData.ciudad || null,
+      redes_sociales: {
+        ...(curData.redes_sociales || {}),
+        facebook: facebook !== undefined ? (facebook || null) : (curData.redes_sociales?.facebook || null),
+        instagram: instagram !== undefined ? (instagram || null) : (curData.redes_sociales?.instagram || null),
+        youtube: youtube !== undefined ? (youtube || null) : (curData.redes_sociales?.youtube || null),
+        tiktok: tiktok !== undefined ? (tiktok || null) : (curData.redes_sociales?.tiktok || null),
+        website: website !== undefined ? (website || null) : (curData.redes_sociales?.website || null),
+        google_business: google_business !== undefined ? (google_business || null) : (curData.redes_sociales?.google_business || null)
+      },
+      configuracion: {
+        ...(curData.configuracion || {}),
+        asistente_nombre: asistente || curData.configuracion?.asistente_nombre || null,
+        idioma: idioma || curData.configuracion?.idioma || 'bilingue',
+        tono: tono || curData.configuracion?.tono || 'calido',
+        horario: horario || curData.configuracion?.horario || '24/7',
+        wa_status: wa_status || curData.configuracion?.wa_status || 'activo',
+        goals: goals || curData.configuracion?.goals || [],
+        presupuesto: presupuesto || curData.configuracion?.presupuesto || '',
+        notas: notas || curData.configuracion?.notas || ''
+      }
+    };
+
     const update = {
       whatsapp_number: whatsapp || null,
-      ciudad: ciudad || null,
-      // Use plain objects — Supabase JSONB stores them correctly without JSON.stringify
-      redes_sociales: { facebook: facebook||null, instagram: instagram||null, youtube: youtube||null, tiktok: tiktok||null, website: website||null, google_business: google_business||null },
-      configuracion: {
-        asistente_nombre: asistente || null,
-        idioma: idioma || 'bilingue',
-        tono: tono || 'calido',
-        horario: horario || '24/7',
-        wa_status: wa_status || 'activo',
-        goals: goals || [],
-        presupuesto: presupuesto || '',
-        notas: notas || ''
-      },
+      data: newData,
       onboarding_completado: true
     };
-    // Save basic info if client filled step 1
     if (email)    update.email    = email;
     if (telefono) update.telefono = telefono;
     if (negocio || nombre) update.nombre = negocio || nombre;
@@ -509,9 +538,22 @@ app.post('/api/clientes/crear', async (req, res) => {
 
 app.patch('/api/clientes/:user_id', async (req, res) => {
   try {
+    const { redes_sociales, configuracion, ciudad, ...directFields } = req.body;
+    // Fetch current data to merge (these fields live in data JSONB, not direct columns)
+    if (redes_sociales || configuracion || ciudad) {
+      const curR = await sbFetch(`/clientes?user_id=eq.${req.params.user_id}&select=data`);
+      const curRows = await curR.json();
+      const curData = (Array.isArray(curRows) && curRows[0]?.data) || {};
+      directFields.data = {
+        ...curData,
+        ...(ciudad ? { ciudad } : {}),
+        ...(redes_sociales ? { redes_sociales: { ...(curData.redes_sociales||{}), ...redes_sociales } } : {}),
+        ...(configuracion  ? { configuracion:  { ...(curData.configuracion||{}),  ...configuracion  } } : {})
+      };
+    }
     const r = await sbFetch(`/clientes?user_id=eq.${req.params.user_id}`, {
       method: 'PATCH',
-      body: JSON.stringify(req.body),
+      body: JSON.stringify(directFields),
       headers: { 'Prefer': 'return=representation' }
     });
     const data = await r.json();
