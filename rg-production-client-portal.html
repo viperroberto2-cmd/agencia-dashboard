@@ -2969,13 +2969,24 @@ function populateSocialStatus(d) {
   if (liDisc) liDisc.style.display = liConnected ? '' : 'none';
 }
 
-// ── Al cargar la página: sesión guardada → OAuth return ──
+// ── Al cargar la página: sesión guardada → invite link → OAuth return ──
 (function() {
   const params = new URLSearchParams(location.search);
   if (params.get('fb_connected')) history.replaceState(null, '', location.pathname);
   if (params.get('fb_error')) {
     history.replaceState(null, '', location.pathname);
     console.warn('Facebook OAuth error:', params.get('fb_error'));
+  }
+
+  // Agency sent an invite link: ?email=X&nuevo=1 → go to wizard directly
+  if (params.get('nuevo') === '1') {
+    const preEmail = params.get('email') || '';
+    if (preEmail) {
+      wizardData.email = preEmail;
+    }
+    history.replaceState(null, '', location.pathname);
+    goScreen('wizard');
+    return;
   }
 
   const savedEmail = sessionStorage.getItem('rg_email');
