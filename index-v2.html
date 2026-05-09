@@ -3146,7 +3146,11 @@ async function nextStep() {
         const clientEmail = onboardingData.email || '';
         const clientNombre = onboardingData.nombre || '';
         const inviteUrl = `https://web-production-3d2c.up.railway.app/portal?email=${encodeURIComponent(clientEmail)}&nuevo=1`;
-        const waMsg = encodeURIComponent(`Hola ${clientNombre.split(' ')[0]}, te comparto el link para que configures tu portal y cuentes lo que hace tu negocio para que tu asistente esté listo:\n\n${inviteUrl}`);
+        const msgText = `Hola ${clientNombre.split(' ')[0]}, te comparto el link para que configures tu portal y cuentes lo que hace tu negocio para que tu asistente esté listo:\n\n${inviteUrl}`;
+        const waMsg    = encodeURIComponent(msgText);
+        const smsMsg   = encodeURIComponent(msgText);
+        const emailSub = encodeURIComponent(`Tu portal está listo — ${clientNombre}`);
+        const emailBody= encodeURIComponent(msgText);
         // Show invite modal
         let overlay = document.getElementById('inviteOverlay');
         if (!overlay) {
@@ -3157,13 +3161,15 @@ async function nextStep() {
         }
         overlay.innerHTML = `<div style="background:var(--bg-secondary,#1a1a2e);border-radius:16px;padding:28px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5)">
           <div style="font-size:22px;font-weight:700;margin-bottom:6px">🚀 Cliente creado</div>
-          <div style="color:var(--text-muted,#888);font-size:14px;margin-bottom:20px">${clientNombre} fue registrado. Ahora comparte este link con el cliente para que complete su perfil y cuestionario de negocio.</div>
+          <div style="color:var(--text-muted,#888);font-size:14px;margin-bottom:20px">${clientNombre} fue registrado. Comparte este link para que complete su perfil y cuestionario de negocio.</div>
           <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;font-size:12px;word-break:break-all;color:#a0a0c0;margin-bottom:16px">${inviteUrl}</div>
-          <div style="display:flex;gap:10px;margin-bottom:16px">
-            <button onclick="navigator.clipboard.writeText('${inviteUrl}');this.textContent='✓ Copiado!';setTimeout(()=>this.textContent='📋 Copiar link',2000)" style="flex:1;padding:11px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#fff;font-size:13px;cursor:pointer;font-weight:600">📋 Copiar link</button>
-            <a href="https://wa.me/?text=${waMsg}" target="_blank" style="flex:1;padding:11px;border-radius:10px;background:#25d366;color:#fff;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px">💬 Enviar por WhatsApp</a>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <button onclick="navigator.clipboard.writeText('${inviteUrl}');this.textContent='✓ Copiado!';setTimeout(()=>this.textContent='📋 Copiar link',2000)" style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#fff;font-size:13px;cursor:pointer;font-weight:600">📋 Copiar link</button>
+            <a href="https://wa.me/?text=${waMsg}" target="_blank" style="padding:10px;border-radius:10px;background:#25d366;color:#fff;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center">💬 WhatsApp</a>
+            <a href="sms:?body=${smsMsg}" style="padding:10px;border-radius:10px;background:#3b82f6;color:#fff;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center">📱 SMS</a>
+            <a href="mailto:${encodeURIComponent(clientEmail)}?subject=${emailSub}&body=${emailBody}" style="padding:10px;border-radius:10px;background:#6366f1;color:#fff;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center">📧 Email</a>
           </div>
-          <button onclick="document.getElementById('inviteOverlay').style.display='none';resetOnboarding();loadConfigClientes();loadClientSwitcher();" style="width:100%;padding:11px;border-radius:10px;border:none;background:var(--accent,#7c5cfc);color:#fff;font-size:14px;font-weight:600;cursor:pointer">Entendido →</button>
+          <button onclick="document.getElementById('inviteOverlay').style.display='none';resetOnboarding();loadConfigClientes();loadClientSwitcher();" style="width:100%;padding:11px;border-radius:10px;border:none;background:var(--accent,#7c5cfc);color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px">Entendido →</button>
         </div>`;
         overlay.style.display = 'flex';
         btn.textContent = '🚀 Lanzar cliente'; btn.disabled = false;
