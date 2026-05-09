@@ -155,7 +155,7 @@ const FB_APP_ID     = process.env.FB_APP_ID     || '963018313370305';
 const FB_APP_SECRET = process.env.FB_APP_SECRET || '';
 const SITE_URL      = process.env.SITE_URL      || 'https://web-production-3d2c.up.railway.app';
 const FB_CALLBACK   = `${SITE_URL}/api/auth/facebook/callback`;
-const FB_SCOPES     = 'pages_manage_posts,pages_read_engagement,pages_show_list,instagram_content_publish,instagram_basic';
+const FB_SCOPES     = 'pages_manage_posts,pages_read_engagement,pages_show_list,instagram_content_publish';
 
 app.get('/api/auth/facebook', (req, res) => {
   const { user_id } = req.query;
