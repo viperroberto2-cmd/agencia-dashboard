@@ -810,6 +810,7 @@ app.post('/api/clientes/crear', async (req, res) => {
       headers: { 'Prefer': 'return=representation' }
     });
     const data = await r.json();
+    if (!r.ok) return res.json({ ok: false, error: data?.message || data?.error || `Supabase error ${r.status}` });
     res.json({ ok: true, cliente: Array.isArray(data) ? data[0] : data });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
