@@ -2980,6 +2980,8 @@ const onboardingData = {
   whatsapp_option: '', respond_io_key: '', whatsapp_number: '',
   heygen_avatar_id: '', heygen_voice_id: '',
   objetivo: '', presupuesto_ads: '', mensaje_principal: '',
+  fb_page_id: '', ig_account_id: '', youtube_refresh_token: '',
+  tiktok_token: '', linkedin_token: '', pinterest_token: '', twitter_token: '',
   redes: [], channels: [], agents: [], integrations: []
 };
 
@@ -3042,19 +3044,23 @@ function renderStepContent() {
     <div class="step-title">📱 Redes sociales</div>
     <div class="step-desc">Selecciona las redes que tiene el cliente. Agrega sus tokens para que el Scheduler pueda publicar.</div>
     ${[
-      { key:'tiktok', label:'TikTok', icon:'🎵', field:'tiktok_token' },
-      { key:'linkedin', label:'LinkedIn', icon:'💼', field:'linkedin_token' },
-      { key:'youtube', label:'YouTube', icon:'▶️', field:'youtube_token' },
-      { key:'pinterest', label:'Pinterest', icon:'📌', field:'pinterest_token' },
-      { key:'twitter', label:'Twitter / X', icon:'𝕏', field:'twitter_token' },
-      { key:'facebook', label:'Facebook', icon:'📘', field:null },
-      { key:'instagram', label:'Instagram', icon:'📸', field:null },
+      { key:'facebook',  label:'Facebook',    icon:'📘', field:'fb_page_id',           placeholder:'ID de la Página (ej: 123456789)' },
+      { key:'instagram', label:'Instagram',   icon:'📸', field:'ig_account_id',         placeholder:'ID de cuenta Instagram Business' },
+      { key:'youtube',   label:'YouTube',     icon:'▶️', field:'youtube_refresh_token', placeholder:'Refresh Token de YouTube' },
+      { key:'tiktok',    label:'TikTok',      icon:'🎵', field:'tiktok_token',          placeholder:'Token', coming_soon: true },
+      { key:'linkedin',  label:'LinkedIn',    icon:'💼', field:'linkedin_token',        placeholder:'Token de acceso' },
+      { key:'pinterest', label:'Pinterest',   icon:'📌', field:'pinterest_token',       placeholder:'Token de acceso' },
+      { key:'twitter',   label:'Twitter / X', icon:'𝕏',  field:'twitter_token',         placeholder:'Token de acceso' },
     ].map(r => `
       <div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
         <button class="choice ${onboardingData.redes.includes(r.key)?'selected':''}" style="width:auto;padding:8px 14px;flex-shrink:0" onclick="toggleRedSocial('${r.key}');renderStepContent()">
           <span>${r.icon}</span> <span>${r.label}</span>
         </button>
-        ${onboardingData.redes.includes(r.key) && r.field ? `<input class="field-input" style="flex:1" placeholder="Token / Page ID" value="${onboardingData[r.field]||''}" oninput="onboardingData.${r.field}=this.value" />` : '<div style="flex:1;font-size:12px;color:var(--text-dim)">Selecciona para agregar token</div>'}
+        ${r.coming_soon
+          ? '<span style="font-size:11px;background:#2a1f00;color:#f59e0b;border:.5px solid rgba(245,158,11,.4);border-radius:20px;padding:3px 10px;flex-shrink:0">próximamente</span>'
+          : onboardingData.redes.includes(r.key) && r.field
+            ? `<input class="field-input" style="flex:1" placeholder="${r.placeholder}" value="${onboardingData[r.field]||''}" oninput="onboardingData.${r.field}=this.value" />`
+            : '<div style="flex:1;font-size:12px;color:var(--text-dim)">Selecciona para agregar</div>'}
       </div>`).join('')}`;
 
   if (currentStep === 4) c.innerHTML = `
@@ -4374,7 +4380,14 @@ async function abrirEditarCliente(userId) {
           <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Page Access Token</label>
             <input id="ec_fb_page_token" class="field-input" placeholder="EAAxxxxxx..." value="${c.data?.facebook_pages?.[0]?.token||''}" /></div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:10px;margin-top:4px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-top:14px">Instagram · YouTube</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px">
+          <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Instagram Business Account ID</label>
+            <input id="ec_ig_account_id" class="field-input" placeholder="17841400..." value="${c.data?.ig_account_id||''}" /></div>
+          <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">YouTube Refresh Token</label>
+            <input id="ec_youtube_refresh" class="field-input" placeholder="1//04xyz..." value="${c.data?.youtube_refresh_token||''}" /></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:10px;margin-top:14px">
           <div>
             <div style="font-size:13px;font-weight:600">Requiere aprobación antes de publicar</div>
             <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Clientes como abogados revisan el contenido antes de que salga</div>
@@ -4442,6 +4455,8 @@ async function guardarEditarCliente(userId) {
     facebook_pages: (g('ec_fb_page_id') && g('ec_fb_page_token'))
       ? [{ id: g('ec_fb_page_id'), name: g('ec_fb') || g('ec_fb_page_id'), token: g('ec_fb_page_token') }]
       : (_editClienteData?.facebook_pages || []),
+    ig_account_id:       g('ec_ig_account_id')   || (_editClienteData?.ig_account_id || null),
+    youtube_refresh_token: g('ec_youtube_refresh') || (_editClienteData?.youtube_refresh_token || null),
     cuestionario: {
       descripcion:   g('ec_q_desc'),
       cliente_ideal: g('ec_q_ci'),
