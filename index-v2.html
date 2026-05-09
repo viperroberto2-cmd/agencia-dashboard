@@ -1901,7 +1901,7 @@ input, textarea { font-family: inherit; }
             <div class="integrations-section-header">
               <div class="integrations-section-icon client">👤</div>
               <div class="integrations-section-info">
-                <div class="integrations-section-title">Por cliente <span class="client-context-pill" id="clientContextPill"><span id="clientContextEmoji">💰</span><span id="clientContextName">Arranca Financial</span></span></div>
+                <div class="integrations-section-title">Por cliente <span class="client-context-pill" id="clientContextPill"><span id="clientContextEmoji">👤</span><span id="clientContextName">Cargando...</span></span></div>
                 <div class="integrations-section-sub">Cada cliente tiene sus propias credenciales · cambia el cliente en el switcher de arriba</div>
               </div>
             </div>
@@ -4225,6 +4225,10 @@ async function loadClientSwitcher() {
       list.innerHTML = '<div style="padding:10px 16px;font-size:12px;color:var(--text-dim);">Sin clientes — usa Onboarding para agregar uno</div>';
       document.getElementById('clientName').textContent = 'Sin clientes';
       document.getElementById('clientAvatar').textContent = '👤';
+      const ctxName = document.getElementById('clientContextName');
+      const ctxEmoji = document.getElementById('clientContextEmoji');
+      if (ctxName) ctxName.textContent = 'Sin cliente seleccionado';
+      if (ctxEmoji) ctxEmoji.textContent = '👤';
       currentClient = null;
       return;
     }
