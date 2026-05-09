@@ -291,7 +291,9 @@ app.post('/api/portal/onboarding-new', async (req, res) => {
   const { nombre, industria, email, telefono, ciudad,
           whatsapp, asistente, idioma, tono, horario, wa_status,
           facebook, instagram, youtube, tiktok, website, google_business,
-          goals, presupuesto, notas, password } = req.body;
+          goals, presupuesto, notas, password,
+          q_descripcion, q_cliente_ideal, q_servicio, q_precio,
+          q_diferenciador, q_resultados, q_objecion, q_proceso_venta } = req.body;
   if (!email) return res.status(400).json({ ok: false, error: 'email requerido' });
   try {
     const newData = {
@@ -307,6 +309,16 @@ app.post('/api/portal/onboarding-new', async (req, res) => {
         goals: goals || [],
         presupuesto: presupuesto || '',
         notas: notas || ''
+      },
+      cuestionario: {
+        descripcion:   q_descripcion   || '',
+        cliente_ideal: q_cliente_ideal || '',
+        servicio:      q_servicio      || '',
+        precio:        q_precio        || '',
+        diferenciador: q_diferenciador || '',
+        resultados:    q_resultados    || '',
+        objecion:      q_objecion      || '',
+        proceso_venta: q_proceso_venta || ''
       }
     };
     // Check if email already exists → update instead of creating duplicate

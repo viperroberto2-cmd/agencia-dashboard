@@ -2046,10 +2046,11 @@ function goPortal(name) {
 // ============ WIZARD ============
 const wizardSteps = [
   { id: 1, key: 'business' },
-  { id: 2, key: 'goals' },
-  { id: 3, key: 'assistant' },
-  { id: 4, key: 'presence' },
-  { id: 5, key: 'review' }
+  { id: 2, key: 'questionnaire' },
+  { id: 3, key: 'goals' },
+  { id: 4, key: 'assistant' },
+  { id: 5, key: 'presence' },
+  { id: 6, key: 'review' }
 ];
 let currentStep = 1;
 const wizardData = { goals: [], step: 0 };
@@ -2057,7 +2058,6 @@ const wizardData = { goals: [], step: 0 };
 function resetWizard() { currentStep = 1; renderWizardStep(); }
 
 function captureStepData() {
-  const get = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
   if (currentStep === 1) {
     const inputs = document.querySelectorAll('#wizardContent input, #wizardContent select, #wizardContent textarea');
     wizardData.negocio   = inputs[0]?.value.trim() || '';
@@ -2066,14 +2066,23 @@ function captureStepData() {
     wizardData.email     = inputs[3]?.value.trim() || '';
     wizardData.telefono  = inputs[4]?.value.trim() || '';
     wizardData.ciudad    = inputs[5]?.value.trim() || '';
-    wizardData.notas     = inputs[7]?.value.trim() || '';
   }
-  if (currentStep === 3) {
+  if (currentStep === 2) {
+    wizardData.q_descripcion    = document.getElementById('q_descripcion')?.value.trim()    || '';
+    wizardData.q_cliente_ideal  = document.getElementById('q_cliente_ideal')?.value.trim()  || '';
+    wizardData.q_servicio       = document.getElementById('q_servicio')?.value.trim()       || '';
+    wizardData.q_precio         = document.getElementById('q_precio')?.value.trim()         || '';
+    wizardData.q_diferenciador  = document.getElementById('q_diferenciador')?.value.trim()  || '';
+    wizardData.q_resultados     = document.getElementById('q_resultados')?.value.trim()     || '';
+    wizardData.q_objecion       = document.getElementById('q_objecion')?.value.trim()       || '';
+    wizardData.q_proceso_venta  = document.getElementById('q_proceso_venta')?.value.trim()  || '';
+  }
+  if (currentStep === 4) {
     const inputs = document.querySelectorAll('#wizardContent input');
     wizardData.whatsapp  = inputs[0]?.value.trim() || '';
     wizardData.asistente = inputs[1]?.value.trim() || 'Sofía';
   }
-  if (currentStep === 4) {
+  if (currentStep === 5) {
     const inputs = document.querySelectorAll('#wizardContent input');
     wizardData.facebook  = inputs[0]?.value.trim() || '';
     wizardData.instagram = inputs[1]?.value.trim() || '';
@@ -2198,7 +2207,48 @@ function stepContent(step) {
       </div>
     </div>`;
 
-  if (step === 2) {
+  if (step === 2) return `
+    <div class="wizard-icon">🧠</div>
+    <h1 class="wizard-title">${es ? 'Cuéntanos cómo trabajas' : 'Tell us how you work'}</h1>
+    <p class="wizard-desc">${es ? 'Esta información le da contexto a tu agente de IA para crear campañas y mensajes que suenan exactamente como tú.' : 'This gives your AI agent context to create campaigns and messages that sound exactly like you.'}</p>
+    <div class="wizard-card">
+      <div class="field-group">
+        <label class="field-label">${es ? '¿Qué hace tu negocio? (2-3 frases)' : 'What does your business do? (2-3 sentences)'} <span class="field-required">*</span></label>
+        <textarea id="q_descripcion" class="field-textarea" placeholder="${es ? 'Ej: Ayudamos a familias hispanas a entender sus opciones financieras y construir crédito para comprar su primera casa o auto.' : 'Ex: We help Hispanic families understand their financial options and build credit to buy their first home or car.'}" oninput="wizardData.q_descripcion=this.value">${wizardData.q_descripcion||''}</textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? '¿A quién le vendes? (tu cliente ideal)' : 'Who do you sell to? (ideal client)'} <span class="field-required">*</span></label>
+        <textarea id="q_cliente_ideal" class="field-textarea" placeholder="${es ? 'Ej: Hispanos de 25-50 años en California, con trabajo estable pero sin historial crediticio, que quieren comprar un carro o refinanciar.' : 'Ex: Hispanics 25-50 in California, with stable jobs but no credit history, wanting to buy a car or refinance.'}" oninput="wizardData.q_cliente_ideal=this.value">${wizardData.q_cliente_ideal||''}</textarea>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">${es ? '¿Cuál es tu servicio o producto principal?' : 'What is your main service or product?'} <span class="field-required">*</span></label>
+          <input id="q_servicio" class="field-input" placeholder="${es ? 'Ej: Préstamos personales, consultoría de crédito' : 'Ex: Personal loans, credit counseling'}" value="${wizardData.q_servicio||''}" oninput="wizardData.q_servicio=this.value" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">${es ? '¿Cuánto cuesta?' : 'How much does it cost?'}</label>
+          <input id="q_precio" class="field-input" placeholder="${es ? 'Ej: $197/mes, desde $500, gratis' : 'Ex: $197/mo, from $500, free'}" value="${wizardData.q_precio||''}" oninput="wizardData.q_precio=this.value" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? '¿Por qué te eligen a ti y no a la competencia?' : 'Why do clients choose you over competitors?'} <span class="field-required">*</span></label>
+        <textarea id="q_diferenciador" class="field-textarea" placeholder="${es ? 'Ej: Hablamos español, sin letra chica, aprobamos a clientes que otros bancos rechazan, respuesta en menos de 24 hrs.' : 'Ex: We speak Spanish, no fine print, we approve clients other banks reject, response within 24 hrs.'}" oninput="wizardData.q_diferenciador=this.value">${wizardData.q_diferenciador||''}</textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? '¿Qué resultados logran tus clientes contigo?' : 'What results do your clients achieve with you?'}</label>
+        <textarea id="q_resultados" class="field-textarea" placeholder="${es ? 'Ej: El 80% mejora su score en 60 días. Muchos logran su primer préstamo en menos de 2 semanas.' : 'Ex: 80% improve their score in 60 days. Many get their first loan in under 2 weeks.'}" oninput="wizardData.q_resultados=this.value">${wizardData.q_resultados||''}</textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? '¿Cuál es la objeción más común que escuchas antes de cerrar?' : 'What is the most common objection before closing?'}</label>
+        <input id="q_objecion" class="field-input" placeholder="${es ? 'Ej: "Tengo mal crédito", "No tengo tiempo", "Es muy caro"' : 'Ex: "I have bad credit", "I don\'t have time", "It\'s too expensive"'}" value="${wizardData.q_objecion||''}" oninput="wizardData.q_objecion=this.value" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">${es ? '¿Cómo cierras una venta? (tu proceso)' : 'How do you close a sale? (your process)'}</label>
+        <textarea id="q_proceso_venta" class="field-textarea" placeholder="${es ? 'Ej: El cliente llena un form → llamada de 15 min → propuesta por email → firma en DocuSign. Normalmente cierra en 3-5 días.' : 'Ex: Client fills form → 15-min call → proposal by email → sign on DocuSign. Usually closes in 3-5 days.'}" oninput="wizardData.q_proceso_venta=this.value">${wizardData.q_proceso_venta||''}</textarea>
+      </div>
+    </div>`;
+
+  if (step === 3) {
     const goals = es ? [
       { id: 'leads', icon: '🎯', label: 'Nuevos pacientes / leads' },
       { id: 'followup', icon: '🔁', label: 'Follow-ups automáticos' },
@@ -2244,7 +2294,7 @@ function stepContent(step) {
     </div>`;
   }
 
-  if (step === 3) return `
+  if (step === 4) return `
     <div class="wizard-icon">💚</div>
     <h1 class="wizard-title">${es ? 'Tu asistente virtual' : 'Your virtual assistant'}</h1>
     <p class="wizard-desc">${es ? 'Configuraremos un asistente dedicado que responde a tus pacientes en WhatsApp 24/7 desde tu propio número.' : 'We will set up a dedicated assistant that answers your patients on WhatsApp 24/7 from your own business number.'}</p>
@@ -2297,7 +2347,7 @@ function stepContent(step) {
       </div>
     </div>`;
 
-  if (step === 4) return `
+  if (step === 5) return `
     <div class="wizard-icon">🌐</div>
     <h1 class="wizard-title">${es ? 'Tu presencia online' : 'Your online presence'}</h1>
     <p class="wizard-desc">${es ? 'Comparte tus handles y analizaremos qué está funcionando. Salta lo que no tengas — te ayudamos a construirlo.' : 'Share your handles and we will analyze what is working. Skip anything you do not have - we will help you build it.'}</p>
@@ -2328,7 +2378,7 @@ function stepContent(step) {
       </div>
     </div>`;
 
-  if (step === 5) return `
+  if (step === 6) return `
     <div class="wizard-icon">✓</div>
     <h1 class="wizard-title">${es ? 'Revisa tu información' : 'Review your information'}</h1>
     <p class="wizard-desc">${es ? '¿Todo se ve correcto? Una vez enviado, nuestro equipo te contacta en 24 horas.' : 'Everything look correct? Once submitted our team will be in touch within 24 hours.'}</p>
