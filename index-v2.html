@@ -2304,6 +2304,7 @@ function goSection(name) {
   if (name === 'grabaciones') loadRecordingsFromAPI();
   if (name === 'scraper')   { loadScraperStats(); loadScraperLogs(); }
   if (name === 'config')    { loadConfigClientes(); loadPortalUsers(); }
+  if (name === 'onboarding') { renderStepper(); renderStepContent(); }
   closeAllDropdowns();
   if (document.getElementById('drawer').classList.contains('open')) toggleDrawer();
 }
