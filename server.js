@@ -256,6 +256,111 @@ app.post('/api/auth/set-password', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+// ── CONTENT QUEUE ─────────────────────────────────────────────────────────────
+const { randomUUID } = require('crypto');
+
+async function getClientData(user_id) {
+  const r = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data`);
+  const rows = await r.json();
+  return (Array.isArray(rows) && rows[0]?.data) || {};
+}
+async function patchClientData(user_id, newData) {
+  await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ data: newData }),
+    headers: { 'Prefer': 'return=minimal' }
+  });
+}
+
+// POST /api/content/queue — bot adds content item to client queue
+app.post('/api/content/queue', async (req, res) => {
+  const { user_id, platform, text, image_url, page_id } = req.body || {};
+  if (!user_id || !text) return res.status(400).json({ ok: false, error: 'user_id y text requeridos' });
+  try {
+    const d = await getClientData(user_id);
+    const queue = Array.isArray(d.content_queue) ? d.content_queue : [];
+    const requires_approval = d.configuracion?.requires_approval !== false; // default: requires approval
+    const item = {
+      id: randomUUID(), platform: platform || 'facebook', text, image_url: image_url || null,
+      page_id: page_id || (d.facebook_pages?.[0]?.id) || null,
+      status: requires_approval ? 'pending' : 'auto',
+      created_at: new Date().toISOString()
+    };
+    queue.unshift(item);
+    await patchClientData(user_id, { ...d, content_queue: queue.slice(0, 100) });
+    // Auto-publish if not requires approval and token exists
+    if (!requires_approval && d.facebook_pages?.length) {
+      await publishToFacebook(item, d);
+    }
+    res.json({ ok: true, item });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// GET /api/content/queue/:user_id — get queue for portal/dashboard
+app.get('/api/content/queue/:user_id', async (req, res) => {
+  try {
+    const d = await getClientData(req.params.user_id);
+    res.json({ ok: true, queue: d.content_queue || [], requires_approval: d.configuracion?.requires_approval !== false });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// POST /api/content/approve/:user_id/:item_id — client approves, auto-publishes
+app.post('/api/content/approve/:user_id/:item_id', async (req, res) => {
+  try {
+    const d = await getClientData(req.params.user_id);
+    const queue = Array.isArray(d.content_queue) ? d.content_queue : [];
+    const item  = queue.find(i => i.id === req.params.item_id);
+    if (!item) return res.status(404).json({ ok: false, error: 'Item no encontrado' });
+    item.status = 'approved';
+    // Try to publish
+    const result = await publishToFacebook(item, d);
+    if (result.ok) { item.status = 'published'; item.published_at = new Date().toISOString(); item.post_id = result.post_id; }
+    await patchClientData(req.params.user_id, { ...d, content_queue: queue });
+    res.json({ ok: true, published: result.ok, item });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// POST /api/content/reject/:user_id/:item_id
+app.post('/api/content/reject/:user_id/:item_id', async (req, res) => {
+  const { reason } = req.body || {};
+  try {
+    const d = await getClientData(req.params.user_id);
+    const queue = Array.isArray(d.content_queue) ? d.content_queue : [];
+    const item  = queue.find(i => i.id === req.params.item_id);
+    if (!item) return res.status(404).json({ ok: false, error: 'Item no encontrado' });
+    item.status = 'rejected'; item.reject_reason = reason || '';
+    await patchClientData(req.params.user_id, { ...d, content_queue: queue });
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+async function publishToFacebook(item, clientData) {
+  const pages = clientData.facebook_pages || [];
+  const page = pages.find(p => p.id === item.page_id) || pages[0];
+  if (!page?.token) return { ok: false, error: 'No hay página de Facebook conectada' };
+  try {
+    const endpoint = item.platform === 'instagram' && clientData.instagram_accounts?.length
+      ? `https://graph.facebook.com/v19.0/${clientData.instagram_accounts[0].id}/media`
+      : `https://graph.facebook.com/v19.0/${page.id}/feed`;
+    const body = item.platform === 'instagram'
+      ? { caption: item.text, ...(item.image_url ? { image_url: item.image_url, media_type: 'IMAGE' } : {}), access_token: page.token }
+      : { message: item.text, ...(item.image_url ? { link: item.image_url } : {}), access_token: page.token };
+    const r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await r.json();
+    if (data.error) return { ok: false, error: data.error.message };
+    // For Instagram, need a second call to publish
+    if (item.platform === 'instagram' && data.id) {
+      const pub = await fetch(`https://graph.facebook.com/v19.0/${clientData.instagram_accounts[0].id}/media_publish`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ creation_id: data.id, access_token: page.token })
+      });
+      const pubData = await pub.json();
+      return { ok: !pubData.error, post_id: pubData.id };
+    }
+    return { ok: true, post_id: data.id };
+  } catch(e) { return { ok: false, error: e.message }; }
+}
+
 // ── Portal cliente — datos reales filtrados por user_id ──────────────────────
 app.get('/api/portal/leads', async (req, res) => {
   const { user_id } = req.query;

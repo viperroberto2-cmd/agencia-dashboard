@@ -1478,6 +1478,7 @@ input, textarea, select { font-family: inherit; }
         <button class="nav-item" data-section="leads" onclick="goPortal('leads')"><span class="nav-icon">👥</span><span data-i18n="nav.leads">Mis leads</span><span class="nav-count alert" id="sidebarLeadsCount"></span></button>
         <button class="nav-item" data-section="appointments" onclick="goPortal('appointments')"><span class="nav-icon">📅</span><span data-i18n="nav.appts">Citas</span><span class="nav-count" id="sidebarApptsCount"></span></button>
         <button class="nav-item" data-section="messages" onclick="goPortal('messages')"><span class="nav-icon">💬</span><span data-i18n="nav.messages">Mensajes</span><span class="nav-count alert" id="sidebarMsgsCount"></span></button>
+        <button class="nav-item" data-section="content" onclick="goPortal('content')"><span class="nav-icon">📢</span><span>Contenido</span><span class="nav-count alert" id="sidebarContentCount" style="display:none"></span></button>
       </div>
       <div class="nav-section">
         <div class="nav-label" data-i18n="nav.account">Cuenta</div>
@@ -1773,12 +1774,22 @@ input, textarea, select { font-family: inherit; }
       </div>
     </section>
 
+    <!-- ── CONTENIDO ──────────────────────────────────────────────── -->
+    <section class="section" id="portal-content">
+      <div class="section-header">
+        <div><div class="section-title">📢 Contenido</div><div class="section-subtitle">Posts preparados por tu agencia — revisa y aprueba antes de publicar</div></div>
+      </div>
+      <div style="padding:0 24px 32px" id="contentQueueContainer">
+        <div style="text-align:center;padding:40px 0;color:var(--text-muted)">Cargando contenido...</div>
+      </div>
+    </section>
+
   </main>
 
   <nav class="bottombar">
     <button class="tab-btn active" data-section="home" onclick="goPortal('home')"><span class="tab-icon">🏠</span><span data-i18n="nav.home">Inicio</span></button>
     <button class="tab-btn" data-section="leads" onclick="goPortal('leads')"><span class="tab-icon">👥</span><span data-i18n="nav.leads">Leads</span><span class="tab-badge" id="portalLeadsBadge"></span></button>
-    <button class="tab-btn" data-section="appointments" onclick="goPortal('appointments')"><span class="tab-icon">📅</span><span data-i18n="nav.apptsShort">Citas</span></button>
+    <button class="tab-btn" data-section="content" onclick="goPortal('content');loadContentQueue()"><span class="tab-icon">📢</span><span>Contenido</span><span class="tab-badge" id="portalContentBadge" style="display:none"></span></button>
     <button class="tab-btn" data-section="messages" onclick="goPortal('messages')"><span class="tab-icon">💬</span><span data-i18n="nav.msg">Mensajes</span><span class="tab-badge" id="portalMsgBadge"></span></button>
     <button class="tab-btn" data-section="settings" onclick="goPortal('settings')"><span class="tab-icon">⚙️</span><span data-i18n="nav.more">Más</span></button>
   </nav>
@@ -2493,6 +2504,81 @@ function sendPortalMessage() {
 document.getElementById('msgInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPortalMessage(); }
 });
+
+// ============ CONTENT QUEUE ============
+async function loadContentQueue() {
+  if (!portalClient?.user_id) return;
+  const el = document.getElementById('contentQueueContainer');
+  if (!el) return;
+  try {
+    const r = await fetch(`/api/content/queue/${portalClient.user_id}`);
+    const d = await r.json();
+    const queue = d.queue || [];
+    const pending = queue.filter(i => i.status === 'pending');
+    // Update badge
+    const badge = document.getElementById('portalContentBadge');
+    const sideBadge = document.getElementById('sidebarContentCount');
+    if (badge) { badge.textContent = pending.length || ''; badge.style.display = pending.length ? '' : 'none'; }
+    if (sideBadge) { sideBadge.textContent = pending.length || ''; sideBadge.style.display = pending.length ? '' : 'none'; }
+    if (!queue.length) {
+      el.innerHTML = `<div style="text-align:center;padding:48px 0">
+        <div style="font-size:40px;margin-bottom:12px">📭</div>
+        <div style="font-weight:600;margin-bottom:6px">Sin contenido pendiente</div>
+        <div style="color:var(--text-muted);font-size:13px">Tu agencia enviará posts para que los revises aquí.</div>
+      </div>`;
+      return;
+    }
+    const statusLabel = { pending: '⏳ Pendiente de aprobación', approved: '✅ Aprobado', published: '🚀 Publicado', rejected: '❌ Rechazado', auto: '⚡ Auto-publicado' };
+    const statusColor = { pending: '#f59e0b', approved: '#10b981', published: '#6366f1', rejected: '#ef4444', auto: '#10b981' };
+    el.innerHTML = queue.map(item => `
+      <div style="background:var(--card-bg,#fff);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="font-size:18px">${item.platform === 'instagram' ? '📸' : '📘'}</span>
+          <span style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted)">${item.platform}</span>
+          <span style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:${statusColor[item.status]}22;color:${statusColor[item.status]}">${statusLabel[item.status] || item.status}</span>
+        </div>
+        ${item.image_url ? `<img src="${item.image_url}" style="width:100%;border-radius:8px;margin-bottom:12px;max-height:220px;object-fit:cover" />` : ''}
+        <div style="font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:12px">${item.text}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:${item.status === 'pending' ? '14px' : '0'}">${new Date(item.created_at).toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' })}</div>
+        ${item.status === 'pending' ? `
+        <div style="display:flex;gap:8px">
+          <button onclick="approveContent('${item.id}')" style="flex:2;padding:10px;border-radius:10px;border:none;background:#10b981;color:#fff;font-weight:700;font-size:13px;cursor:pointer">✅ Aprobar y publicar</button>
+          <button onclick="rejectContent('${item.id}')" style="flex:1;padding:10px;border-radius:10px;border:1px solid #ef4444;background:none;color:#ef4444;font-weight:600;font-size:13px;cursor:pointer">Rechazar</button>
+        </div>` : ''}
+        ${item.status === 'published' ? `<div style="font-size:11px;color:#10b981">Publicado ${item.published_at ? new Date(item.published_at).toLocaleDateString('es-MX') : ''}</div>` : ''}
+      </div>`).join('');
+  } catch(e) { console.warn('loadContentQueue:', e); }
+}
+
+async function approveContent(itemId) {
+  if (!portalClient?.user_id) return;
+  const btn = event.target;
+  btn.textContent = 'Publicando...'; btn.disabled = true;
+  try {
+    const r = await fetch(`/api/content/approve/${portalClient.user_id}/${itemId}`, { method: 'POST' });
+    const d = await r.json();
+    if (d.published) {
+      btn.textContent = '🚀 ¡Publicado!';
+      setTimeout(() => loadContentQueue(), 1200);
+    } else {
+      btn.textContent = d.item?.status === 'approved' ? '✅ Aprobado (sin token FB)' : '❌ Error';
+      btn.disabled = false;
+      setTimeout(() => loadContentQueue(), 2000);
+    }
+  } catch(e) { btn.textContent = 'Error'; btn.disabled = false; }
+}
+
+async function rejectContent(itemId) {
+  const reason = prompt('¿Por qué rechazas este contenido? (opcional)') ?? '';
+  if (reason === null) return;
+  try {
+    await fetch(`/api/content/reject/${portalClient.user_id}/${itemId}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason })
+    });
+    loadContentQueue();
+  } catch(e) { console.warn('rejectContent:', e); }
+}
 
 // ============ INIT ============
 renderWizardStep();

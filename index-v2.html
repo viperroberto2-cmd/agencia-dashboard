@@ -4365,6 +4365,18 @@ async function abrirEditarCliente(userId) {
         </div>
         <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Precio de producto ($)</label>
           <input id="ec_precio" class="field-input" type="number" value="${c.precio_producto||''}" placeholder="197" /></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:10px;margin-top:4px">
+          <div>
+            <div style="font-size:13px;font-weight:600">Requiere aprobación antes de publicar</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Clientes como abogados revisan el contenido antes de que salga</div>
+          </div>
+          <label style="position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0;margin-left:12px">
+            <input type="checkbox" id="ec_requires_approval" style="opacity:0;width:0;height:0" ${conf.requires_approval !== false ? 'checked' : ''}>
+            <span onclick="document.getElementById('ec_requires_approval').click()" style="position:absolute;cursor:pointer;inset:0;background:${conf.requires_approval !== false ? 'var(--accent)' : 'var(--border)'};border-radius:24px;transition:.2s">
+              <span style="position:absolute;left:${conf.requires_approval !== false ? '22px' : '2px'};top:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s"></span>
+            </span>
+          </label>
+        </div>
       </div>
 
       <!-- TAB: Perfil de negocio -->
@@ -4415,7 +4427,8 @@ async function guardarEditarCliente(userId) {
       ...(_editClienteData?.configuracion || {}),
       asistente_nombre: g('ec_asistente'),
       idioma:  document.getElementById('ec_idioma')?.value  || 'bilingue',
-      horario: document.getElementById('ec_horario')?.value || '24/7'
+      horario: document.getElementById('ec_horario')?.value || '24/7',
+      requires_approval: document.getElementById('ec_requires_approval')?.checked ?? true
     },
     cuestionario: {
       descripcion:   g('ec_q_desc'),
