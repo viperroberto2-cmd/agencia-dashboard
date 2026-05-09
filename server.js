@@ -792,20 +792,30 @@ app.post('/api/clientes/crear', async (req, res) => {
             objetivo, presupuesto_ads, mensaje_principal, agents } = req.body;
     if (!nombre) return res.status(400).json({ ok: false, error: 'nombre requerido' });
     const user_id = nombre.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    const clienteData = {
+      ...(agents         ? { agentes_asignados: agents } : {}),
+      ...(heygen_avatar_id ? { heygen_avatar_id } : {}),
+      ...(heygen_voice_id  ? { heygen_voice_id }  : {}),
+      ...(whatsapp_option  ? { whatsapp_option }   : {}),
+      ...(respond_io_key   ? { respond_io_key }    : {}),
+      ...(whatsapp_number  ? { whatsapp_number }   : {}),
+      ...(inbox_channel_id ? { inbox_channel_id }  : {}),
+      ...(integrations     ? { integrations }      : {}),
+      ...(objetivo         ? { objetivo }          : {}),
+      ...(presupuesto_ads  ? { presupuesto_ads }   : {}),
+      ...(mensaje_principal? { mensaje_principal } : {}),
+      ...(tiktok_token     ? { tiktok_token }      : {}),
+      ...(linkedin_token   ? { linkedin_token }    : {}),
+      ...(youtube_token    ? { youtube_token }     : {}),
+      ...(pinterest_token  ? { pinterest_token }   : {}),
+      ...(twitter_token    ? { twitter_token }     : {}),
+    };
     const r = await sbFetch('/clientes', {
       method: 'POST',
       body: JSON.stringify({
         user_id, nombre, industria, email, telefono,
         precio_producto: precio_producto || 197,
-        whatsapp_option, respond_io_key, whatsapp_number, inbox_channel_id,
-        tiktok_token, linkedin_token, youtube_token, pinterest_token, twitter_token,
-        heygen_avatar_id: heygen_avatar_id || null,
-        heygen_voice_id: heygen_voice_id || null,
-        integrations: integrations ? JSON.stringify(integrations) : null,
-        objetivo: objetivo || null,
-        presupuesto_ads: presupuesto_ads || null,
-        mensaje_principal: mensaje_principal || null,
-        data: agents ? JSON.stringify({ agentes_asignados: agents }) : null
+        data: Object.keys(clienteData).length ? clienteData : null
       }),
       headers: { 'Prefer': 'return=representation' }
     });
