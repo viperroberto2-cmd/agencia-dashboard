@@ -2209,7 +2209,7 @@ input, textarea { font-family: inherit; }
     <div class="nav-section">
       <div class="nav-label">Principal</div>
       <button class="nav-item" data-section="home" onclick="goSection('home'); toggleDrawer()"><span class="nav-icon">🏠</span> Home</button>
-      <button class="nav-item" data-section="inbox" onclick="goSection('inbox'); toggleDrawer()"><span class="nav-icon">📥</span> Inbox<span class="nav-count alert">3</span></button>
+      <button class="nav-item" data-section="inbox" onclick="goSection('inbox'); toggleDrawer()"><span class="nav-icon">📥</span> Inbox<span class="nav-count alert" id="drawerInboxCount"></span></button>
       <button class="nav-item" data-section="chat" onclick="goSection('chat'); toggleDrawer()"><span class="nav-icon">💬</span> Chat</button>
       <button class="nav-item" data-section="equipo" onclick="goSection('equipo'); toggleDrawer()"><span class="nav-icon">🤖</span> Equipo</button>
     </div>
@@ -2573,7 +2573,7 @@ function renderInbox() {
   if (inboxFilter === 'unread') items = items.filter(i => i.unread);
   else if (inboxFilter !== 'all') items = items.filter(i => i.channel === inboxFilter);
   document.getElementById('inboxList').innerHTML = items.map(i => `
-    <button class="inbox-item ${i.unread ? 'unread' : ''}" onclick="alert('Abriendo conversación con ${i.from}...')">
+    <button class="inbox-item ${i.unread ? 'unread' : ''}">
       <div class="inbox-channel-icon">${i.icon}</div>
       <div class="inbox-content">
         <div class="inbox-top">
@@ -2582,7 +2582,7 @@ function renderInbox() {
         </div>
         <div class="inbox-preview">${i.preview}</div>
         <div class="inbox-tags">
-          <span class="inbox-tag client">${i.client === 'arranca' ? '💰 Arranca' : '💊 Sofía'}</span>
+          <span class="inbox-tag client">${i.client || '—'}</span>
           <span class="inbox-tag">${i.channel}</span>
         </div>
       </div>
@@ -3194,7 +3194,7 @@ async function nextStep() {
 }
 function resetOnboarding() {
   currentStep = 1;
-  Object.assign(onboardingData, { nombre:'', industria:'', email:'', telefono:'', precio_producto:'', descripcion:'', whatsapp_option:'', respond_io_key:'', whatsapp_number:'', heygen_avatar_id:'', heygen_voice_id:'', objetivo:'', presupuesto_ads:'', mensaje_principal:'', redes:[], channels:[], agents:[], integrations:[] });
+  Object.assign(onboardingData, { nombre:'', industria:'', email:'', telefono:'', precio_producto:'', descripcion:'', whatsapp_option:'', respond_io_key:'', whatsapp_number:'', heygen_avatar_id:'', heygen_voice_id:'', objetivo:'', presupuesto_ads:'', mensaje_principal:'', fb_page_id:'', ig_account_id:'', youtube_refresh_token:'', tiktok_token:'', linkedin_token:'', pinterest_token:'', twitter_token:'', redes:[], channels:[], agents:[], integrations:[] });
   renderStepper(); renderStepContent();
 }
 
@@ -3826,6 +3826,8 @@ async function loadInboxFromSupabase() {
     const unread = inboxItems.filter(i => i.unread).length;
     document.getElementById('tabInboxCount').textContent = unread || '';
     document.getElementById('navInboxCount').textContent = unread || '';
+    const drawerCount = document.getElementById('drawerInboxCount');
+    if (drawerCount) drawerCount.textContent = unread || '';
   } catch(e) { /* keep current inboxItems */ }
 }
 
@@ -4271,8 +4273,14 @@ async function loadConfigClientes() {
     }
     el.innerHTML = d.clientes.map(c => {
       const emoji = SECTOR_EMOJI[c.industria] || '🏢';
-      const tags = [c.whatsapp_option, c.tiktok_token ? 'TikTok' : null, c.linkedin_token ? 'LinkedIn' : null,
-                    c.youtube_token ? 'YouTube' : null].filter(Boolean);
+      const tags = [
+        c.data?.whatsapp_option || c.whatsapp_option,
+        c.data?.tiktok_token   ? 'TikTok'   : null,
+        c.data?.linkedin_token ? 'LinkedIn'  : null,
+        c.data?.youtube_refresh_token ? 'YouTube' : null,
+        c.data?.ig_account_id  ? 'Instagram' : null,
+        c.data?.facebook_pages?.length ? 'Facebook' : null,
+      ].filter(Boolean);
       return `<div class="client-row">
         <div class="client-icon">${emoji}</div>
         <div class="client-info">
@@ -4310,9 +4318,9 @@ async function abrirEditarCliente(userId) {
   overlay.style.display = 'flex';
   content.innerHTML = '<div style="padding:32px 0;text-align:center;color:var(--text-dim)">Cargando...</div>';
   try {
-    const res = await fetch('/api/clientes');
+    const res = await fetch(`/api/clientes/${encodeURIComponent(userId)}`);
     const d = await res.json();
-    const c = (d.clientes || []).find(x => x.user_id === userId);
+    const c = d.cliente;
     if (!c) { content.innerHTML = '<div style="color:var(--danger)">Cliente no encontrado.</div>'; return; }
     _editClienteData = { ...c };
     const redes = c.redes_sociales ? (typeof c.redes_sociales === 'string' ? JSON.parse(c.redes_sociales) : c.redes_sociales) : {};
@@ -4376,7 +4384,7 @@ async function abrirEditarCliente(userId) {
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">El cliente te agrega como Editor en su Facebook Page → tú abres <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:var(--accent)">Graph API Explorer</a> → generas el page token y lo pegas aquí.</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Facebook Page ID</label>
-            <input id="ec_fb_page_id" class="field-input" placeholder="123456789" value="${c.data?.facebook_pages?.[0]?.id||''}" /></div>
+            <input id="ec_fb_page_id" class="field-input" placeholder="123456789" value="${c.data?.facebook_pages?.[0]?.id || c.data?.fb_page_id || ''}" /></div>
           <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Page Access Token</label>
             <input id="ec_fb_page_token" class="field-input" placeholder="EAAxxxxxx..." value="${c.data?.facebook_pages?.[0]?.token||''}" /></div>
         </div>

@@ -406,7 +406,11 @@ app.post('/api/content/reject/:user_id/:item_id', async (req, res) => {
 
 async function publishToFacebook(item, clientData) {
   const pages = clientData.facebook_pages || [];
-  const page = pages.find(p => p.id === item.page_id) || pages[0];
+  let page = pages.find(p => p.id === item.page_id) || pages[0];
+  // Fall back to global FB_USER_TOKEN + stored fb_page_id (manual token setup)
+  if (!page?.token && clientData.fb_page_id && process.env.FB_USER_TOKEN) {
+    page = { id: clientData.fb_page_id, token: process.env.FB_USER_TOKEN };
+  }
   if (!page?.token) return { ok: false, error: 'No hay página de Facebook conectada' };
   try {
     const endpoint = item.platform === 'instagram' && clientData.instagram_accounts?.length
@@ -780,6 +784,16 @@ app.get('/api/clientes', async (req, res) => {
     const data = await r.json();
     const rows = Array.isArray(data) ? data.filter(c => c.user_id !== 'ms_jobs_dashboard') : [];
     res.json({ ok: true, clientes: rows.map(_mergeDataCol) });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
+app.get('/api/clientes/:user_id', async (req, res) => {
+  try {
+    const r = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(req.params.user_id)}&select=*`);
+    const data = await r.json();
+    const row = Array.isArray(data) ? data[0] : null;
+    if (!row) return res.json({ ok: false, error: 'Cliente no encontrado' });
+    res.json({ ok: true, cliente: _mergeDataCol(row) });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
