@@ -4294,6 +4294,7 @@ async function abrirEditarCliente(userId) {
     _editClienteData = { ...c };
     const redes = c.redes_sociales ? (typeof c.redes_sociales === 'string' ? JSON.parse(c.redes_sociales) : c.redes_sociales) : {};
     const conf  = c.configuracion   ? (typeof c.configuracion   === 'string' ? JSON.parse(c.configuracion)   : c.configuracion)   : {};
+    const q     = (c.data?.cuestionario) || {};
     content.innerHTML = `
       <div style="font-size:17px;font-weight:700;margin-bottom:4px;">✏️ Editar cliente</div>
       <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">${c.nombre}</div>
@@ -4341,6 +4342,21 @@ async function abrirEditarCliente(userId) {
         </div>
         <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Precio de producto ($)</label>
           <input id="ec_precio" class="field-input" type="number" value="${c.precio_producto||''}" placeholder="197" /></div>
+        ${Object.keys(q).some(k => q[k]) ? `
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-top:16px;margin-bottom:8px">🧠 Perfil de negocio (llenado por el cliente)</div>
+        <div style="background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:12px;padding:14px;display:grid;gap:10px">
+          ${q.descripcion    ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">¿Qué hace?</div><div style="font-size:13px">${q.descripcion}</div></div>` : ''}
+          ${q.cliente_ideal  ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Cliente ideal</div><div style="font-size:13px">${q.cliente_ideal}</div></div>` : ''}
+          ${q.servicio       ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Servicio principal</div><div style="font-size:13px">${q.servicio}</div></div>${q.precio?`<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Precio</div><div style="font-size:13px">${q.precio}</div></div>`:''}` : ''}
+          ${q.diferenciador  ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">¿Por qué te eligen?</div><div style="font-size:13px">${q.diferenciador}</div></div>` : ''}
+          ${q.resultados     ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Resultados que logran</div><div style="font-size:13px">${q.resultados}</div></div>` : ''}
+          ${q.objecion       ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Objeción más común</div><div style="font-size:13px">${q.objecion}</div></div>` : ''}
+          ${q.proceso_venta  ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Proceso de venta</div><div style="font-size:13px">${q.proceso_venta}</div></div>` : ''}
+        </div>` : `
+        <div style="margin-top:12px;padding:12px;background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.2);border-radius:10px;font-size:12px;color:var(--text-muted)">
+          ⚠️ El cliente aún no ha completado su cuestionario de negocio.
+          <button onclick="navigator.clipboard.writeText('https://web-production-3d2c.up.railway.app/portal?email=${encodeURIComponent(c.email||'')}&nuevo=1');this.textContent='✓ Copiado!';setTimeout(()=>this.textContent='📋 Copiar link de onboarding',2000)" style="display:block;margin-top:8px;width:100%;padding:7px;border-radius:8px;border:1px solid rgba(255,193,7,.3);background:none;color:var(--text);font-size:12px;cursor:pointer">📋 Copiar link de onboarding</button>
+        </div>`}
         <div id="editClienteError" style="display:none;color:var(--danger);font-size:12px;padding:8px 12px;background:rgba(239,68,68,.08);border-radius:8px"></div>
         <div style="display:flex;gap:8px;margin-top:8px">
           <button class="btn btn-ghost" style="flex:1" onclick="cerrarEditarCliente()">Cancelar</button>
