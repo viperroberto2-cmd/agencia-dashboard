@@ -2103,9 +2103,43 @@ function captureStepData() {
   }
 }
 
+function _wizardError(msg) {
+  let el = document.getElementById('wizardError');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'wizardError';
+    el.style.cssText = 'color:#ef4444;font-size:13px;padding:10px 14px;background:rgba(239,68,68,.08);border-radius:8px;margin-top:10px;border:1px solid rgba(239,68,68,.25)';
+    const content = document.getElementById('wizardContent');
+    if (content) content.parentNode.insertBefore(el, content.nextSibling);
+  }
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function _wizardClearError() {
+  const el = document.getElementById('wizardError');
+  if (el) el.style.display = 'none';
+}
+
 async function nextStep() {
   captureStepData();
+
+  // Validación por paso
+  const es = currentLang === 'es';
+  if (currentStep === 1) {
+    if (!wizardData.negocio?.trim()) return _wizardError(es ? 'Ingresa el nombre de tu negocio.' : 'Enter your business name.');
+    if (!wizardData.email?.trim())   return _wizardError(es ? 'Ingresa tu email.' : 'Enter your email.');
+    if (!wizardData.password || wizardData.password.length < 6) return _wizardError(es ? 'La contraseña debe tener al menos 6 caracteres.' : 'Password must be at least 6 characters.');
+  }
+  if (currentStep === 2) {
+    if (!wizardData.q_descripcion?.trim())   return _wizardError(es ? '¿Qué hace tu negocio? Es obligatorio.' : 'Business description is required.');
+    if (!wizardData.q_cliente_ideal?.trim()) return _wizardError(es ? '¿A quién le vendes? Es obligatorio.' : 'Ideal client is required.');
+    if (!wizardData.q_servicio?.trim())      return _wizardError(es ? 'Ingresa tu servicio o producto principal.' : 'Enter your main service or product.');
+    if (!wizardData.q_diferenciador?.trim()) return _wizardError(es ? '¿Por qué te eligen a ti? Es obligatorio.' : 'Your differentiator is required.');
+  }
+
   if (currentStep < wizardSteps.length) {
+    _wizardClearError();
     currentStep++;
     renderWizardStep();
   } else {
