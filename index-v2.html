@@ -4455,7 +4455,9 @@ async function eliminarCliente(userId, nombre) {
     const res = await fetch(`/api/clientes/${userId}`, { method: 'DELETE' });
     const d = await res.json();
     if (!d.ok) { alert('Error: ' + (d.error || 'No se pudo eliminar')); return; }
+    currentClient = null;
     loadConfigClientes();
+    loadClientSwitcher();
   } catch(e) { alert('Error de conexión.'); }
 }
 
