@@ -1756,8 +1756,8 @@ input, textarea, select { font-family: inherit; }
             </div>
             <div id="fb-connect-area" style="display:flex;align-items:center;gap:8px">
               <span id="fb-status-badge" class="setting-status" style="display:none"></span>
-              <button id="fb-connect-btn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="connectFacebook()">Conectar →</button>
-              <button id="fb-disconnect-btn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px;color:#ef4444;display:none" onclick="disconnectFacebook()">Desconectar</button>
+              <div id="fb-connected-badge" style="display:none;font-size:12px;color:#10b981;font-weight:600">✓ Conectado</div>
+              <div id="fb-pending-msg" style="font-size:12px;color:var(--text-muted);max-width:220px;text-align:right;line-height:1.4">Tu asesor te guiará para activar la publicación automática</div>
             </div>
           </div>
 
@@ -3170,15 +3170,13 @@ function populateSocialStatus(d) {
   const igAccounts = data.instagram_accounts || [];
 
   // Facebook
-  const fbConnected = !!data.facebook_token && pages.length > 0;
+  const fbConnected = pages.length > 0 && !!pages[0]?.token;
   const fbName = pages[0]?.name || '';
   document.getElementById('set-facebook').textContent = fbConnected ? fbName : '—';
-  const fbBadge = document.getElementById('fb-status-badge');
-  const fbBtn   = document.getElementById('fb-connect-btn');
-  const fbDisc  = document.getElementById('fb-disconnect-btn');
-  if (fbBadge) { fbBadge.textContent = fbConnected ? '● Conectado' : ''; fbBadge.style.display = fbConnected ? '' : 'none'; fbBadge.className = 'setting-status ' + (fbConnected ? 'connected' : ''); }
-  if (fbBtn)  fbBtn.style.display  = fbConnected ? 'none' : '';
-  if (fbDisc) fbDisc.style.display = fbConnected ? '' : 'none';
+  const fbConnectedBadge = document.getElementById('fb-connected-badge');
+  const fbPendingMsg     = document.getElementById('fb-pending-msg');
+  if (fbConnectedBadge) fbConnectedBadge.style.display = fbConnected ? '' : 'none';
+  if (fbPendingMsg)     fbPendingMsg.style.display     = fbConnected ? 'none' : '';
 
   // Instagram
   const igConnected = igAccounts.length > 0;
