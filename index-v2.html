@@ -4281,6 +4281,18 @@ async function loadConfigClientes() {
 
 let _editClienteData = null;
 
+function _ecTab(tab) {
+  ['ec-tab-config','ec-tab-q'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id === `ec-tab-${tab}` ? '' : 'none';
+  });
+  ['ec-btn-config','ec-btn-q'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = id === `ec-btn-${tab}`
+      ? 'btn btn-primary' : 'btn btn-ghost';
+  });
+}
+
 async function abrirEditarCliente(userId) {
   const overlay = document.getElementById('editClienteOverlay');
   const content = document.getElementById('editClienteContent');
@@ -4295,11 +4307,18 @@ async function abrirEditarCliente(userId) {
     const redes = c.redes_sociales ? (typeof c.redes_sociales === 'string' ? JSON.parse(c.redes_sociales) : c.redes_sociales) : {};
     const conf  = c.configuracion   ? (typeof c.configuracion   === 'string' ? JSON.parse(c.configuracion)   : c.configuracion)   : {};
     const q     = (c.data?.cuestionario) || {};
+    const hasQ  = Object.values(q).some(v => v);
     content.innerHTML = `
       <div style="font-size:17px;font-weight:700;margin-bottom:4px;">✏️ Editar cliente</div>
-      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">${c.nombre}</div>
-      <div style="display:grid;gap:14px">
-        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">WhatsApp y asistente</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">${c.nombre}</div>
+      <div style="display:flex;gap:8px;margin-bottom:18px;">
+        <button id="ec-btn-config" class="btn btn-primary" onclick="_ecTab('config')">⚙️ Configuración</button>
+        <button id="ec-btn-q" class="btn btn-ghost" onclick="_ecTab('q')">🧠 Perfil de negocio ${hasQ ? '' : '⚠️'}</button>
+      </div>
+
+      <!-- TAB: Configuración -->
+      <div id="ec-tab-config" style="display:grid;gap:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em">WhatsApp y asistente</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Número WhatsApp</label>
             <input id="ec_whatsapp" class="field-input" placeholder="+1 (714) 000-0000" value="${c.whatsapp_number||''}" /></div>
@@ -4320,7 +4339,7 @@ async function abrirEditarCliente(userId) {
               <option value="9am-6pm" ${conf.horario==='9am-6pm'?'selected':''}>Lun-Vie 9am-6pm</option>
             </select></div>
         </div>
-        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-top:8px">Redes sociales</div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Redes sociales</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Facebook</label>
             <div style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;color:var(--text-dim);white-space:nowrap">fb.com/</span><input id="ec_fb" class="field-input" placeholder="tunegocio" value="${redes.facebook||''}" /></div></div>
@@ -4333,7 +4352,7 @@ async function abrirEditarCliente(userId) {
         </div>
         <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Sitio web</label>
           <input id="ec_web" class="field-input" type="url" placeholder="https://tunegocio.com" value="${redes.website||''}" /></div>
-        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-top:8px">Info básica</div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Info básica</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
           <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Email</label>
             <input id="ec_email" class="field-input" type="email" value="${c.email||''}" /></div>
@@ -4342,26 +4361,35 @@ async function abrirEditarCliente(userId) {
         </div>
         <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Precio de producto ($)</label>
           <input id="ec_precio" class="field-input" type="number" value="${c.precio_producto||''}" placeholder="197" /></div>
-        ${Object.keys(q).some(k => q[k]) ? `
-        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-top:16px;margin-bottom:8px">🧠 Perfil de negocio (llenado por el cliente)</div>
-        <div style="background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:12px;padding:14px;display:grid;gap:10px">
-          ${q.descripcion    ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">¿Qué hace?</div><div style="font-size:13px">${q.descripcion}</div></div>` : ''}
-          ${q.cliente_ideal  ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Cliente ideal</div><div style="font-size:13px">${q.cliente_ideal}</div></div>` : ''}
-          ${q.servicio       ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Servicio principal</div><div style="font-size:13px">${q.servicio}</div></div>${q.precio?`<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Precio</div><div style="font-size:13px">${q.precio}</div></div>`:''}` : ''}
-          ${q.diferenciador  ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">¿Por qué te eligen?</div><div style="font-size:13px">${q.diferenciador}</div></div>` : ''}
-          ${q.resultados     ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Resultados que logran</div><div style="font-size:13px">${q.resultados}</div></div>` : ''}
-          ${q.objecion       ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Objeción más común</div><div style="font-size:13px">${q.objecion}</div></div>` : ''}
-          ${q.proceso_venta  ? `<div><div style="font-size:10px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Proceso de venta</div><div style="font-size:13px">${q.proceso_venta}</div></div>` : ''}
-        </div>` : `
-        <div style="margin-top:12px;padding:12px;background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.2);border-radius:10px;font-size:12px;color:var(--text-muted)">
-          ⚠️ El cliente aún no ha completado su cuestionario de negocio.
-          <button onclick="navigator.clipboard.writeText('https://web-production-3d2c.up.railway.app/portal?email=${encodeURIComponent(c.email||'')}&nuevo=1');this.textContent='✓ Copiado!';setTimeout(()=>this.textContent='📋 Copiar link de onboarding',2000)" style="display:block;margin-top:8px;width:100%;padding:7px;border-radius:8px;border:1px solid rgba(255,193,7,.3);background:none;color:var(--text);font-size:12px;cursor:pointer">📋 Copiar link de onboarding</button>
-        </div>`}
-        <div id="editClienteError" style="display:none;color:var(--danger);font-size:12px;padding:8px 12px;background:rgba(239,68,68,.08);border-radius:8px"></div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="btn btn-ghost" style="flex:1" onclick="cerrarEditarCliente()">Cancelar</button>
-          <button class="btn btn-primary" style="flex:2" onclick="guardarEditarCliente('${userId}')">💾 Guardar cambios</button>
+      </div>
+
+      <!-- TAB: Perfil de negocio -->
+      <div id="ec-tab-q" style="display:none;display:grid;gap:12px">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">Puedes corregir o ampliar lo que llenó el cliente. El bot usará esta información para crear campañas.</div>
+        <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">¿Qué hace el negocio?</label>
+          <textarea id="ec_q_desc" class="field-textarea" placeholder="Describe el negocio en 2-3 frases...">${q.descripcion||''}</textarea></div>
+        <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Cliente ideal</label>
+          <textarea id="ec_q_ci" class="field-textarea" placeholder="¿A quién le venden?">${q.cliente_ideal||''}</textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Servicio / producto principal</label>
+            <input id="ec_q_srv" class="field-input" placeholder="Ej: Préstamos personales" value="${q.servicio||''}" /></div>
+          <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Precio</label>
+            <input id="ec_q_precio" class="field-input" placeholder="Ej: $197/mes" value="${q.precio||''}" /></div>
         </div>
+        <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">¿Por qué los eligen? (diferenciador)</label>
+          <textarea id="ec_q_dif" class="field-textarea" placeholder="Ventaja frente a la competencia...">${q.diferenciador||''}</textarea></div>
+        <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Resultados que logran los clientes</label>
+          <textarea id="ec_q_res" class="field-textarea" placeholder="Casos de éxito, testimonios...">${q.resultados||''}</textarea></div>
+        <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Objeción más común antes de cerrar</label>
+          <input id="ec_q_obj" class="field-input" placeholder='Ej: "Tengo mal crédito"' value="${q.objecion||''}" /></div>
+        <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Proceso de venta</label>
+          <textarea id="ec_q_pv" class="field-textarea" placeholder="Pasos desde el primer contacto hasta el cierre...">${q.proceso_venta||''}</textarea></div>
+      </div>
+
+      <div id="editClienteError" style="display:none;color:var(--danger);font-size:12px;padding:8px 12px;background:rgba(239,68,68,.08);border-radius:8px;margin-top:12px"></div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-ghost" style="flex:1" onclick="cerrarEditarCliente()">Cancelar</button>
+        <button class="btn btn-primary" style="flex:2" onclick="guardarEditarCliente('${userId}')">💾 Guardar cambios</button>
       </div>`;
   } catch(e) { content.innerHTML = `<div style="color:var(--danger)">Error: ${e.message}</div>`; }
 }
@@ -4374,28 +4402,32 @@ function cerrarEditarCliente() {
 async function guardarEditarCliente(userId) {
   const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
   const update = {
-    whatsapp_number:  g('ec_whatsapp') || null,
-    email:            g('ec_email')    || null,
-    telefono:         g('ec_tel')      || null,
-    precio_producto:  g('ec_precio')   ? +g('ec_precio') : null,
-    redes_sociales: {
-      facebook: g('ec_fb'), instagram: g('ec_ig'),
-      youtube:  g('ec_yt'), tiktok:    g('ec_tt'),
-      website:  g('ec_web')
-    },
+    whatsapp_number: g('ec_whatsapp') || null,
+    email:           g('ec_email')    || null,
+    telefono:        g('ec_tel')      || null,
+    precio_producto: g('ec_precio')   ? +g('ec_precio') : null,
+    redes_sociales: { facebook: g('ec_fb'), instagram: g('ec_ig'), youtube: g('ec_yt'), tiktok: g('ec_tt'), website: g('ec_web') },
     configuracion: {
       ...(_editClienteData?.configuracion || {}),
       asistente_nombre: g('ec_asistente'),
       idioma:  document.getElementById('ec_idioma')?.value  || 'bilingue',
       horario: document.getElementById('ec_horario')?.value || '24/7'
+    },
+    cuestionario: {
+      descripcion:   g('ec_q_desc'),
+      cliente_ideal: g('ec_q_ci'),
+      servicio:      g('ec_q_srv'),
+      precio:        g('ec_q_precio'),
+      diferenciador: g('ec_q_dif'),
+      resultados:    g('ec_q_res'),
+      objecion:      g('ec_q_obj'),
+      proceso_venta: g('ec_q_pv')
     }
   };
-  // Quitar nulls para no sobreescribir con null innecesariamente
   Object.keys(update).forEach(k => { if (update[k] === null) delete update[k]; });
   try {
     const res = await fetch(`/api/clientes/${userId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(update)
     });
     const d = await res.json();

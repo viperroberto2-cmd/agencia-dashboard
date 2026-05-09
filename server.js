@@ -641,17 +641,17 @@ app.post('/api/clientes/crear', async (req, res) => {
 
 app.patch('/api/clientes/:user_id', async (req, res) => {
   try {
-    const { redes_sociales, configuracion, ciudad, ...directFields } = req.body;
-    // Fetch current data to merge (these fields live in data JSONB, not direct columns)
-    if (redes_sociales || configuracion || ciudad) {
+    const { redes_sociales, configuracion, ciudad, cuestionario, ...directFields } = req.body;
+    if (redes_sociales || configuracion || ciudad || cuestionario) {
       const curR = await sbFetch(`/clientes?user_id=eq.${req.params.user_id}&select=data`);
       const curRows = await curR.json();
       const curData = (Array.isArray(curRows) && curRows[0]?.data) || {};
       directFields.data = {
         ...curData,
-        ...(ciudad ? { ciudad } : {}),
-        ...(redes_sociales ? { redes_sociales: { ...(curData.redes_sociales||{}), ...redes_sociales } } : {}),
-        ...(configuracion  ? { configuracion:  { ...(curData.configuracion||{}),  ...configuracion  } } : {})
+        ...(ciudad        ? { ciudad } : {}),
+        ...(redes_sociales? { redes_sociales: { ...(curData.redes_sociales||{}), ...redes_sociales } } : {}),
+        ...(configuracion ? { configuracion:  { ...(curData.configuracion||{}),  ...configuracion  } } : {}),
+        ...(cuestionario  ? { cuestionario:   { ...(curData.cuestionario||{}),   ...cuestionario   } } : {})
       };
     }
     const r = await sbFetch(`/clientes?user_id=eq.${req.params.user_id}`, {
