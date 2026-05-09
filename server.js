@@ -256,6 +256,76 @@ app.post('/api/auth/set-password', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body || {};
+  if (!email) return res.status(400).json({ ok: false, error: 'Email requerido' });
+  try {
+    const r = await sbFetch(`/clientes?email=eq.${encodeURIComponent(email)}&select=*`);
+    const rows = await r.json();
+    // Siempre responder "ok" para no revelar si el email existe
+    if (!rows || rows.length === 0) return res.json({ ok: true });
+    const row = rows[0];
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hora
+    const curData = row.data || {};
+    await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(row.user_id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ data: { ...curData, reset_token: token, reset_token_expires: expires } }),
+    });
+    const resetLink = `${SITE_URL}/portal?reset=${token}`;
+    const nombre = row.nombre || email;
+    const RESEND_KEY = process.env.RESEND_API_KEY;
+    if (!RESEND_KEY) {
+      console.warn('[forgot-password] RESEND_API_KEY no configurado. Link:', resetLink);
+      return res.json({ ok: true, _debug_link: resetLink });
+    }
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'RG Production <noreply@rgproduction.ai>',
+        to: [email],
+        subject: 'Restablecer tu contraseña — RG Production',
+        html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;">
+          <div style="font-size:28px;font-weight:700;margin-bottom:8px;">RG Production</div>
+          <h2 style="margin:0 0 16px;">Restablece tu contraseña</h2>
+          <p>Hola ${nombre},</p>
+          <p>Recibimos una solicitud para restablecer la contraseña de tu portal. Haz clic en el botón de abajo — el enlace expira en 1 hora.</p>
+          <a href="${resetLink}" style="display:inline-block;margin:20px 0;padding:14px 28px;background:#10b981;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">Restablecer contraseña →</a>
+          <p style="font-size:12px;color:#6b7280;">Si no solicitaste este cambio, puedes ignorar este email.</p>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
+          <p style="font-size:12px;color:#9ca3af;">RG Production — Sistema de gestión de marketing</p>
+        </div>`
+      })
+    });
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { token, password } = req.body || {};
+  if (!token || !password) return res.status(400).json({ ok: false, error: 'Token y contraseña requeridos' });
+  if (password.length < 6) return res.status(400).json({ ok: false, error: 'La contraseña debe tener al menos 6 caracteres' });
+  try {
+    const r = await sbFetch(`/clientes?data->>reset_token=eq.${encodeURIComponent(token)}&select=*`);
+    const rows = await r.json();
+    if (!rows || rows.length === 0) return res.status(404).json({ ok: false, error: 'Token inválido o ya utilizado.' });
+    const row = rows[0];
+    const expires = (row.data || {}).reset_token_expires;
+    if (!expires || new Date() > new Date(expires))
+      return res.status(400).json({ ok: false, error: 'Este enlace expiró. Solicita uno nuevo.' });
+    const curData = row.data || {};
+    delete curData.reset_token;
+    delete curData.reset_token_expires;
+    curData.password_hash = hashPassword(password);
+    await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(row.user_id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ data: curData }),
+    });
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
 // ── CONTENT QUEUE ─────────────────────────────────────────────────────────────
 const { randomUUID } = require('crypto');
 

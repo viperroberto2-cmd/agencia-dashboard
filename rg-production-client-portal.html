@@ -1355,6 +1355,9 @@ input, textarea, select { font-family: inherit; }
       </div>
       <button class="btn btn-primary btn-block" id="rg-login-btn" onclick="loginWithPassword()" style="margin-top:16px;">Entrar →</button>
       <div id="rg-login-error" style="display:none;margin-top:10px;font-size:13px;color:#ef4444;text-align:center;"></div>
+      <div style="text-align:center;margin-top:10px;">
+        <a style="font-size:13px;color:#6b7280;cursor:pointer;text-decoration:underline;" onclick="goScreen('forgot')">¿Olvidaste tu contraseña?</a>
+      </div>
       <div class="login-footer">
         <span>¿Aún no tienes cuenta?</span>
         <a onclick="goScreen('wizard'); resetWizard();">Empieza tu onboarding →</a>
@@ -1368,6 +1371,59 @@ input, textarea, select { font-family: inherit; }
       <div class="login-sub" style="margin-top:8px;">Un momento por favor.</div>
     </div>
 
+  </div>
+</div>
+
+<!-- ============ FORGOT PASSWORD ============ -->
+<div class="screen" id="screen-forgot">
+  <div class="login-wrap">
+    <div class="login-card" id="forgot-form-card">
+      <div class="login-brand">
+        <div class="brand-mark">RG</div>
+        <div>
+          <div class="brand-name">RG Production</div>
+          <div class="brand-tag">Recuperar acceso</div>
+        </div>
+      </div>
+      <div class="login-title">¿Olvidaste tu contraseña?</div>
+      <div class="login-sub">Ingresa tu email y te mandamos un enlace para restablecerla.</div>
+      <div class="field-group" style="margin-top:16px;">
+        <label class="field-label">Email</label>
+        <input class="field-input" type="email" id="forgot-email" placeholder="tu@negocio.com" onkeydown="if(event.key==='Enter')sendForgotEmail()" />
+      </div>
+      <button class="btn btn-primary btn-block" onclick="sendForgotEmail()" style="margin-top:16px;">Enviar enlace →</button>
+      <div id="forgot-msg" style="display:none;margin-top:12px;font-size:13px;text-align:center;padding:10px;border-radius:8px;"></div>
+      <div style="text-align:center;margin-top:12px;">
+        <a style="font-size:13px;color:#6b7280;cursor:pointer;text-decoration:underline;" onclick="goScreen('login')">← Volver al login</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RESET PASSWORD ============ -->
+<div class="screen" id="screen-reset">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="brand-mark">RG</div>
+        <div>
+          <div class="brand-name">RG Production</div>
+          <div class="brand-tag">Nueva contraseña</div>
+        </div>
+      </div>
+      <div class="login-title">Elige tu nueva contraseña</div>
+      <div class="login-sub">Debe tener al menos 6 caracteres.</div>
+      <div class="field-group" style="margin-top:16px;">
+        <label class="field-label">Nueva contraseña</label>
+        <input class="field-input" type="password" id="reset-pw1" placeholder="••••••••" onkeydown="if(event.key==='Enter')document.getElementById('reset-pw2').focus()" />
+      </div>
+      <div class="field-group" style="margin-top:12px;">
+        <label class="field-label">Confirmar contraseña</label>
+        <input class="field-input" type="password" id="reset-pw2" placeholder="••••••••" onkeydown="if(event.key==='Enter')doResetPassword()" />
+      </div>
+      <button class="btn btn-primary btn-block" onclick="doResetPassword()" style="margin-top:16px;">Guardar contraseña →</button>
+      <div id="reset-msg" style="display:none;margin-top:12px;font-size:13px;text-align:center;padding:10px;border-radius:8px;"></div>
+    </div>
   </div>
 </div>
 
@@ -2620,6 +2676,61 @@ renderLeads();
 renderAppts();
 renderMessages();
 
+// ============ FORGOT / RESET PASSWORD ============
+async function sendForgotEmail() {
+  const email = (document.getElementById('forgot-email')?.value || '').trim();
+  const msgEl = document.getElementById('forgot-msg');
+  if (!email) {
+    msgEl.textContent = 'Ingresa tu email.';
+    msgEl.style.cssText = 'display:block;color:#ef4444;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;font-size:13px;text-align:center;margin-top:12px;';
+    return;
+  }
+  const btn = document.querySelector('#screen-forgot .btn-primary');
+  btn.textContent = 'Enviando…'; btn.disabled = true;
+  try {
+    await fetch('/api/auth/forgot-password', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    msgEl.textContent = '✅ Si ese email está registrado, recibirás el enlace en unos minutos. Revisa también tu carpeta de spam.';
+    msgEl.style.cssText = 'display:block;color:#059669;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px;font-size:13px;text-align:center;margin-top:12px;';
+    btn.textContent = 'Enviado ✓'; btn.disabled = true;
+  } catch(e) {
+    msgEl.textContent = 'Error al enviar. Intenta de nuevo.';
+    msgEl.style.cssText = 'display:block;color:#ef4444;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;font-size:13px;text-align:center;margin-top:12px;';
+    btn.textContent = 'Enviar enlace →'; btn.disabled = false;
+  }
+}
+
+let _resetToken = null;
+async function doResetPassword() {
+  const pw1 = document.getElementById('reset-pw1')?.value || '';
+  const pw2 = document.getElementById('reset-pw2')?.value || '';
+  const msgEl = document.getElementById('reset-msg');
+  const showErr = (m) => {
+    msgEl.textContent = m;
+    msgEl.style.cssText = 'display:block;color:#ef4444;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px;font-size:13px;text-align:center;margin-top:12px;';
+  };
+  if (pw1.length < 6) return showErr('La contraseña debe tener al menos 6 caracteres.');
+  if (pw1 !== pw2) return showErr('Las contraseñas no coinciden.');
+  if (!_resetToken) return showErr('Token no encontrado. Solicita un nuevo enlace.');
+  const btn = document.querySelector('#screen-reset .btn-primary');
+  btn.textContent = 'Guardando…'; btn.disabled = true;
+  try {
+    const r = await fetch('/api/auth/reset-password', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: _resetToken, password: pw1 })
+    });
+    const d = await r.json();
+    if (!d.ok) { showErr(d.error || 'Error al restablecer.'); btn.textContent = 'Guardar contraseña →'; btn.disabled = false; return; }
+    msgEl.textContent = '✅ Contraseña actualizada. Redirigiendo al login…';
+    msgEl.style.cssText = 'display:block;color:#059669;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px;font-size:13px;text-align:center;margin-top:12px;';
+    _resetToken = null;
+    history.replaceState(null, '', location.pathname);
+    setTimeout(() => goScreen('login'), 2000);
+  } catch(e) { showErr('Error de red. Intenta de nuevo.'); btn.textContent = 'Guardar contraseña →'; btn.disabled = false; }
+}
+
 // ============ PASSWORD AUTH ============
 async function loginWithPassword() {
   const email    = (document.getElementById('rg-login-email')?.value || '').trim();
@@ -3096,6 +3207,14 @@ function populateSocialStatus(d) {
   if (params.get('fb_error')) {
     history.replaceState(null, '', location.pathname);
     console.warn('Facebook OAuth error:', params.get('fb_error'));
+  }
+
+  // Reset password link: ?reset=TOKEN
+  if (params.get('reset')) {
+    _resetToken = params.get('reset');
+    history.replaceState(null, '', location.pathname);
+    goScreen('reset');
+    return;
   }
 
   // Agency sent an invite link: ?email=X&nuevo=1 → go to wizard directly
