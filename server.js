@@ -151,7 +151,7 @@ app.get('/portal', (req, res) => servePortal(res));
 app.get('/client-portal', (req, res) => servePortal(res));
 
 // ── Facebook / Instagram OAuth ─────────────────────────────────────────────
-const FB_APP_ID     = process.env.FB_APP_ID     || '1327631492618438';
+const FB_APP_ID     = process.env.FB_APP_ID     || '1981039516112644';
 const FB_APP_SECRET = process.env.FB_APP_SECRET || '';
 const SITE_URL      = process.env.SITE_URL      || 'https://web-production-3d2c.up.railway.app';
 const FB_CALLBACK   = `${SITE_URL}/api/auth/facebook/callback`;
