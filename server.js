@@ -805,7 +805,7 @@ app.post('/api/clientes/crear', async (req, res) => {
         objetivo: objetivo || null,
         presupuesto_ads: presupuesto_ads || null,
         mensaje_principal: mensaje_principal || null,
-        agentes_asignados: agents ? JSON.stringify(agents) : null
+        data: agents ? JSON.stringify({ agentes_asignados: agents }) : null
       }),
       headers: { 'Prefer': 'return=representation' }
     });
