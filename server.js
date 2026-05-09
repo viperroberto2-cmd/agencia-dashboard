@@ -816,8 +816,8 @@ app.post('/api/clientes/crear', async (req, res) => {
 
 app.patch('/api/clientes/:user_id', async (req, res) => {
   try {
-    const { redes_sociales, configuracion, ciudad, cuestionario, ...directFields } = req.body;
-    if (redes_sociales || configuracion || ciudad || cuestionario) {
+    const { redes_sociales, configuracion, ciudad, cuestionario, facebook_pages, ...directFields } = req.body;
+    if (redes_sociales || configuracion || ciudad || cuestionario || facebook_pages !== undefined) {
       const curR = await sbFetch(`/clientes?user_id=eq.${req.params.user_id}&select=data`);
       const curRows = await curR.json();
       const curData = (Array.isArray(curRows) && curRows[0]?.data) || {};
@@ -826,7 +826,8 @@ app.patch('/api/clientes/:user_id', async (req, res) => {
         ...(ciudad        ? { ciudad } : {}),
         ...(redes_sociales? { redes_sociales: { ...(curData.redes_sociales||{}), ...redes_sociales } } : {}),
         ...(configuracion ? { configuracion:  { ...(curData.configuracion||{}),  ...configuracion  } } : {}),
-        ...(cuestionario  ? { cuestionario:   { ...(curData.cuestionario||{}),   ...cuestionario   } } : {})
+        ...(cuestionario  ? { cuestionario:   { ...(curData.cuestionario||{}),   ...cuestionario   } } : {}),
+        ...(facebook_pages !== undefined ? { facebook_pages } : {})
       };
     }
     const r = await sbFetch(`/clientes?user_id=eq.${req.params.user_id}`, {

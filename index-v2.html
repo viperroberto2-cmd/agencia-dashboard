@@ -4365,6 +4365,14 @@ async function abrirEditarCliente(userId) {
         </div>
         <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Precio de producto ($)</label>
           <input id="ec_precio" class="field-input" type="number" value="${c.precio_producto||''}" placeholder="197" /></div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Facebook para publicar</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">El cliente te agrega como Editor en su Facebook Page → tú abres <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:var(--accent)">Graph API Explorer</a> → generas el page token y lo pegas aquí.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Facebook Page ID</label>
+            <input id="ec_fb_page_id" class="field-input" placeholder="123456789" value="${c.data?.facebook_pages?.[0]?.id||''}" /></div>
+          <div><label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:4px">Page Access Token</label>
+            <input id="ec_fb_page_token" class="field-input" placeholder="EAAxxxxxx..." value="${c.data?.facebook_pages?.[0]?.token||''}" /></div>
+        </div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(124,92,252,.06);border:1px solid rgba(124,92,252,.2);border-radius:10px;margin-top:4px">
           <div>
             <div style="font-size:13px;font-weight:600">Requiere aprobación antes de publicar</div>
@@ -4430,6 +4438,9 @@ async function guardarEditarCliente(userId) {
       horario: document.getElementById('ec_horario')?.value || '24/7',
       requires_approval: document.getElementById('ec_requires_approval')?.checked ?? true
     },
+    facebook_pages: (g('ec_fb_page_id') && g('ec_fb_page_token'))
+      ? [{ id: g('ec_fb_page_id'), name: g('ec_fb') || g('ec_fb_page_id'), token: g('ec_fb_page_token') }]
+      : (_editClienteData?.facebook_pages || []),
     cuestionario: {
       descripcion:   g('ec_q_desc'),
       cliente_ideal: g('ec_q_ci'),
