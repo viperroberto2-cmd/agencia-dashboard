@@ -283,7 +283,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: 'RG Production <noreply@rgproduction.ai>',
+        from: 'RG Production <onboarding@resend.dev>',
         to: [email],
         subject: 'Restablecer tu contraseña — RG Production',
         html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;">
