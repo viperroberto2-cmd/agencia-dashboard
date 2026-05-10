@@ -1148,6 +1148,46 @@ app.post('/api/scheduler/post', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── Vision proxy — imagen base64 → bot organizador ───────────────────────────
+app.post('/api/vision', async (req, res) => {
+  const { imagen_b64, caption, media_type } = req.body;
+  if (!imagen_b64) return res.json({ response: 'No se recibió imagen.' });
+  try {
+    const r = await fetch('https://web-production-77871.up.railway.app/organizador/vision', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagen_b64, caption: caption || 'Analiza esta imagen.', user_id: '8534665260', media_type: media_type || 'image/jpeg' })
+    });
+    const d = await r.json();
+    res.json({ response: d.respuesta || d.response || 'Sin respuesta' });
+  } catch(e) { res.json({ response: 'Error: ' + e.message }); }
+});
+
+// ── Document proxy — PDF base64 → Claude API directamente ───────────────────
+app.post('/api/document', async (req, res) => {
+  const { doc_b64, caption, filename } = req.body;
+  if (!doc_b64) return res.json({ response: 'No se recibió documento.' });
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.json({ response: 'ANTHROPIC_API_KEY no configurada en Railway.' });
+  try {
+    const body = JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: doc_b64 } },
+        { type: 'text', text: caption || ('Analiza este documento: ' + (filename || 'archivo.pdf')) }
+      ]}]
+    });
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'Content-Length': Buffer.byteLength(body) },
+      body
+    });
+    const d = await r.json();
+    res.json({ response: d.content?.[0]?.text || 'Sin respuesta' });
+  } catch(e) { res.json({ response: 'Error procesando documento: ' + e.message }); }
+});
+
 // ── Chat proxy — all agent chats go through here (avoids CORS) ───────────────
 const CHAT_TARGETS = {
   organizador: 'https://web-production-77871.up.railway.app/organizador/chat',
