@@ -1214,6 +1214,34 @@ app.post('/api/vision', async (req, res) => {
   } catch(e) { res.json({ response: 'Error: ' + e.message }); }
 });
 
+// ── DOCX → texto plano → Claude ──────────────────────────────────────────────
+const mammoth = require('mammoth');
+app.post('/api/document-docx', async (req, res) => {
+  const { doc_b64, caption, filename } = req.body;
+  if (!doc_b64) return res.json({ response: 'No se recibió documento.' });
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return res.json({ response: 'ANTHROPIC_API_KEY no configurada.' });
+  try {
+    const buf = Buffer.from(doc_b64, 'base64');
+    const { value: text } = await mammoth.extractRawText({ buffer: buf });
+    if (!text.trim()) return res.json({ response: 'No se pudo extraer texto del documento.' });
+    const body = JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2000,
+      messages: [{ role: 'user', content:
+        `${caption || 'Analiza este documento'} (${filename || 'archivo.docx'}):\n\n${text.slice(0, 30000)}`
+      }]
+    });
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body
+    });
+    const d = await r.json();
+    res.json({ response: d.content?.[0]?.text || 'Sin respuesta' });
+  } catch(e) { res.json({ response: 'Error procesando DOCX: ' + e.message }); }
+});
+
 // ── Document proxy — PDF base64 → Claude API directamente ───────────────────
 app.post('/api/document', async (req, res) => {
   const { doc_b64, caption, filename } = req.body;
