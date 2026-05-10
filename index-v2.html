@@ -2968,6 +2968,48 @@ chatInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
 
+// Paste image from clipboard (screenshots)
+chatInput.addEventListener('paste', async (e) => {
+  const items = Array.from(e.clipboardData?.items || []);
+  const imgItem = items.find(i => i.type.startsWith('image/'));
+  if (!imgItem) return; // plain text paste — let browser handle it
+  e.preventDefault();
+  const file = imgItem.getAsFile();
+  if (!file) return;
+  const msgs = document.getElementById('chatMessages');
+  const loadId = 'load-' + Date.now();
+  const caption = chatInput.value.trim() || 'Analiza esta imagen';
+  chatInput.value = '';
+
+  // Show user bubble
+  msgs.innerHTML += `<div class="msg user"><div class="msg-bubble">📸 Imagen pegada</div></div>`;
+  msgs.innerHTML += `<div class="msg bot" id="${loadId}"><div class="msg-bubble" style="color:var(--text-muted)">Analizando imagen...</div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const b64 = await new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = ev => res(ev.target.result.split(',')[1]);
+    reader.onerror = rej;
+    reader.readAsDataURL(file);
+  });
+
+  try {
+    const r = await fetch('/api/vision', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagen_b64: b64, caption, media_type: file.type || 'image/png', client: currentClient })
+    });
+    const d = await r.json();
+    const reply = d.response || d.respuesta || d.reply || 'Sin respuesta';
+    const el = document.getElementById(loadId);
+    if (el) el.querySelector('.msg-bubble').textContent = reply;
+  } catch(err) {
+    const el = document.getElementById(loadId);
+    if (el) el.querySelector('.msg-bubble').textContent = '⚠ Error: ' + err.message;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+});
+
 function sendMessage() {
   const text = chatInput.value.trim();
   if (!text) return;
