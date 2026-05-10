@@ -1216,7 +1216,7 @@ app.post('/api/chat/:agentId', (req, res) => {
   const opts = {
     hostname: u.hostname, path: u.pathname, method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-    timeout: 15000,
+    timeout: 55000,
   };
   const pr = https.request(opts, (r) => {
     let d = '';
