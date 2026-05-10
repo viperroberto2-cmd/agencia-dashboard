@@ -10,6 +10,16 @@
   if (token && (type === 'magiclink' || type === 'signup' || type === 'recovery')) {
     location.replace('/portal' + location.hash);
   }
+  // Facebook OAuth return to admin dashboard
+  const params = new URLSearchParams(location.search);
+  if (params.get('fb_connected')) {
+    window._adminFbJustConnected = params.get('page') || '1';
+    history.replaceState(null, '', location.pathname);
+  }
+  if (params.get('fb_error')) {
+    window._adminFbJustError = params.get('fb_error');
+    history.replaceState(null, '', location.pathname);
+  }
 })();
 window.SUPABASE_URL = '__SUPABASE_URL__';
 window.SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
@@ -1939,6 +1949,29 @@ input, textarea { font-family: inherit; }
                 <div id="heygenConfigStatus" style="font-size:11px;color:var(--text-muted);min-height:16px"></div>
                 <div id="heygenPickerList" style="display:none;max-height:180px;overflow-y:auto;background:#150f25;border-radius:8px;padding:8px;font-size:12px"></div>
               </div>
+            <!-- Facebook / Instagram per-client card -->
+            <div id="facebookConfigCard" style="background:#1a1730;border:.5px solid #2a2540;border-radius:14px;padding:18px;margin-top:16px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                <span style="font-size:20px">📘</span>
+                <div>
+                  <div style="font-weight:600;font-size:13px">Facebook / Instagram</div>
+                  <div style="font-size:11px;color:var(--text-muted)">Publicación automática en redes sociales</div>
+                </div>
+                <span id="fbAdminStatus" style="margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;background:#2a2540;color:#94a3b8">Sin configurar</span>
+              </div>
+              <div style="display:grid;gap:10px">
+                <div id="fbAdminPageInfo" style="font-size:12px;color:var(--text-muted);display:none">
+                  Página FB: <strong id="fbAdminPageName" style="color:var(--text)"></strong>
+                </div>
+                <div id="fbAdminIgInfo" style="font-size:12px;color:var(--text-muted);display:none">
+                  Instagram: <strong id="fbAdminIgName" style="color:var(--text)"></strong>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button id="fbAdminConnectBtn" class="btn btn-primary" style="flex:1;font-size:12px" onclick="adminConnectFacebook()">🔗 Conectar Facebook</button>
+                  <button id="fbAdminDisconnectBtn" class="btn btn-ghost" style="flex:1;font-size:12px;color:#ef4444;display:none" onclick="adminDisconnectFacebook()">Desconectar</button>
+                </div>
+                <div id="fbAdminMsg" style="font-size:11px;color:var(--text-muted);min-height:16px"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -2334,6 +2367,12 @@ function selectClient(id, emoji, name, ev) {
   document.getElementById('clientContextName').textContent = name;
   if (ev) ev.stopPropagation();
   closeAllDropdowns();
+  // Refresh per-client cards if integraciones tab is active
+  const intPane = document.getElementById('pane-integraciones');
+  if (intPane && intPane.classList.contains('active')) {
+    loadHeygenConfigDB();
+    loadFacebookStatusDB();
+  }
 }
 
 function toggleDrawer() {
@@ -2858,11 +2897,65 @@ async function loadHeygenVoces() {
   } catch(e) { listEl.textContent = '❌ ' + e.message; }
 }
 
+// ── Facebook per-client ───────────────────────────────────────────────────────
+let _fbAdminUserId = null;
+
+async function loadFacebookStatusDB() {
+  if (!currentClient) return;
+  try {
+    const r = await fetch('/api/clientes');
+    const d = await r.json();
+    const cli = (d.clientes || []).find(c => c.nombre === currentClient || c.user_id === currentClient);
+    if (!cli) return;
+    _fbAdminUserId = cli.user_id;
+    const data = cli.data || {};
+    const pages = data.facebook_pages || [];
+    const igAccounts = data.instagram_accounts || [];
+    const fbConnected = pages.length > 0 && !!pages[0]?.token;
+
+    const statusEl    = document.getElementById('fbAdminStatus');
+    const pageInfo    = document.getElementById('fbAdminPageInfo');
+    const pageNameEl  = document.getElementById('fbAdminPageName');
+    const igInfo      = document.getElementById('fbAdminIgInfo');
+    const igNameEl    = document.getElementById('fbAdminIgName');
+    const connectBtn  = document.getElementById('fbAdminConnectBtn');
+    const discBtn     = document.getElementById('fbAdminDisconnectBtn');
+
+    if (statusEl) {
+      statusEl.textContent = fbConnected ? '● Conectado' : 'Sin configurar';
+      statusEl.style.background = fbConnected ? '#064e3b' : '#2a2540';
+      statusEl.style.color = fbConnected ? '#10b981' : '#94a3b8';
+    }
+    if (pageInfo) pageInfo.style.display = fbConnected ? '' : 'none';
+    if (pageNameEl && fbConnected) pageNameEl.textContent = pages[0].name || pages[0].id;
+    const igConnected = igAccounts.length > 0;
+    if (igInfo) igInfo.style.display = igConnected ? '' : 'none';
+    if (igNameEl && igConnected) igNameEl.textContent = '@' + (igAccounts[0].username || igAccounts[0].id);
+    if (connectBtn) connectBtn.style.display = fbConnected ? 'none' : '';
+    if (discBtn) discBtn.style.display = fbConnected ? '' : 'none';
+  } catch(e) {}
+}
+
+function adminConnectFacebook() {
+  if (!_fbAdminUserId) { alert('Selecciona un cliente primero'); return; }
+  const returnUrl = window.location.href.split('?')[0];
+  window.location.href = `/api/auth/facebook?user_id=${encodeURIComponent(_fbAdminUserId)}&return_to=${encodeURIComponent(returnUrl)}`;
+}
+
+async function adminDisconnectFacebook() {
+  if (!_fbAdminUserId) return;
+  const msgEl = document.getElementById('fbAdminMsg');
+  if (msgEl) msgEl.textContent = 'Desconectando...';
+  await fetch(`/api/auth/facebook/disconnect?user_id=${encodeURIComponent(_fbAdminUserId)}`);
+  await loadFacebookStatusDB();
+  if (msgEl) { msgEl.textContent = 'Desconectado.'; setTimeout(() => { msgEl.textContent = ''; }, 2000); }
+}
+
 function switchConfigTab(tab) {
   document.querySelectorAll('.config-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   document.querySelectorAll('.config-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('pane-' + tab).classList.add('active');
-  if (tab === 'integraciones') loadHeygenConfigDB();
+  if (tab === 'integraciones') { loadHeygenConfigDB(); loadFacebookStatusDB(); }
 }
 
 // ============ CHAT ============
@@ -3310,6 +3403,30 @@ renderAgentDropdown();
 renderStepper();
 renderStepContent();
 loadPortalUsers();
+
+// Show toast if returning from Facebook OAuth
+if (window._adminFbJustConnected) {
+  const pn = decodeURIComponent(window._adminFbJustConnected !== '1' ? window._adminFbJustConnected : 'Facebook');
+  setTimeout(() => {
+    const t = document.createElement('div');
+    t.textContent = `✓ ${pn} conectado exitosamente`;
+    Object.assign(t.style, { position:'fixed', bottom:'24px', right:'24px', zIndex:'9999', padding:'12px 20px', borderRadius:'10px', fontSize:'14px', fontWeight:'600', background:'#10b981', color:'#fff', boxShadow:'0 4px 20px rgba(0,0,0,.3)', opacity:'1', transition:'opacity .4s ease' });
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),420); }, 3500);
+    loadFacebookStatusDB();
+  }, 800);
+  window._adminFbJustConnected = null;
+}
+if (window._adminFbJustError) {
+  setTimeout(() => {
+    const t = document.createElement('div');
+    t.textContent = 'Error al conectar Facebook. Intenta de nuevo.';
+    Object.assign(t.style, { position:'fixed', bottom:'24px', right:'24px', zIndex:'9999', padding:'12px 20px', borderRadius:'10px', fontSize:'14px', fontWeight:'600', background:'#ef4444', color:'#fff', boxShadow:'0 4px 20px rgba(0,0,0,.3)' });
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  }, 800);
+  window._adminFbJustError = null;
+}
 
 // ── HEALTH CHECK ──────────────────────────────────────────────────
 async function loadHealth() {

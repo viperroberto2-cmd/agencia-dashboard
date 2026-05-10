@@ -158,16 +158,23 @@ const FB_CALLBACK   = `${SITE_URL}/api/auth/facebook/callback`;
 const FB_SCOPES     = 'pages_manage_posts,pages_read_engagement,pages_show_list,instagram_content_publish';
 
 app.get('/api/auth/facebook', (req, res) => {
-  const { user_id } = req.query;
+  const { user_id, return_to } = req.query;
   if (!user_id) return res.status(400).send('user_id requerido');
-  const url = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(FB_CALLBACK)}&scope=${FB_SCOPES}&state=${encodeURIComponent(user_id)}`;
+  const state = encodeURIComponent(JSON.stringify({ user_id, return_to: return_to || '' }));
+  const url = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(FB_CALLBACK)}&scope=${FB_SCOPES}&state=${state}`;
   res.redirect(url);
 });
 
 app.get('/api/auth/facebook/callback', async (req, res) => {
   const { code, state, error } = req.query;
-  const user_id = decodeURIComponent(state || '');
-  if (error || !code || !user_id) return res.redirect(`${SITE_URL}/portal?fb_error=cancelled`);
+  let user_id = '', return_to = '';
+  try {
+    const parsed = JSON.parse(decodeURIComponent(state || '{}'));
+    user_id = parsed.user_id || '';
+    return_to = parsed.return_to || '';
+  } catch { user_id = decodeURIComponent(state || ''); }
+  const errorBase = return_to || `${SITE_URL}/portal`;
+  if (error || !code || !user_id) return res.redirect(`${errorBase}?fb_error=cancelled`);
   try {
     // Short-lived token
     const t1 = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(FB_CALLBACK)}&client_secret=${FB_APP_SECRET}&code=${code}`).then(r=>r.json());
@@ -196,10 +203,12 @@ app.get('/api/auth/facebook/callback', async (req, res) => {
       headers: { 'Prefer': 'return=minimal' }
     });
     const pageName = pages[0]?.name || 'conectado';
-    res.redirect(`${SITE_URL}/portal?fb_connected=1&page=${encodeURIComponent(pageName)}`);
+    const successBase = return_to || `${SITE_URL}/portal`;
+    res.redirect(`${successBase}?fb_connected=1&page=${encodeURIComponent(pageName)}`);
   } catch(e) {
     console.error('[fb-callback]', e.message);
-    res.redirect(`${SITE_URL}/portal?fb_error=server`);
+    const errBase = return_to || `${SITE_URL}/portal`;
+    res.redirect(`${errBase}?fb_error=server`);
   }
 });
 
