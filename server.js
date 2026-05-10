@@ -179,12 +179,19 @@ app.get('/api/auth/facebook/callback', async (req, res) => {
   try {
     // Short-lived token
     const t1 = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(FB_CALLBACK)}&client_secret=${FB_APP_SECRET}&code=${code}`).then(r=>r.json());
-    if (!t1.access_token) return res.redirect(`${SITE_URL}/portal?fb_error=token`);
-    // Long-lived token
+    console.log('[fb-cb] t1:', t1.access_token ? 'ok('+t1.access_token.length+'chars)' : JSON.stringify(t1));
+    if (!t1.access_token) return res.redirect(`${errorBase}?fb_error=token`);
+    // Long-lived token exchange (60 days)
     const t2 = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${FB_APP_ID}&client_secret=${FB_APP_SECRET}&fb_exchange_token=${t1.access_token}`).then(r=>r.json());
-    const longToken = t2.access_token || t1.access_token;
-    // Pages
+    console.log('[fb-cb] t2 long-lived:', t2.access_token ? 'ok(expires_in='+t2.expires_in+')' : JSON.stringify(t2));
+    if (!t2.access_token) {
+      console.error('[fb-cb] Long-lived exchange failed — check FB_APP_SECRET env var');
+      return res.redirect(`${errorBase}?fb_error=longtoken`);
+    }
+    const longToken = t2.access_token;
+    // Pages — fetch with long-lived user token so page tokens are also permanent
     const pagesData = await fetch(`https://graph.facebook.com/v19.0/me/accounts?access_token=${longToken}`).then(r=>r.json());
+    console.log('[fb-cb] pages found:', pagesData.data?.length ?? 0, pagesData.error || '');
     const pages = (pagesData.data || []).map(p => ({ id: p.id, name: p.name, token: p.access_token }));
     // Instagram accounts linked to pages
     const igAccounts = [];
