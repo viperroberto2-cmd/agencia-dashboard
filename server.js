@@ -195,14 +195,36 @@ app.get('/api/auth/facebook/callback', async (req, res) => {
       }
     }
     // Merge into data column
-    const curRows = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data`).then(r=>r.json());
+    const curRows = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data,nombre`).then(r=>r.json());
     const curData = (Array.isArray(curRows) && curRows[0]?.data) || {};
+    const clientNombre = (Array.isArray(curRows) && curRows[0]?.nombre) || '';
     await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}`, {
       method: 'PATCH',
       body: JSON.stringify({ data: { ...curData, facebook_token: longToken, facebook_pages: pages, instagram_accounts: igAccounts, facebook_connected_at: new Date().toISOString() } }),
       headers: { 'Prefer': 'return=minimal' }
     });
-    const pageName = pages[0]?.name || 'conectado';
+    // Sync Facebook status into memoria_clientes so bots can read it
+    const pageName = pages[0]?.name || pages[0]?.id || 'conectado';
+    const igUser = igAccounts[0]?.username ? '@' + igAccounts[0].username : null;
+    try {
+      const memKey = encodeURIComponent(clientNombre || user_id);
+      const memoriaRows = await sbFetch(`/memoria_clientes?cliente=eq.${memKey}&select=cliente,datos`).then(r=>r.json());
+      if (Array.isArray(memoriaRows) && memoriaRows.length > 0) {
+        const mem = memoriaRows[0];
+        const datosObj = mem.datos || {};
+        const conexiones = datosObj.conexiones || {};
+        conexiones.facebook_token_activo = true;
+        conexiones.facebook_page_id = pages[0]?.id || null;
+        conexiones.nota = 'Facebook conectado via OAuth. Token activo.';
+        if (igUser) conexiones.instagram_cuenta = igUser;
+        datosObj.conexiones = conexiones;
+        await sbFetch(`/memoria_clientes?cliente=eq.${memKey}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ datos: datosObj }),
+          headers: { 'Prefer': 'return=minimal' }
+        });
+      }
+    } catch(me) { console.warn('[fb-memoria-sync]', me.message); }
     const successBase = return_to || `${SITE_URL}/portal`;
     res.redirect(`${successBase}?fb_connected=1&page=${encodeURIComponent(pageName)}`);
   } catch(e) {
@@ -216,12 +238,32 @@ app.get('/api/auth/facebook/disconnect', async (req, res) => {
   const { user_id } = req.query;
   if (!user_id) return res.status(400).json({ ok: false });
   try {
-    const curRows = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data`).then(r=>r.json());
+    const curRows = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data,nombre`).then(r=>r.json());
     const curData = (Array.isArray(curRows) && curRows[0]?.data) || {};
+    const clientNombre = (Array.isArray(curRows) && curRows[0]?.nombre) || '';
     const { facebook_token, facebook_pages, instagram_accounts, facebook_connected_at, ...rest } = curData;
     await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}`, {
       method: 'PATCH', body: JSON.stringify({ data: rest }), headers: { 'Prefer': 'return=minimal' }
     });
+    // Sync disconnect into memoria_clientes
+    try {
+      const memKey = encodeURIComponent(clientNombre || user_id);
+      const memoriaRows = await sbFetch(`/memoria_clientes?cliente=eq.${memKey}&select=cliente,datos`).then(r=>r.json());
+      if (Array.isArray(memoriaRows) && memoriaRows.length > 0) {
+        const mem = memoriaRows[0];
+        const datosObj = mem.datos || {};
+        const conexiones = datosObj.conexiones || {};
+        conexiones.facebook_token_activo = false;
+        conexiones.nota = 'Facebook desconectado. Conectar desde Integraciones.';
+        delete conexiones.instagram_cuenta;
+        datosObj.conexiones = conexiones;
+        await sbFetch(`/memoria_clientes?cliente=eq.${memKey}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ datos: datosObj }),
+          headers: { 'Prefer': 'return=minimal' }
+        });
+      }
+    } catch(me) { console.warn('[fb-memoria-disconnect]', me.message); }
     res.json({ ok: true });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
