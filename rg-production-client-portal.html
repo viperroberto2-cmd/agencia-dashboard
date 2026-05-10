@@ -1757,7 +1757,8 @@ input, textarea, select { font-family: inherit; }
             <div id="fb-connect-area" style="display:flex;align-items:center;gap:8px">
               <span id="fb-status-badge" class="setting-status" style="display:none"></span>
               <div id="fb-connected-badge" style="display:none;font-size:12px;color:#10b981;font-weight:600">✓ Conectado</div>
-              <div id="fb-pending-msg" style="font-size:12px;color:var(--text-muted);max-width:220px;text-align:right;line-height:1.4">Tu asesor te guiará para activar la publicación automática</div>
+              <button id="fb-connect-btn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="connectFacebook()">Conectar Facebook</button>
+              <button id="fb-disconnect-btn" class="btn btn-ghost" style="font-size:12px;padding:5px 12px;color:#ef4444;display:none" onclick="disconnectFacebook()">Desconectar</button>
             </div>
           </div>
 
@@ -2803,6 +2804,15 @@ function populatePortal(d) {
   // Poblar sección settings con datos reales
   populateSettings(d);
   populateSocialStatus(d);
+  if (window._fbJustConnected) {
+    const pageName = decodeURIComponent(window._fbJustConnected !== '1' ? window._fbJustConnected : 'Facebook');
+    showToast(`✓ ${pageName} conectado exitosamente`);
+    window._fbJustConnected = null;
+  }
+  if (window._fbJustError) {
+    showToast('Error al conectar Facebook. Intenta de nuevo.', 'error');
+    window._fbJustError = null;
+  }
   // Cargar datos reales del cliente
   loadPortalStats();
   loadPortalLeads();
@@ -3138,6 +3148,21 @@ async function _authWithCredentials(email, password) {
   }
 }
 
+// ── Toast ──────────────────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  Object.assign(t.style, {
+    position: 'fixed', bottom: '24px', right: '24px', zIndex: '9999',
+    padding: '12px 20px', borderRadius: '10px', fontSize: '14px', fontWeight: '600',
+    background: type === 'success' ? '#10b981' : '#ef4444', color: '#fff',
+    boxShadow: '0 4px 20px rgba(0,0,0,.25)', opacity: '1',
+    transition: 'opacity .4s ease'
+  });
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 420); }, 3500);
+}
+
 // ── Social Connect ─────────────────────────────────────────────────────────
 function connectFacebook() {
   if (!portalClient?.user_id) return;
@@ -3174,9 +3199,11 @@ function populateSocialStatus(d) {
   const fbName = pages[0]?.name || '';
   document.getElementById('set-facebook').textContent = fbConnected ? fbName : '—';
   const fbConnectedBadge = document.getElementById('fb-connected-badge');
-  const fbPendingMsg     = document.getElementById('fb-pending-msg');
+  const fbConnectBtn     = document.getElementById('fb-connect-btn');
+  const fbDisconnectBtn  = document.getElementById('fb-disconnect-btn');
   if (fbConnectedBadge) fbConnectedBadge.style.display = fbConnected ? '' : 'none';
-  if (fbPendingMsg)     fbPendingMsg.style.display     = fbConnected ? 'none' : '';
+  if (fbConnectBtn)     fbConnectBtn.style.display     = fbConnected ? 'none' : '';
+  if (fbDisconnectBtn)  fbDisconnectBtn.style.display  = fbConnected ? '' : 'none';
 
   // Instagram
   const igConnected = igAccounts.length > 0;
@@ -3201,10 +3228,13 @@ function populateSocialStatus(d) {
 // ── Al cargar la página: sesión guardada → invite link → OAuth return ──
 (function() {
   const params = new URLSearchParams(location.search);
-  if (params.get('fb_connected')) history.replaceState(null, '', location.pathname);
-  if (params.get('fb_error')) {
+  if (params.get('fb_connected')) {
+    window._fbJustConnected = params.get('page') || '1';
     history.replaceState(null, '', location.pathname);
-    console.warn('Facebook OAuth error:', params.get('fb_error'));
+  }
+  if (params.get('fb_error')) {
+    window._fbJustError = params.get('fb_error');
+    history.replaceState(null, '', location.pathname);
   }
 
   // Reset password link: ?reset=TOKEN
