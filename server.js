@@ -190,7 +190,7 @@ app.get('/api/auth/facebook/callback', async (req, res) => {
     }
     const longToken = t2.access_token;
     // Pages — fetch with long-lived user token so page tokens are also permanent
-    const pagesData = await fetch(`https://graph.facebook.com/v19.0/me/accounts?access_token=${longToken}`).then(r=>r.json());
+    const pagesData = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token&access_token=${longToken}`).then(r=>r.json());
     console.log('[fb-cb] pages found:', pagesData.data?.length ?? 0, pagesData.error || '');
     const pages = (pagesData.data || []).map(p => ({ id: p.id, name: p.name, token: p.access_token }));
     // Instagram accounts linked to pages
