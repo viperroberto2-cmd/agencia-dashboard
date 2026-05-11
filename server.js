@@ -62,6 +62,8 @@ function buildIcon(size) {
   return c.toBuffer('image/png');
 }
 
+app.get('/privacy', (_,res) => res.sendFile(path.join(__dirname, 'privacy.html')));
+
 app.get('/icon-192.png', (_,res) => {
   try { res.type('image/png').set('Cache-Control','public,max-age=86400').send(buildIcon(192)); }
   catch(e) { res.status(500).end(); }
