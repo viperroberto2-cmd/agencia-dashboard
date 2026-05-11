@@ -211,9 +211,29 @@ app.get('/api/auth/facebook/callback', async (req, res) => {
       body: JSON.stringify({ data: { ...curData, facebook_token: longToken, facebook_pages: pages, instagram_accounts: igAccounts, facebook_connected_at: new Date().toISOString() } }),
       headers: { 'Prefer': 'return=minimal' }
     });
-    // Sync Facebook status into memoria_clientes so bots can read it
+    // Sync token into dashboard CRM so Organizador/Crew can publish
     const pageName = pages[0]?.name || pages[0]?.id || 'conectado';
     const igUser = igAccounts[0]?.username ? '@' + igAccounts[0].username : null;
+    try {
+      const dashRows = await sbFetch(`/clientes?user_id=eq.dashboard&select=data`).then(r=>r.json());
+      const dashData = (Array.isArray(dashRows) && dashRows[0]?.data) || { cliente_activo: null, clientes: {} };
+      if (!dashData.clientes) dashData.clientes = {};
+      if (!dashData.clientes[clientNombre]) dashData.clientes[clientNombre] = {};
+      dashData.clientes[clientNombre].conexiones = {
+        facebook_token: pages[0]?.token || longToken,
+        facebook_page_id: pages[0]?.id || null,
+        instagram_account_id: igAccounts[0]?.id || '',
+      };
+      dashData.cliente_activo = dashData.cliente_activo || clientNombre;
+      await sbFetch(`/clientes?user_id=eq.dashboard`, {
+        method: dashRows?.length ? 'PATCH' : 'POST',
+        body: JSON.stringify(dashRows?.length ? { data: dashData } : { user_id: 'dashboard', data: dashData }),
+        headers: { 'Prefer': 'return=minimal' }
+      });
+      console.log('[fb-cb] Dashboard CRM synced for', clientNombre);
+    } catch(ce) { console.warn('[fb-cb] CRM sync error:', ce.message); }
+
+    // Sync Facebook status into memoria_clientes so bots can read it
     try {
       const memKey = encodeURIComponent(clientNombre || user_id);
       const memoriaRows = await sbFetch(`/memoria_clientes?cliente=eq.${memKey}&select=cliente,datos`).then(r=>r.json());
