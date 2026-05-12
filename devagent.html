@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dev Agent — Mission Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #07090f;
+    --bg2:       #0d1117;
+    --bg3:       #131920;
+    --border:    rgba(0,229,255,.12);
+    --cyan:      #00e5ff;
+    --green:     #39ff14;
+    --red:       #ff2244;
+    --amber:     #ffb300;
+    --dim:       rgba(255,255,255,.35);
+    --text:      rgba(255,255,255,.88);
+    --mono:      'JetBrains Mono', monospace;
+    --display:   'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── hex grid bg ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 66L0 50V18L28 2l28 16v32z' fill='none' stroke='%2300e5ff' stroke-opacity='.04' stroke-width='1'/%3E%3C/svg%3E");
+    background-size: 56px 100px;
+    pointer-events: none;
+  }
+
+  /* ── scan line ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,.08) 2px,
+      rgba(0,0,0,.08) 4px
+    );
+    pointer-events: none;
+  }
+
+  .shell { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ── header ── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 32px 0 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 36px;
+  }
+
+  .logo-block { display: flex; align-items: center; gap: 16px; }
+
+  .logo-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: linear-gradient(135deg, #0ff2 0%, var(--cyan) 100%);
+    display: grid; place-items: center;
+    font-family: var(--display); font-size: 18px; font-weight: 800;
+    color: var(--bg); letter-spacing: -1px;
+    box-shadow: 0 0 20px rgba(0,229,255,.3);
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: 22px; font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #fff;
+  }
+
+  .subtitle { color: var(--dim); font-size: 11px; margin-top: 2px; letter-spacing: .5px; }
+
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    color: var(--dim); text-decoration: none; font-size: 11px;
+    letter-spacing: .5px; text-transform: uppercase;
+    transition: color .2s;
+  }
+  .back-btn:hover { color: var(--cyan); }
+
+  /* ── stats bar ── */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    position: relative; overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent, var(--cyan));
+    opacity: .6;
+  }
+
+  .stat-label { font-size: 10px; letter-spacing: .8px; text-transform: uppercase; color: var(--dim); }
+  .stat-val {
+    font-family: var(--display); font-size: 32px; font-weight: 800;
+    color: var(--accent, var(--cyan)); line-height: 1.1; margin-top: 4px;
+  }
+
+  /* ── two-col layout ── */
+  .grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; align-items: start; }
+
+  /* ── panel ── */
+  .panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+
+  .panel-title {
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--cyan); font-weight: 700;
+  }
+
+  /* ── feature list ── */
+  #feature-list { min-height: 200px; }
+
+  .feature-card {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 8px; align-items: start;
+    transition: background .15s;
+    animation: fadeIn .3s ease both;
+  }
+  .feature-card:hover { background: rgba(0,229,255,.03); }
+  .feature-card:last-child { border-bottom: none; }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  .fc-name { font-weight: 500; color: #fff; font-size: 12px; margin-bottom: 4px; }
+  .fc-repo { color: var(--dim); font-size: 10px; word-break: break-all; }
+  .fc-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 20px;
+    font-size: 10px; font-weight: 500; letter-spacing: .3px;
+  }
+  .badge-pendiente  { background: rgba(255,179,0,.12);  color: var(--amber); border: 1px solid rgba(255,179,0,.2); }
+  .badge-en_progreso{ background: rgba(0,229,255,.1);   color: var(--cyan);  border: 1px solid rgba(0,229,255,.2); }
+  .badge-completado { background: rgba(57,255,20,.1);   color: var(--green); border: 1px solid rgba(57,255,20,.2); }
+  .badge-error      { background: rgba(255,34,68,.1);   color: var(--red);   border: 1px solid rgba(255,34,68,.2); }
+  .badge-rechazado  { background: rgba(255,34,68,.1);   color: var(--red);   border: 1px solid rgba(255,34,68,.2); }
+  .badge-sin_cambios{ background: rgba(255,255,255,.06); color: var(--dim);   border: 1px solid rgba(255,255,255,.1); }
+
+  .pulse { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+  .pulse-anim { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.4;transform:scale(.7);} }
+
+  .prio-chip {
+    font-size: 9px; color: var(--dim); background: rgba(255,255,255,.05);
+    padding: 1px 6px; border-radius: 4px;
+  }
+
+  .btn-run {
+    padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: .5px; text-transform: uppercase;
+    background: rgba(0,229,255,.1); color: var(--cyan);
+    border: 1px solid rgba(0,229,255,.3);
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .btn-run:hover {
+    background: rgba(0,229,255,.2);
+    box-shadow: 0 0 12px rgba(0,229,255,.25);
+  }
+  .btn-run:active { transform: scale(.97); }
+
+  /* ── add form ── */
+  .add-form { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  label { font-size: 10px; letter-spacing: .8px; text-transform: uppercase; color: var(--dim); display: block; margin-bottom: 5px; }
+
+  input, textarea, select {
+    width: 100%; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 7px;
+    padding: 10px 12px; color: var(--text);
+    font-family: var(--mono); font-size: 12px;
+    outline: none; transition: border-color .2s, box-shadow .2s;
+    appearance: none;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(0,229,255,.1);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .btn-launch {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, rgba(0,229,255,.15), rgba(0,229,255,.05));
+    border: 1px solid rgba(0,229,255,.4);
+    border-radius: 8px; cursor: pointer;
+    font-family: var(--display); font-size: 15px; font-weight: 800;
+    color: var(--cyan); letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all .25s;
+    position: relative; overflow: hidden;
+  }
+  .btn-launch::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(0,229,255,.08));
+    opacity: 0; transition: opacity .25s;
+  }
+  .btn-launch:hover {
+    box-shadow: 0 0 30px rgba(0,229,255,.2), 0 0 60px rgba(0,229,255,.08);
+    transform: translateY(-1px);
+  }
+  .btn-launch:hover::after { opacity: 1; }
+  .btn-launch:active { transform: scale(.99); }
+  .btn-launch:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+  /* ── log panel ── */
+  #log-list { max-height: 340px; overflow-y: auto; }
+  #log-list::-webkit-scrollbar { width: 4px; }
+  #log-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .log-row {
+    display: grid; grid-template-columns: 90px 1fr auto;
+    gap: 8px; align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    font-size: 11px;
+    animation: fadeIn .2s ease both;
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-ts { color: var(--dim); font-size: 10px; }
+  .log-stage {
+    font-weight: 500;
+    padding: 1px 7px; border-radius: 4px; font-size: 9px;
+    text-transform: uppercase; letter-spacing: .5px;
+    width: fit-content;
+  }
+  .log-ok   { background: rgba(57,255,20,.1);  color: var(--green); }
+  .log-fail { background: rgba(255,34,68,.1);  color: var(--red);   }
+
+  /* ── empty state ── */
+  .empty {
+    padding: 48px 20px; text-align: center; color: var(--dim);
+    font-size: 12px; line-height: 1.8;
+  }
+  .empty-icon { font-size: 32px; margin-bottom: 12px; opacity: .4; }
+
+  /* ── toast ── */
+  #toast {
+    position: fixed; bottom: 28px; right: 28px; z-index: 999;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 20px;
+    font-size: 12px; max-width: 320px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    transform: translateY(80px); opacity: 0;
+    transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    pointer-events: none;
+  }
+  #toast.show { transform: none; opacity: 1; }
+  #toast.ok   { border-color: rgba(57,255,20,.3); }
+  #toast.err  { border-color: rgba(255,34,68,.3); }
+
+  /* ── responsive ── */
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- header -->
+  <header>
+    <div class="logo-block">
+      <div class="logo-icon">DA</div>
+      <div>
+        <h1>Dev Agent</h1>
+        <div class="subtitle">Autonomous Code Implementation System · Agencia AI</div>
+      </div>
+    </div>
+    <a href="/" class="back-btn">← Dashboard</a>
+  </header>
+
+  <!-- stats -->
+  <div class="stats-bar">
+    <div class="stat-card" style="--accent:var(--amber)">
+      <div class="stat-label">Pendientes</div>
+      <div class="stat-val" id="s-pending">—</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--cyan)">
+      <div class="stat-label">En progreso</div>
+      <div class="stat-val" id="s-running">—</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--green)">
+      <div class="stat-label">Completadas</div>
+      <div class="stat-val" id="s-done">—</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--red)">
+      <div class="stat-label">Errores</div>
+      <div class="stat-val" id="s-err">—</div>
+    </div>
+  </div>
+
+  <!-- main grid -->
+  <div class="grid">
+
+    <!-- LEFT: feature queue + logs -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- feature queue -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">// Feature Queue</span>
+          <button class="btn-run" onclick="loadFeatures()">↺ Refresh</button>
+        </div>
+        <div id="feature-list">
+          <div class="empty"><div class="empty-icon">⬡</div>Cargando misiones...</div>
+        </div>
+      </div>
+
+      <!-- run log -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">// Run Log</span>
+          <button class="btn-run" onclick="loadLogs()">↺ Refresh</button>
+        </div>
+        <div id="log-list">
+          <div class="empty"><div class="empty-icon">⬡</div>Sin logs todavía</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: add feature form -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">// Nueva Misión</span>
+      </div>
+      <form class="add-form" onsubmit="submitFeature(event)">
+        <div>
+          <label>Nombre de la feature</label>
+          <input id="f-nombre" placeholder="Agregar health check al Crew bot" required>
+        </div>
+        <div>
+          <label>Descripción detallada</label>
+          <textarea id="f-desc" placeholder="Qué implementar, cómo debe funcionar, qué archivos tocar..."></textarea>
+        </div>
+        <div>
+          <label>Repo URL (GitHub)</label>
+          <input id="f-repo" placeholder="https://github.com/viperroberto2-cmd/AgenciaAI" required>
+        </div>
+        <div class="row2">
+          <div>
+            <label>Prioridad (1=urgente)</label>
+            <input id="f-prio" type="number" min="1" max="10" value="5">
+          </div>
+          <div>
+            <label>Rama destino</label>
+            <input id="f-rama" value="main">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-direction:column">
+          <button type="submit" class="btn-launch" id="btn-add">⬡ Agregar a la Queue</button>
+          <button type="button" class="btn-launch" id="btn-trigger"
+                  onclick="triggerRun()"
+                  style="background:rgba(57,255,20,.08);border-color:rgba(57,255,20,.3);color:var(--green)">
+            ▶ Run Next Feature
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- toast -->
+<div id="toast"></div>
+
+<script>
+const DEVAGENT_SECRET = 'agencia-dev-2025';
+
+// ── Status badge ──────────────────────────────────────────────────────────────
+function badge(status) {
+  const pulse = status === 'en_progreso'
+    ? `<span class="pulse pulse-anim"></span>` : '';
+  return `<span class="badge badge-${status}">${pulse} ${status}</span>`;
+}
+
+function ts(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleString('es-MX', { month:'short', day:'numeric',
+    hour:'2-digit', minute:'2-digit' });
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  setTimeout(() => el.className = '', 3200);
+}
+
+// ── Load features ─────────────────────────────────────────────────────────────
+async function loadFeatures() {
+  try {
+    const r = await fetch('/api/devagent/features', {
+      headers: { 'x-devagent-secret': DEVAGENT_SECRET }
+    });
+    const d = await r.json();
+    const features = d.features || [];
+
+    // stats
+    const count = s => features.filter(f => f.status === s).length;
+    document.getElementById('s-pending').textContent = count('pendiente');
+    document.getElementById('s-running').textContent = count('en_progreso');
+    document.getElementById('s-done').textContent    = count('completado');
+    document.getElementById('s-err').textContent     = count('error') + count('rechazado');
+
+    const list = document.getElementById('feature-list');
+    if (!features.length) {
+      list.innerHTML = `<div class="empty"><div class="empty-icon">⬡</div>No hay features en la queue.<br>Agrega una nueva misión →</div>`;
+      return;
+    }
+
+    list.innerHTML = features.map(f => `
+      <div class="feature-card">
+        <div>
+          <div class="fc-name">${f.nombre}</div>
+          <div class="fc-repo">${f.repo_url}</div>
+          <div class="fc-meta">
+            ${badge(f.status)}
+            <span class="prio-chip">P${f.prioridad}</span>
+            <span style="color:var(--dim);font-size:10px">${ts(f.created_at)}</span>
+          </div>
+          ${f.notas ? `<div style="color:var(--dim);font-size:10px;margin-top:6px;padding:6px 8px;background:rgba(255,255,255,.03);border-radius:5px;border-left:2px solid var(--border)">${f.notas.slice(0,120)}</div>` : ''}
+        </div>
+        <div>
+          ${f.status === 'pendiente'
+            ? `<button class="btn-run" onclick="triggerRun(${f.id})">▶ Run</button>`
+            : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    document.getElementById('feature-list').innerHTML =
+      `<div class="empty" style="color:var(--red)">Error: ${e.message}</div>`;
+  }
+}
+
+// ── Load logs ─────────────────────────────────────────────────────────────────
+async function loadLogs() {
+  try {
+    // Leer de Supabase via devagent/runs (proxied en server.js como /api/devagent/runs)
+    const r = await fetch('/api/devagent/runs');
+    if (!r.ok) return;
+    const d = await r.json();
+    const runs = d.runs || [];
+    const list = document.getElementById('log-list');
+    if (!runs.length) {
+      list.innerHTML = `<div class="empty"><div class="empty-icon">⬡</div>Sin logs todavía</div>`;
+      return;
+    }
+    list.innerHTML = runs.slice(0,40).map(r => `
+      <div class="log-row">
+        <span class="log-ts">${ts(r.ts)}</span>
+        <span>${r.resultado ? r.resultado.slice(0,80) : '—'}</span>
+        <span class="log-stage ${r.ok ? 'log-ok' : 'log-fail'}">${r.stage}</span>
+      </div>
+    `).join('');
+  } catch(e) { /* silent */ }
+}
+
+// ── Submit feature ────────────────────────────────────────────────────────────
+async function submitFeature(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-add');
+  btn.disabled = true;
+  btn.textContent = '⟳ Enviando...';
+  try {
+    const r = await fetch('/api/devagent/features', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-devagent-secret': DEVAGENT_SECRET },
+      body: JSON.stringify({
+        nombre:      document.getElementById('f-nombre').value,
+        descripcion: document.getElementById('f-desc').value,
+        repo_url:    document.getElementById('f-repo').value,
+        prioridad:   parseInt(document.getElementById('f-prio').value) || 5,
+        rama:        document.getElementById('f-rama').value || 'main',
+      })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      toast('✅ Feature agregada a la queue', 'ok');
+      e.target.reset();
+      document.getElementById('f-prio').value = '5';
+      document.getElementById('f-rama').value = 'main';
+      await loadFeatures();
+    } else {
+      toast(`❌ ${d.error || 'Error desconocido'}`, 'err');
+    }
+  } catch(err) {
+    toast(`❌ ${err.message}`, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⬡ Agregar a la Queue';
+  }
+}
+
+// ── Trigger run ───────────────────────────────────────────────────────────────
+async function triggerRun(featureId) {
+  const btn = document.getElementById('btn-trigger');
+  if (btn) { btn.disabled = true; btn.textContent = '⟳ Iniciando...'; }
+  try {
+    const body = featureId ? JSON.stringify({ feature_id: featureId }) : '{}';
+    const r = await fetch('/api/devagent/run', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-devagent-secret': DEVAGENT_SECRET },
+      body,
+    });
+    const d = await r.json();
+    if (d.ok) {
+      toast('🚀 Dev Agent iniciado. Te notifica por Telegram al terminar.', 'ok');
+      setTimeout(loadFeatures, 2000);
+    } else {
+      toast(`❌ ${d.error || JSON.stringify(d)}`, 'err');
+    }
+  } catch(e) {
+    toast(`❌ ${e.message}`, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '▶ Run Next Feature'; }
+  }
+}
+
+// ── Auto-refresh every 30s ────────────────────────────────────────────────────
+loadFeatures();
+loadLogs();
+setInterval(() => { loadFeatures(); loadLogs(); }, 30000);
+</script>
+</body>
+</html>
