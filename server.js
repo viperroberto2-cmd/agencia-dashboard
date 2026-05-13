@@ -1056,6 +1056,26 @@ app.post('/api/leads', async (req, res) => {
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
+app.post('/api/leads/import', async (req, res) => {
+  try {
+    const { leads } = req.body;
+    if (!Array.isArray(leads) || !leads.length) return res.status(400).json({ ok: false, error: 'No leads' });
+    const valid = leads.filter(l => l.nombre).map(l => ({
+      nombre: l.nombre, telefono: l.telefono || null, email: l.email || null,
+      fuente: l.fuente || 'Excel', notas: l.notas || null,
+      status: l.status || 'new', cliente: l.cliente || null,
+      call_status: 'manual', created_at: new Date().toISOString()
+    }));
+    if (!valid.length) return res.status(400).json({ ok: false, error: 'Sin leads válidos' });
+    const r = await sbFetch('/voice_leads', {
+      method: 'POST', body: JSON.stringify(valid),
+      headers: { 'Prefer': 'return=minimal' }
+    });
+    if (!r.ok) { const t = await r.text(); return res.status(500).json({ ok: false, error: t }); }
+    res.json({ ok: true, imported: valid.length });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 app.patch('/api/leads/:id/status', async (req, res) => {
   try {
     const { status } = req.body || {};

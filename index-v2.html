@@ -43,6 +43,7 @@ window.AGENT_MAP = {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 :root {
   --bg: #0a0a10;
@@ -1781,10 +1782,11 @@ input, textarea { font-family: inherit; }
           <div style="position: relative;">
             <button class="btn btn-ghost" onclick="toggleDropdown('importDropdown', event)">📥 Importar <span style="font-size:9px;margin-left:2px;">▼</span></button>
             <div class="dropdown" id="importDropdown" style="min-width: 240px;">
-              <button class="dropdown-item" onclick="alert('Sube tu archivo .xlsx')"><span style="font-size:18px;">📊</span><div><div style="font-weight:600;font-size:13px;">Excel (.xlsx)</div><div style="font-size:11px;color:var(--text-muted);">Subir archivo</div></div></button>
-              <button class="dropdown-item" onclick="alert('Sube tu archivo CSV')"><span style="font-size:18px;">📄</span><div><div style="font-weight:600;font-size:13px;">CSV</div><div style="font-size:11px;color:var(--text-muted);">Subir archivo</div></div></button>
-              <button class="dropdown-item" onclick="alert('Pega URL del Sheet')"><span style="font-size:18px;">📗</span><div><div style="font-weight:600;font-size:13px;">Google Sheets</div><div style="font-size:11px;color:var(--text-muted);">Pegar URL pública</div></div></button>
+              <button class="dropdown-item" onclick="document.getElementById('importFileInput').accept='.xlsx,.xls';document.getElementById('importFileInput').click();toggleDropdown('importDropdown',{stopPropagation:()=>{}})"><span style="font-size:18px;">📊</span><div><div style="font-weight:600;font-size:13px;">Excel (.xlsx)</div><div style="font-size:11px;color:var(--text-muted);">Subir archivo</div></div></button>
+              <button class="dropdown-item" onclick="document.getElementById('importFileInput').accept='.csv';document.getElementById('importFileInput').click();toggleDropdown('importDropdown',{stopPropagation:()=>{}})"><span style="font-size:18px;">📄</span><div><div style="font-weight:600;font-size:13px;">CSV</div><div style="font-size:11px;color:var(--text-muted);">Subir archivo</div></div></button>
+              <button class="dropdown-item" onclick="alert('Pega URL del Sheet')"><span style="font-size:18px;">📗</span><div><div style="font-weight:600;font-size:13px;">Google Sheets</div><div style="font-size:11px;color:var(--text-muted);">Próximamente</div></div></button>
             </div>
+            <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleImportFile(this)">
           </div>
           <button class="btn btn-primary" onclick="openAddLeadModal()">＋ Lead</button>
         </div>
@@ -2182,6 +2184,42 @@ input, textarea { font-family: inherit; }
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;padding:28px;position:relative;">
     <button onclick="closeLeadModal()" style="position:absolute;top:16px;right:16px;background:var(--bg-elevated);border:none;border-radius:8px;width:32px;height:32px;font-size:16px;color:var(--text-muted);cursor:pointer;">✕</button>
     <div id="leadModalContent"></div>
+  </div>
+</div>
+
+<!-- ── IMPORT LEADS MODAL ─────────────────────────────────────────── -->
+<div id="importModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:400;align-items:center;justify-content:center;" onclick="if(event.target===this)closeImportModal()">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;width:min(680px,96vw);max-height:90vh;display:flex;flex-direction:column;position:relative;">
+    <div style="padding:24px 28px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <button onclick="closeImportModal()" style="position:absolute;top:16px;right:16px;background:var(--bg-elevated);border:none;border-radius:8px;width:32px;height:32px;font-size:16px;color:var(--text-muted);cursor:pointer;">✕</button>
+      <div style="font-size:18px;font-weight:700;color:var(--text);">📥 Importar leads</div>
+      <div id="importSubtitle" style="font-size:13px;color:var(--text-muted);margin-top:4px;"></div>
+    </div>
+    <!-- Column mapping -->
+    <div id="importMappingSection" style="padding:20px 28px;flex-shrink:0;display:none;">
+      <div style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">Mapeo de columnas</div>
+      <div id="importMappingGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+    </div>
+    <!-- Preview table -->
+    <div style="flex:1;overflow-y:auto;padding:0 28px 20px;">
+      <div id="importPreviewWrap" style="display:none;">
+        <div style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Vista previa <span id="importCount" style="font-weight:400;color:var(--text-muted);"></span></div>
+        <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--border);">
+          <table id="importPreviewTable" style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead id="importPreviewHead" style="background:var(--bg-elevated);"></thead>
+            <tbody id="importPreviewBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="importEmptyMsg" style="text-align:center;color:var(--text-muted);padding:40px;display:none;">No se encontraron filas válidas con nombre.</div>
+    </div>
+    <div style="padding:16px 28px 24px;border-top:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div id="importStatusMsg" style="font-size:13px;color:var(--text-muted);"></div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="closeImportModal()" style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:10px 20px;color:var(--text-muted);cursor:pointer;font-size:13px;">Cancelar</button>
+        <button id="importConfirmBtn" onclick="confirmImport()" style="background:var(--accent);border:none;border-radius:10px;padding:10px 20px;color:#fff;cursor:pointer;font-size:13px;font-weight:600;" disabled>Importar</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -4290,6 +4328,173 @@ async function saveNewLead() {
     errEl.textContent = 'Error de conexión'; errEl.style.display = 'block';
     btn.textContent = 'Guardar lead'; btn.disabled = false;
   }
+}
+
+// ============ IMPORT LEADS ============
+let _importRows = [];
+
+const FIELD_ALIASES = {
+  nombre:   ['nombre','name','full name','fullname','nombre completo','contact','contacto','lead'],
+  telefono: ['telefono','teléfono','phone','tel','mobile','celular','whatsapp','phone number'],
+  email:    ['email','correo','e-mail','mail'],
+  fuente:   ['fuente','source','origen','lead source'],
+  notas:    ['notas','notes','nota','note','comentarios','comments','observaciones'],
+};
+
+function _detectField(header) {
+  const h = header.toLowerCase().trim();
+  for (const [field, aliases] of Object.entries(FIELD_ALIASES)) {
+    if (aliases.some(a => h.includes(a))) return field;
+  }
+  return '';
+}
+
+function handleImportFile(input) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+  const isCSV = /\.csv$/i.test(file.name);
+  const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+  if (!isCSV && !isExcel) { alert('Formato no soportado. Usa .xlsx o .csv'); return; }
+
+  document.getElementById('importSubtitle').textContent = file.name;
+  document.getElementById('importMappingSection').style.display = 'none';
+  document.getElementById('importPreviewWrap').style.display = 'none';
+  document.getElementById('importEmptyMsg').style.display = 'none';
+  document.getElementById('importStatusMsg').textContent = '⏳ Leyendo archivo...';
+  document.getElementById('importConfirmBtn').disabled = true;
+  document.getElementById('importModalOverlay').style.display = 'flex';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      let rows = [];
+      if (isCSV) {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/).filter(l => l.trim());
+        const headers = lines[0].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(h => h.replace(/^"|"$/g, '').trim());
+        for (let i = 1; i < lines.length; i++) {
+          const vals = lines[i].split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
+          const row = {};
+          headers.forEach((h, j) => row[h] = vals[j] || '');
+          rows.push(row);
+        }
+      } else {
+        const wb = XLSX.read(e.target.result, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      }
+      _buildImportPreview(rows);
+    } catch(err) {
+      document.getElementById('importStatusMsg').textContent = '⚠ Error leyendo archivo: ' + err.message;
+    }
+  };
+  reader.onerror = () => { document.getElementById('importStatusMsg').textContent = '⚠ No se pudo leer el archivo.'; };
+  if (isCSV) reader.readAsText(file, 'UTF-8');
+  else reader.readAsArrayBuffer(file);
+}
+
+function _buildImportPreview(rows) {
+  if (!rows.length) { document.getElementById('importStatusMsg').textContent = 'El archivo está vacío.'; return; }
+  const headers = Object.keys(rows[0]);
+
+  // Auto-detect mapping
+  const mapping = {};
+  headers.forEach(h => { const f = _detectField(h); if (f && !Object.values(mapping).includes(h)) mapping[f] = h; });
+
+  // Render mapping selects
+  const mappingGrid = document.getElementById('importMappingGrid');
+  mappingGrid.innerHTML = Object.keys(FIELD_ALIASES).map(field => `
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <label style="font-size:12px;color:var(--text-muted);text-transform:capitalize;">${field} ${field==='nombre'?'*':''}</label>
+      <select id="map_${field}" style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 10px;font-size:12px;">
+        <option value="">— ignorar —</option>
+        ${headers.map(h => `<option value="${h}" ${mapping[field]===h?'selected':''}>${h}</option>`).join('')}
+      </select>
+    </div>
+  `).join('');
+  document.getElementById('importMappingSection').style.display = 'block';
+
+  // Add change listeners to re-render preview
+  Object.keys(FIELD_ALIASES).forEach(f => {
+    document.getElementById(`map_${f}`)?.addEventListener('change', () => _renderPreviewTable(rows));
+  });
+
+  _importRows = rows;
+  _renderPreviewTable(rows);
+}
+
+function _getMapping() {
+  const m = {};
+  Object.keys(FIELD_ALIASES).forEach(f => {
+    const el = document.getElementById(`map_${f}`);
+    if (el && el.value) m[f] = el.value;
+  });
+  return m;
+}
+
+function _renderPreviewTable(rows) {
+  const mapping = _getMapping();
+  const mapped = rows.map(r => ({
+    nombre:   (r[mapping.nombre]   || '').toString().trim(),
+    telefono: (r[mapping.telefono] || '').toString().trim(),
+    email:    (r[mapping.email]    || '').toString().trim(),
+    fuente:   (r[mapping.fuente]   || 'Excel').toString().trim(),
+    notas:    (r[mapping.notas]    || '').toString().trim(),
+  })).filter(r => r.nombre);
+
+  const preview = mapped.slice(0, 8);
+  document.getElementById('importCount').textContent = `(${mapped.length} leads)`;
+  document.getElementById('importPreviewHead').innerHTML = `<tr>${['Nombre','Teléfono','Email','Fuente','Notas'].map(h=>`<th style="text-align:left;padding:8px 12px;color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border);">${h}</th>`).join('')}</tr>`;
+  document.getElementById('importPreviewBody').innerHTML = preview.map(r => `<tr style="border-bottom:1px solid var(--border);">${[r.nombre,r.telefono,r.email,r.fuente,r.notas].map(v=>`<td style="padding:8px 12px;color:var(--text);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(v||'—')}</td>`).join('')}</tr>`).join('');
+  if (mapped.length > 8) document.getElementById('importPreviewBody').innerHTML += `<tr><td colspan="5" style="padding:8px 12px;color:var(--text-muted);font-style:italic;">... y ${mapped.length-8} más</td></tr>`;
+
+  document.getElementById('importPreviewWrap').style.display = mapped.length ? 'block' : 'none';
+  document.getElementById('importEmptyMsg').style.display = mapped.length ? 'none' : 'block';
+  document.getElementById('importStatusMsg').textContent = mapped.length ? `${mapped.length} leads listos para importar` : 'Sin filas válidas — asegúrate de mapear la columna Nombre.';
+  document.getElementById('importConfirmBtn').disabled = !mapped.length;
+}
+
+async function confirmImport() {
+  const mapping = _getMapping();
+  const leads = _importRows.map(r => ({
+    nombre:   (r[mapping.nombre]   || '').toString().trim(),
+    telefono: (r[mapping.telefono] || '').toString().trim() || null,
+    email:    (r[mapping.email]    || '').toString().trim() || null,
+    fuente:   (r[mapping.fuente]   || 'Excel').toString().trim() || 'Excel',
+    notas:    (r[mapping.notas]    || '').toString().trim() || null,
+    status:   'new',
+    cliente:  currentClient || null,
+  })).filter(r => r.nombre);
+
+  if (!leads.length) return;
+  const btn = document.getElementById('importConfirmBtn');
+  btn.disabled = true; btn.textContent = 'Importando...';
+  document.getElementById('importStatusMsg').textContent = `⏳ Importando ${leads.length} leads...`;
+
+  try {
+    const r = await fetch('/api/leads/import', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leads })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      document.getElementById('importStatusMsg').textContent = `✅ ${d.imported} leads importados correctamente.`;
+      btn.textContent = 'Hecho';
+      setTimeout(() => { closeImportModal(); loadLeadsFromAPI(); }, 1200);
+    } else {
+      document.getElementById('importStatusMsg').textContent = '⚠ Error: ' + (d.error || 'desconocido');
+      btn.disabled = false; btn.textContent = 'Reintentar';
+    }
+  } catch(e) {
+    document.getElementById('importStatusMsg').textContent = '⚠ Error de conexión: ' + e.message;
+    btn.disabled = false; btn.textContent = 'Reintentar';
+  }
+}
+
+function closeImportModal() {
+  document.getElementById('importModalOverlay').style.display = 'none';
+  _importRows = [];
 }
 
 // ============ SCHEDULE POST MODAL ============
