@@ -2318,6 +2318,7 @@ let calendarDayFilter = null;
 
 let activeAgent = agents[0];
 let currentClient = null;
+const chatHistories = {};  // per-agent conversation history for context
 let inboxFilter = 'all';
 let driveFilter = 'all';
 let recordingFilter = 'all';
@@ -2403,6 +2404,7 @@ function openChat(agentId) {
   const a = agents.find(x => x.id === agentId);
   if (!a) return;
   activeAgent = a;
+  if (!chatHistories[a.id]) chatHistories[a.id] = [];
   document.getElementById('activeAgentEmoji').textContent = a.emoji;
   document.getElementById('activeAgentName').textContent = a.name;
   const msgs = document.getElementById('chatMessages');
@@ -3031,19 +3033,27 @@ function sendMessage() {
     document.getElementById(loadId).querySelector('.message').textContent = simulateReply(text);
     return;
   }
+  // Track history per agent (cap at 20 messages to avoid token overflow)
+  if (!chatHistories[activeAgent.id]) chatHistories[activeAgent.id] = [];
+  chatHistories[activeAgent.id].push({ role: 'user', content: text });
+  if (chatHistories[activeAgent.id].length > 20) chatHistories[activeAgent.id].splice(0, 2);
+  const historial = chatHistories[activeAgent.id].slice();
   fetch(agentCfg.url + agentCfg.endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: text, client: currentClient })
+    body: JSON.stringify({ message: text, mensaje: text, client: currentClient, historial })
   })
   .then(r => r.json())
   .then(d => {
     const reply = d.response || d.respuesta || d.message || d.reply || d.content || JSON.stringify(d);
+    chatHistories[activeAgent.id].push({ role: 'assistant', content: reply });
     document.getElementById(loadId).querySelector('.message').style.opacity = '1';
     document.getElementById(loadId).querySelector('.message').textContent = reply;
     msgs.scrollTop = msgs.scrollHeight;
   })
   .catch(e => {
+    // Remove the user message we added since the request failed
+    chatHistories[activeAgent.id].pop();
     document.getElementById(loadId).querySelector('.message').textContent = '⚠ Sin respuesta del agente (' + e.message + ')';
     document.getElementById(loadId).querySelector('.message').style.opacity = '1';
   });
