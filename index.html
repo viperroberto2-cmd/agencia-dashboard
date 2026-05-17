@@ -1123,57 +1123,38 @@ body{background:#EBEBF0 !important}
   <div class="panel content" id="panel-chat" style="padding:20px">
     <div class="chat-layout">
       <div class="chat-agents">
-        <div class="chat-agents-title">Tu equipo (11)</div>
-        <div class="chat-agent-item active" onclick="selectAgent(this,'🎯','Organizador','CEO · Delega y coordina')" data-name="Organizador">
-          <span class="chat-agent-emoji">🎯</span>
-          <div><div class="chat-agent-name">Organizador</div><div class="chat-agent-role">CEO · Delega y coordina</div></div>
+        <div class="chat-agents-title">Agencia AI</div>
+        <div class="chat-agent-item active" onclick="selectAgent(this,'🧠','Cerebro','Todo el sistema')" data-name="Cerebro">
+          <span class="chat-agent-emoji">🧠</span>
+          <div><div class="chat-agent-name">Cerebro</div><div class="chat-agent-role">Todo el sistema</div></div>
         </div>
-        <div class="chat-agent-item" onclick="selectAgent(this,'🎬','Director','Creativo · Copy y guiones')" data-name="Director">
+        <div style="margin:12px 8px 6px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:var(--font-mono)">Acciones rápidas</div>
+        <div class="chat-agent-item" onclick="sendQ('Genera una historia de venta hipnótica para redes sociales para el cliente activo')" style="cursor:pointer">
           <span class="chat-agent-emoji">🎬</span>
-          <div><div class="chat-agent-name">Director</div><div class="chat-agent-role">Creativo · Copy y guiones</div></div>
+          <div><div class="chat-agent-name">Historia de venta</div><div class="chat-agent-role">Facebook · Instagram · TikTok</div></div>
         </div>
-        <div class="chat-agent-item" onclick="selectAgent(this,'🎨','Crew','Producción · Video e imágenes')" data-name="Crew">
-          <span class="chat-agent-emoji">🎨</span>
-          <div><div class="chat-agent-name">Crew</div><div class="chat-agent-role">Producción · Video</div></div>
+        <div class="chat-agent-item" onclick="sendQ('¿Cuántas llamadas y mensajes se recibieron esta semana? Dame un reporte de actividad Twilio')" style="cursor:pointer">
+          <span class="chat-agent-emoji">📞</span>
+          <div><div class="chat-agent-name">Teléfonos & Twilio</div><div class="chat-agent-role">Llamadas · SMS · WhatsApp</div></div>
         </div>
-        <div class="chat-agent-item" onclick="selectAgent(this,'📊','Estrategia','Marketing · Campañas y SEO')" data-name="Estrategia">
+        <div class="chat-agent-item" onclick="sendQ('Dame un reporte de redes sociales: qué se publicó, engagement y qué publicar esta semana')" style="cursor:pointer">
+          <span class="chat-agent-emoji">📱</span>
+          <div><div class="chat-agent-name">Redes Sociales</div><div class="chat-agent-role">Facebook · Instagram · TikTok</div></div>
+        </div>
+        <div class="chat-agent-item" onclick="sendQ('Dame un reporte de ventas y leads: cuántos entraron, cuántos cerraron y qué sigue')" style="cursor:pointer">
+          <span class="chat-agent-emoji">💰</span>
+          <div><div class="chat-agent-name">Ventas & Leads</div><div class="chat-agent-role">CRM · Seguimiento · Cierre</div></div>
+        </div>
+        <div class="chat-agent-item" onclick="sendQ('Dame el reporte semanal completo: métricas, ROAS, leads, publicaciones y recomendaciones')" style="cursor:pointer">
           <span class="chat-agent-emoji">📊</span>
-          <div><div class="chat-agent-name">Estrategia</div><div class="chat-agent-role">Marketing · Campañas</div></div>
-        </div>
-        <div class="chat-agent-item" onclick="selectAgent(this,'📅','Scheduler','Publicación automática')" data-name="Scheduler">
-          <span class="chat-agent-emoji">📅</span>
-          <div><div class="chat-agent-name">Scheduler</div><div class="chat-agent-role">Publicación automática</div></div>
-        </div>
-        <div class="chat-agent-item" onclick="selectAgent(this,'📈','Analytics','Reportes semanales')" data-name="Analytics">
-          <span class="chat-agent-emoji">📈</span>
-          <div><div class="chat-agent-name">Analytics</div><div class="chat-agent-role">Reportes semanales</div></div>
-        </div>
-        <div class="chat-agent-item" onclick="selectAgent(this,'🎵','CompositorBot','Audio · Scoring y bandas sonoras')" data-name="CompositorBot">
-          <span class="chat-agent-emoji">🎵</span>
-          <div><div class="chat-agent-name">CompositorBot</div><div class="chat-agent-role">Audio · Scoring</div></div>
-        </div>
-        <div class="chat-agent-item" onclick="selectAgent(this,'🔍','Scraper','Research · Competencia e inteligencia')" data-name="Scraper">
-          <span class="chat-agent-emoji">🔍</span>
-          <div><div class="chat-agent-name">Scraper</div><div class="chat-agent-role">Research · Competencia</div></div>
-        </div>
-        <div class="chat-agent-item" onclick="selectAgent(this,'🏷️','SEO','Estratega SEO · Keywords y contenido')" data-name="SEO">
-          <span class="chat-agent-emoji">🏷️</span>
-          <div><div class="chat-agent-name">SEO Strategist</div><div class="chat-agent-role">Estratega SEO</div></div>
-        </div>
-        <div class="chat-agent-item" onclick="selectAgent(this,'🌐','WebDesigner','Web · Páginas y landing pages')" data-name="WebDesigner">
-          <span class="chat-agent-emoji">🌐</span>
-          <div><div class="chat-agent-name">Web Designer</div><div class="chat-agent-role">Web · Páginas animadas y deploy</div></div>
-        </div>
-        <div class="chat-agent-item" onclick="selectAgent(this,'🎞️','Motion','Motion Graphics · Remotion y Lottie')" data-name="Motion">
-          <span class="chat-agent-emoji">🎞️</span>
-          <div><div class="chat-agent-name">Motion Bot</div><div class="chat-agent-role">Gráficas animadas · Remotion · Lottie</div></div>
+          <div><div class="chat-agent-name">Reporte Semanal</div><div class="chat-agent-role">Analytics · ROAS · KPIs</div></div>
         </div>
       </div>
       <div class="chat-main">
         <div class="chat-header">
-          <span class="chat-header-emoji" id="chat-emoji">🎯</span>
+          <span class="chat-header-emoji" id="chat-emoji">🧠</span>
           <div style="flex:1">
-            <div class="chat-header-name" id="chat-name">Organizador</div>
+            <div class="chat-header-name" id="chat-name">Cerebro</div>
             <div class="chat-header-status">● online · responde al instante</div>
           </div>
           <div id="current-agent-badge" style="font-family:var(--font-mono);font-size:10px;color:var(--muted);padding:3px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;letter-spacing:.06em;text-transform:uppercase"></div>
@@ -1181,9 +1162,9 @@ body{background:#EBEBF0 !important}
         </div>
         <div class="chat-msgs" id="chat-msgs">
           <div class="msg agent">
-            <div class="msg-av">🎯</div>
+            <div class="msg-av">🧠</div>
             <div>
-              <div class="msg-bubble">Hola Roberto. Soy el Organizador — el CEO de tu agencia. Cuéntame qué necesitas y lo ejecuto.</div>
+              <div class="msg-bubble">Hola Roberto. Soy el Cerebro de Agencia AI.<br><br>Tengo todas las skills cargadas: psicología de venta, storytelling hipnótico, dirección cinematográfica, scoring musical. Conozco a todos tus clientes.<br><br>Dime qué necesitas — contenido, llamadas, redes sociales, reportes, ventas. Lo ejecuto desde aquí.</div>
               <div class="msg-time">ahora</div>
             </div>
           </div>
@@ -1204,7 +1185,7 @@ body{background:#EBEBF0 !important}
         <div class="chat-input-row" id="chat-input-row">
           <input type="file" id="img-input" accept="image/*" style="display:none" onchange="sendImage(this)">
           <button onclick="document.getElementById('img-input').click()" title="Enviar imagen" style="background:none;border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;color:var(--muted);font-size:16px;line-height:1">📎</button>
-          <input class="chat-input" id="chat-input" placeholder="Escríbele al Organizador..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}">
+          <input class="chat-input" id="chat-input" placeholder="Dile al Cerebro qué necesitas..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}">
           <button id="mic-btn" class="mic-btn" title="Mantén presionado para hablar">🎤</button>
           <button class="send-btn" id="send-btn" onclick="sendMsg()"><span class="send-btn-text">Enviar</span><span class="send-btn-icon" style="display:none">➤</span></button>
         </div>
@@ -1692,23 +1673,13 @@ const USER_ID      = '8534665260';
 const _CHAT_KEY    = 'chat_history_' + USER_ID;
 let chatHistory    = JSON.parse(localStorage.getItem(_CHAT_KEY) || '[]');
 const chatHistories = {};
-let currentAgentName = 'Organizador';
+let currentAgentName = 'Cerebro';
 
-/* ── Agent routing map ── */
+/* ── Agent routing map — todo pasa por el Cerebro (Organizador) ── */
 const AGENT_MAP = {
-  'Organizador':   { url: ORG_URL,      endpoint: '/organizador/chat' },
-  'Director':      { url: DIRECTOR_URL, endpoint: '/director/chat'    },
-  'Estrategia':    { url: STRATEGY_URL, endpoint: '/estratega/chat'   },
-  'Crew':          { url: 'https://worker-production-34f9.up.railway.app', endpoint: '/crew/chat' },
-  'Scheduler':     { url: ORG_URL,      endpoint: '/organizador/chat' },
-  'Analytics':     { url: 'https://upbeat-endurance.up.railway.app',   endpoint: '/analytics/chat' },
-  'CompositorBot': { url: 'https://compositorbot-production.up.railway.app', endpoint: '/compositor/chat' },
-  'Scraper':       { url: SCRAPER_URL,  endpoint: '/scraper/task'     },
-  'SEO':           { url: SEO_URL,      endpoint: '/seo/task'         },
-  'WebDesigner':   { url: 'https://agencia-ai-web-designer-production.up.railway.app', endpoint: '/web/chat' },
-  'Motion':        { url: 'https://agencia-ai-motion-production.up.railway.app', endpoint: '/motion/chat' },
+  'Cerebro': { url: ORG_URL, endpoint: '/organizador/chat' },
 };
-let currentAgent = AGENT_MAP['Organizador'];
+let currentAgent = AGENT_MAP['Cerebro'];
 
 /* ── Auto-reload on Railway deploy ── */
 (function(){
@@ -1755,17 +1726,7 @@ function showPanel(id,btn){
 }
 
 const _WELCOME={
-  'Organizador':   'Hola Roberto. Soy el Organizador — CEO de tu agencia.',
-  'Director':      'Hola Roberto. Soy el Director — copy, guiones y dirección creativa.',
-  'Crew':          'Hola Roberto. Soy Crew — producción de video e imágenes.',
-  'Estrategia':    'Hola Roberto. Soy Estrategia — campañas, SEO y funnels.',
-  'Scheduler':     'Hola Roberto. Soy Scheduler — publicación automática de contenido.',
-  'Analytics':     'Hola Roberto. Soy Analytics — reportes y métricas semanales.',
-  'CompositorBot': 'Hola Roberto. Soy CompositorBot — scoring y bandas sonoras.',
-  'Scraper':       'Hola Roberto. Soy el Scraper — inteligencia competitiva.',
-  'SEO':           'Hola Roberto. Soy el SEO Strategist — keywords y contenido.',
-  'WebDesigner':   'Hola Roberto. Soy el Web Designer — landing pages, canvas scroll y deploy a Hostinger. Dime qué página construimos.',
-  'Motion':        'Hola Roberto. Soy Motion Bot — intros, lower thirds, reels, stories y animaciones Lottie. Usa /intro, /lowerthird, /reel, /stories o /lottie, o dime qué necesitas.',
+  'Cerebro': 'Hola Roberto. Soy el Cerebro de Agencia AI.\n\nTengo cargadas todas las skills: psicología de venta, storytelling hipnótico, dirección cinematográfica y scoring musical. Conozco a todos tus clientes.\n\nDime qué necesitas — contenido, llamadas, redes sociales, reportes, ventas. Lo hago todo desde aquí.',
 };
 
 function toggleMobileTeam(){
@@ -1779,12 +1740,11 @@ function selectAgent(el,emoji,name,role){
   document.getElementById('chat-emoji').textContent=emoji;
   document.getElementById('chat-name').textContent=name;
   currentAgentName=name;
-  currentAgent=AGENT_MAP[name]||AGENT_MAP['Organizador'];
+  currentAgent=AGENT_MAP[name]||AGENT_MAP['Cerebro'];
   const input=document.getElementById('chat-input');
-  if(input)input.placeholder='Escríbele al '+name+'...';
+  if(input)input.placeholder='Dile al Cerebro qué necesitas...';
   const badge=document.getElementById('current-agent-badge');
-  const isRouted=!!AGENT_MAP[name]&&AGENT_MAP[name].url!==ORG_URL;
-  if(badge)badge.textContent=isRouted?'→ '+name:'→ Organizador';
+  if(badge)badge.textContent='🧠 Cerebro';
   const msgs=document.getElementById('chat-msgs');
   msgs.innerHTML='';
   const hist=chatHistories[name]||[];
