@@ -2410,6 +2410,7 @@ function toggleDrawer() {
 // ============ TEAM ============
 function renderTeam() {
   const grid = document.getElementById('teamGrid');
+  if (!grid) return;
   grid.innerHTML = agents.map(a => `
     <button class="agent-card" onclick="openChat('${a.id}')">
       <div class="agent-card-top">
