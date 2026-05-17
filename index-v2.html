@@ -36,22 +36,28 @@ window.AGENT_MAP = {
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 :root {
-  --bg: #0a0a10;
-  --bg-card: #12121c;
-  --bg-elevated: #1a1a28;
-  --bg-hover: #20202f;
-  --border: #232333;
-  --border-bright: #2f2f45;
-  --text: #f5f5fa;
-  --text-muted: #8b8b9e;
-  --text-dim: #5a5a70;
-  --accent: #a78bfa;
-  --accent-bright: #c4b5fd;
-  --accent-dim: rgba(167, 139, 250, 0.12);
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --danger: #f87171;
-  --info: #60a5fa;
+  --bg: #ffffff;
+  --bg-soft: #f8fafb;
+  --bg-card: #ffffff;
+  --bg-elevated: #f1f5f9;
+  --bg-hover: #e2e8f0;
+  --border: #e5e9ee;
+  --border-bright: #cbd5e1;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --accent: #059669;
+  --accent-bright: #10b981;
+  --accent-dim: rgba(16, 185, 129, 0.10);
+  --primary: #059669;
+  --primary-bright: #10b981;
+  --primary-dark: #047857;
+  --primary-dim: rgba(16, 185, 129, 0.08);
+  --primary-glow: rgba(16, 185, 129, 0.18);
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
   --sidebar-w: 240px;
   --topbar-h: 60px;
   --bottombar-h: 68px;
@@ -61,7 +67,7 @@ window.AGENT_MAP = {
 
 html, body {
   font-family: 'Inter', -apple-system, sans-serif;
-  background: var(--bg);
+  background: var(--bg-soft);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   height: 100vh;
@@ -198,7 +204,7 @@ input, textarea { font-family: inherit; }
   font-weight: 600; color: var(--text-muted);
 }
 .nav-item.active .nav-count { background: rgba(167, 139, 250, 0.2); color: var(--accent-bright); }
-.nav-item .nav-count.alert { background: var(--accent); color: #1a1a2a; }
+.nav-item .nav-count.alert { background: var(--accent); color: #fff; }
 
 .sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
 
@@ -223,7 +229,7 @@ input, textarea { font-family: inherit; }
   transition: all 0.15s;
   border: 1px solid transparent;
 }
-.btn-primary { background: var(--accent); color: #1a1a2a; }
+.btn-primary { background: var(--accent); color: #fff; }
 .btn-primary:hover { background: var(--accent-bright); }
 .btn-ghost { background: var(--bg-card); border-color: var(--border); color: var(--text); }
 .btn-ghost:hover { background: var(--bg-elevated); border-color: var(--border-bright); }
@@ -349,7 +355,7 @@ input, textarea { font-family: inherit; }
 }
 .message.user {
   background: var(--accent);
-  color: #1a1a2a;
+  color: #fff;
   border-bottom-right-radius: 4px;
   align-self: flex-end;
   font-weight: 500;
@@ -428,7 +434,7 @@ input, textarea { font-family: inherit; }
   width: 36px; height: 36px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   border-radius: 8px;
-  background: var(--accent); color: #1a1a2a;
+  background: var(--accent); color: #fff;
   transition: all 0.15s;
 }
 .send-btn:hover { background: var(--accent-bright); }
@@ -811,8 +817,8 @@ input, textarea { font-family: inherit; }
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 700;
 }
-.step-pill.active .step-num { background: var(--accent); color: #1a1a2a; }
-.step-pill.done .step-num { background: var(--success); color: #1a1a2a; }
+.step-pill.active .step-num { background: var(--accent); color: #fff; }
+.step-pill.done .step-num { background: var(--success); color: #fff; }
 .step-connector {
   flex-shrink: 0;
   width: 16px; height: 1px;
@@ -1034,7 +1040,7 @@ input, textarea { font-family: inherit; }
   font-size: 11px;
   margin-left: -4px;
 }
-.rec-play:hover { background: var(--accent); color: #1a1a2a; }
+.rec-play:hover { background: var(--accent); color: #fff; }
 .rec-status-pill {
   font-size: 10px;
   padding: 3px 8px;
@@ -1344,7 +1350,7 @@ input, textarea { font-family: inherit; }
   top: 0; right: 50%;
   transform: translateX(16px);
   background: var(--accent);
-  color: #1a1a2a;
+  color: #fff;
   font-size: 9px;
   font-weight: 700;
   padding: 1px 5px;
@@ -1901,14 +1907,14 @@ input, textarea { font-family: inherit; }
             <div class="integrations-grid" id="clientIntegrationsGrid"></div>
 
             <!-- HeyGen real config -->
-            <div id="heygenConfigCard" style="background:#1a1730;border:.5px solid #2a2540;border-radius:14px;padding:18px;margin-top:16px">
+            <div id="heygenConfigCard" style="background:#f0fdf4;border:.5px solid #d1fae5;border-radius:14px;padding:18px;margin-top:16px">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
                 <span style="font-size:20px">🎭</span>
                 <div>
                   <div style="font-weight:600;font-size:13px">HeyGen</div>
                   <div style="font-size:11px;color:var(--text-muted)">Avatar de video IA — talking head</div>
                 </div>
-                <span id="heygenStatus" style="margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;background:#2a2540;color:#94a3b8">Sin configurar</span>
+                <span id="heygenStatus" style="margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;background:#d1fae5;color:#94a3b8">Sin configurar</span>
               </div>
               <div style="display:grid;gap:10px">
                 <div>
@@ -1929,17 +1935,17 @@ input, textarea { font-family: inherit; }
                   <button class="btn btn-primary" style="flex:1;font-size:12px" onclick="guardarHeygenConfig()">💾 Guardar</button>
                 </div>
                 <div id="heygenConfigStatus" style="font-size:11px;color:var(--text-muted);min-height:16px"></div>
-                <div id="heygenPickerList" style="display:none;max-height:180px;overflow-y:auto;background:#150f25;border-radius:8px;padding:8px;font-size:12px"></div>
+                <div id="heygenPickerList" style="display:none;max-height:180px;overflow-y:auto;background:#f8fafb;border-radius:8px;padding:8px;font-size:12px"></div>
               </div>
             <!-- Facebook / Instagram per-client card -->
-            <div id="facebookConfigCard" style="background:#1a1730;border:.5px solid #2a2540;border-radius:14px;padding:18px;margin-top:16px">
+            <div id="facebookConfigCard" style="background:#f0fdf4;border:.5px solid #d1fae5;border-radius:14px;padding:18px;margin-top:16px">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
                 <span style="font-size:20px">📘</span>
                 <div>
                   <div style="font-weight:600;font-size:13px">Facebook / Instagram</div>
                   <div style="font-size:11px;color:var(--text-muted)">Publicación automática en redes sociales</div>
                 </div>
-                <span id="fbAdminStatus" style="margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;background:#2a2540;color:#94a3b8">Sin configurar</span>
+                <span id="fbAdminStatus" style="margin-left:auto;font-size:11px;padding:3px 10px;border-radius:20px;background:#d1fae5;color:#94a3b8">Sin configurar</span>
               </div>
               <div style="display:grid;gap:10px">
                 <div id="fbAdminPageInfo" style="font-size:12px;color:var(--text-muted);display:none">
@@ -2026,86 +2032,86 @@ input, textarea { font-family: inherit; }
         <div class="section-title" style="margin-bottom:4px">🎬 Marketing Studio</div>
         <div class="section-subtitle" style="margin-bottom:28px">Seedance 2.0 · kie.ai · RG Production</div>
 
-        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:12px">Tipo de video</div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#64748b;text-transform:uppercase;margin-bottom:12px">Tipo de video</div>
         <div id="ms-presets" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px">
-          <div class="ms-preset-card ms-active" onclick="msSelect(this,'ugc')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">👤</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">UGC</div><div style="font-size:11px;color:#7b6fa0">Video estilo usuario real</div></div>
-          <div class="ms-preset-card" onclick="msSelect(this,'tutorial')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">📋</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Tutorial</div><div style="font-size:11px;color:#7b6fa0">Paso a paso del producto</div></div>
-          <div class="ms-preset-card" onclick="msSelect(this,'tv_spot')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">📺</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">TV Spot</div><div style="font-size:11px;color:#7b6fa0">Comercial cinematográfico</div></div>
-          <div class="ms-preset-card" onclick="msSelect(this,'hyper_motion')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">⚡</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Hyper Motion</div><div style="font-size:11px;color:#7b6fa0">Alta energía y acción</div></div>
-          <div class="ms-preset-card" onclick="msSelect(this,'review')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">⭐</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Review</div><div style="font-size:11px;color:#7b6fa0">Testimonio de cliente</div></div>
-          <div class="ms-preset-card" onclick="msSelect(this,'wild_card')" style="background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">🃏</div><div style="font-size:13px;font-weight:600;color:#e8e0ff;margin-bottom:3px">Wild Card</div><div style="font-size:11px;color:#7b6fa0">Formato libre</div></div>
+          <div class="ms-preset-card ms-active" onclick="msSelect(this,'ugc')" style="background:#f0fdf4;border:.5px solid #d1fae5;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">👤</div><div style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:3px">UGC</div><div style="font-size:11px;color:#64748b">Video estilo usuario real</div></div>
+          <div class="ms-preset-card" onclick="msSelect(this,'tutorial')" style="background:#f0fdf4;border:.5px solid #d1fae5;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">📋</div><div style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:3px">Tutorial</div><div style="font-size:11px;color:#64748b">Paso a paso del producto</div></div>
+          <div class="ms-preset-card" onclick="msSelect(this,'tv_spot')" style="background:#f0fdf4;border:.5px solid #d1fae5;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">📺</div><div style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:3px">TV Spot</div><div style="font-size:11px;color:#64748b">Comercial cinematográfico</div></div>
+          <div class="ms-preset-card" onclick="msSelect(this,'hyper_motion')" style="background:#f0fdf4;border:.5px solid #d1fae5;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">⚡</div><div style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:3px">Hyper Motion</div><div style="font-size:11px;color:#64748b">Alta energía y acción</div></div>
+          <div class="ms-preset-card" onclick="msSelect(this,'review')" style="background:#f0fdf4;border:.5px solid #d1fae5;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">⭐</div><div style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:3px">Review</div><div style="font-size:11px;color:#64748b">Testimonio de cliente</div></div>
+          <div class="ms-preset-card" onclick="msSelect(this,'wild_card')" style="background:#f0fdf4;border:.5px solid #d1fae5;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s"><div style="font-size:22px;margin-bottom:8px">🃏</div><div style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:3px">Wild Card</div><div style="font-size:11px;color:#64748b">Formato libre</div></div>
         </div>
 
         <!-- Controls row: Aspect Ratio + Duration + Avatar -->
         <div style="display:flex;gap:10px;margin-bottom:20px;align-items:stretch;flex-wrap:wrap">
 
           <!-- Aspect Ratio -->
-          <div style="flex:1;min-width:140px;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px;position:relative">
-            <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Aspect Ratio</div>
+          <div style="flex:1;min-width:140px;background:#f0fdf4;border:.5px solid #d1fae5;border-radius:10px;padding:12px 14px;position:relative">
+            <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:#64748b;text-transform:uppercase;margin-bottom:8px">Aspect Ratio</div>
             <div id="ms-ar-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
-              <button class="ms-ar-btn ms-ar-active" onclick="msAR(this,'9:16')" style="background:#1e1a3a;border:.5px solid #7c5cfc;border-radius:6px;padding:5px 4px;font-size:11px;color:#e8e0ff;cursor:pointer">9:16</button>
-              <button class="ms-ar-btn" onclick="msAR(this,'16:9')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:5px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">16:9</button>
-              <button class="ms-ar-btn" onclick="msAR(this,'1:1')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:5px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">1:1</button>
-              <button class="ms-ar-btn" onclick="msAR(this,'4:3')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:5px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">4:3</button>
-              <button class="ms-ar-btn" onclick="msAR(this,'3:4')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:5px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">3:4</button>
-              <button class="ms-ar-btn" onclick="msAR(this,'21:9')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:5px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">21:9</button>
+              <button class="ms-ar-btn ms-ar-active" onclick="msAR(this,'9:16')" style="background:#dcfce7;border:.5px solid #059669;border-radius:6px;padding:5px 4px;font-size:11px;color:#0f172a;cursor:pointer">9:16</button>
+              <button class="ms-ar-btn" onclick="msAR(this,'16:9')" style="background:#f8fafb;border:.5px solid #d1fae5;border-radius:6px;padding:5px 4px;font-size:11px;color:#64748b;cursor:pointer">16:9</button>
+              <button class="ms-ar-btn" onclick="msAR(this,'1:1')" style="background:#f8fafb;border:.5px solid #d1fae5;border-radius:6px;padding:5px 4px;font-size:11px;color:#64748b;cursor:pointer">1:1</button>
+              <button class="ms-ar-btn" onclick="msAR(this,'4:3')" style="background:#f8fafb;border:.5px solid #d1fae5;border-radius:6px;padding:5px 4px;font-size:11px;color:#64748b;cursor:pointer">4:3</button>
+              <button class="ms-ar-btn" onclick="msAR(this,'3:4')" style="background:#f8fafb;border:.5px solid #d1fae5;border-radius:6px;padding:5px 4px;font-size:11px;color:#64748b;cursor:pointer">3:4</button>
+              <button class="ms-ar-btn" onclick="msAR(this,'21:9')" style="background:#f8fafb;border:.5px solid #d1fae5;border-radius:6px;padding:5px 4px;font-size:11px;color:#64748b;cursor:pointer">21:9</button>
             </div>
           </div>
 
           <!-- Duration -->
-          <div style="flex:0 0 110px;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px">
-            <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Duration</div>
+          <div style="flex:0 0 110px;background:#f0fdf4;border:.5px solid #d1fae5;border-radius:10px;padding:12px 14px">
+            <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:#64748b;text-transform:uppercase;margin-bottom:8px">Duration</div>
             <div style="display:flex;flex-direction:column;gap:5px">
-              <button class="ms-dur-btn ms-dur-active" onclick="msDur(this,'5')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:6px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">5s</button>
-              <button class="ms-dur-btn ms-dur-active" onclick="msDur(this,'8')" style="background:#1e1a3a;border:.5px solid #7c5cfc;border-radius:6px;padding:6px 4px;font-size:11px;color:#e8e0ff;cursor:pointer">8s</button>
-              <button class="ms-dur-btn" onclick="msDur(this,'10')" style="background:#150f25;border:.5px solid #2a2540;border-radius:6px;padding:6px 4px;font-size:11px;color:#9b8ec4;cursor:pointer">10s</button>
+              <button class="ms-dur-btn ms-dur-active" onclick="msDur(this,'5')" style="background:#f8fafb;border:.5px solid #d1fae5;border-radius:6px;padding:6px 4px;font-size:11px;color:#64748b;cursor:pointer">5s</button>
+              <button class="ms-dur-btn ms-dur-active" onclick="msDur(this,'8')" style="background:#dcfce7;border:.5px solid #059669;border-radius:6px;padding:6px 4px;font-size:11px;color:#0f172a;cursor:pointer">8s</button>
+              <button class="ms-dur-btn" onclick="msDur(this,'10')" style="background:#f8fafb;border:.5px solid #d1fae5;border-radius:6px;padding:6px 4px;font-size:11px;color:#64748b;cursor:pointer">10s</button>
             </div>
           </div>
 
           <!-- Avatar + Audio -->
-          <div style="flex:0 0 110px;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px">
-            <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Extras</div>
+          <div style="flex:0 0 110px;background:#f0fdf4;border:.5px solid #d1fae5;border-radius:10px;padding:12px 14px">
+            <div style="font-size:10px;font-weight:600;letter-spacing:.08em;color:#64748b;text-transform:uppercase;margin-bottom:8px">Extras</div>
             <label style="display:flex;align-items:center;gap:7px;cursor:pointer;margin-bottom:8px">
-              <div id="ms-avatar-toggle" onclick="msToggle('avatar')" style="width:28px;height:16px;background:#2a2540;border-radius:8px;position:relative;cursor:pointer;transition:background .18s">
-                <div id="ms-avatar-knob" style="width:12px;height:12px;background:#7b6fa0;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .18s"></div>
+              <div id="ms-avatar-toggle" onclick="msToggle('avatar')" style="width:28px;height:16px;background:#d1fae5;border-radius:8px;position:relative;cursor:pointer;transition:background .18s">
+                <div id="ms-avatar-knob" style="width:12px;height:12px;background:#64748b;border-radius:50%;position:absolute;top:2px;left:2px;transition:left .18s"></div>
               </div>
-              <span style="font-size:11px;color:#9b8ec4">Avatar</span>
+              <span style="font-size:11px;color:#64748b">Avatar</span>
             </label>
             <label style="display:flex;align-items:center;gap:7px;cursor:pointer">
-              <div id="ms-audio-toggle" onclick="msToggle('audio')" style="width:28px;height:16px;background:#7c5cfc;border-radius:8px;position:relative;cursor:pointer;transition:background .18s">
+              <div id="ms-audio-toggle" onclick="msToggle('audio')" style="width:28px;height:16px;background:#059669;border-radius:8px;position:relative;cursor:pointer;transition:background .18s">
                 <div id="ms-audio-knob" style="width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:2px;left:14px;transition:left .18s"></div>
               </div>
-              <span style="font-size:11px;color:#9b8ec4">Audio</span>
+              <span style="font-size:11px;color:#64748b">Audio</span>
             </label>
           </div>
 
         </div>
 
-        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:8px">Brief</div>
-        <textarea id="ms-brief" placeholder="Describe el contenido: tono, audiencia, mensaje, CTA..." style="width:100%;background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;color:#e8e0ff;resize:vertical;min-height:90px;box-sizing:border-box;outline:none;margin-bottom:12px"></textarea>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#64748b;text-transform:uppercase;margin-bottom:8px">Brief</div>
+        <textarea id="ms-brief" placeholder="Describe el contenido: tono, audiencia, mensaje, CTA..." style="width:100%;background:#f0fdf4;border:.5px solid #d1fae5;border-radius:10px;padding:12px 14px;font-size:13px;font-family:inherit;color:#0f172a;resize:vertical;min-height:90px;box-sizing:border-box;outline:none;margin-bottom:12px"></textarea>
 
         <!-- Referencias desde Drive -->
         <div style="margin-bottom:16px;">
-          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:10px;">Referencias desde Drive</div>
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#64748b;text-transform:uppercase;margin-bottom:10px;">Referencias desde Drive</div>
           <div id="ms-ref-slots"></div>
-          <div id="ms-ref-picker" style="display:none;background:#1a1730;border:.5px solid #2a2540;border-radius:12px;padding:12px;margin-top:8px;max-height:200px;overflow-y:auto;">
+          <div id="ms-ref-picker" style="display:none;background:#f0fdf4;border:.5px solid #d1fae5;border-radius:12px;padding:12px;margin-top:8px;max-height:200px;overflow-y:auto;">
             <div id="ms-ref-list" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-              <div style="color:#7b6fa0;font-size:12px;grid-column:1/-1;">Cargando…</div>
+              <div style="color:#64748b;font-size:12px;grid-column:1/-1;">Cargando…</div>
             </div>
           </div>
         </div>
 
-        <button onclick="msGenerar()" style="width:100%;background:linear-gradient(135deg,#7c5cfc,#a78bfa);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;margin-bottom:8px">✦ Generar Video</button>
-        <div id="ms-status" style="font-size:12px;color:#7c5cfc;min-height:16px;margin-bottom:12px"></div>
-        <div id="ms-output" style="background:#1a1730;border:.5px solid #2a2540;border-radius:10px;padding:14px;min-height:60px;font-size:12px;color:#9b8ec4;white-space:pre-wrap;display:none"></div>
+        <button onclick="msGenerar()" style="width:100%;background:linear-gradient(135deg,#059669,#10b981);border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;margin-bottom:8px">✦ Generar Video</button>
+        <div id="ms-status" style="font-size:12px;color:#059669;min-height:16px;margin-bottom:12px"></div>
+        <div id="ms-output" style="background:#f0fdf4;border:.5px solid #d1fae5;border-radius:10px;padding:14px;min-height:60px;font-size:12px;color:#64748b;white-space:pre-wrap;display:none"></div>
 
         <!-- Recent Jobs — synced across desktop & mobile via Supabase -->
         <div style="margin-top:24px">
-          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#7b6fa0;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#64748b;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px">
             Trabajos recientes
-            <button onclick="loadMSJobs()" style="background:none;border:none;color:#7b6fa0;font-size:12px;cursor:pointer;padding:0">↻</button>
+            <button onclick="loadMSJobs()" style="background:none;border:none;color:#64748b;font-size:12px;cursor:pointer;padding:0">↻</button>
           </div>
-          <div id="ms-jobs-list" style="font-size:12px;color:#7b6fa0">Cargando...</div>
+          <div id="ms-jobs-list" style="font-size:12px;color:#64748b">Cargando...</div>
         </div>
       </div>
     </section>
@@ -2444,7 +2450,9 @@ function getAgentGreeting(a) {
 }
 
 function renderAgentDropdown() {
-  document.getElementById('agentDropdown').innerHTML = agents.map(a => `
+  const dd = document.getElementById('agentDropdown');
+  if (!dd) return;
+  dd.innerHTML = agents.map(a => `
     <button class="dropdown-item ${a.id === activeAgent.id ? 'active' : ''}" onclick="event.stopPropagation(); openChat('${a.id}'); closeAllDropdowns();">
       <div class="agent-emoji" style="width: 28px; height: 28px; font-size: 14px;">${a.emoji}</div>
       <div><div style="font-weight: 600; font-size: 13px;">${a.name}</div><div style="font-size: 11px; color: var(--text-muted);">${a.role}</div></div>
@@ -2852,7 +2860,7 @@ async function loadHeygenConfigDB() {
         statusEl.style.color = '#4ade80';
       } else {
         statusEl.textContent = 'Sin configurar';
-        statusEl.style.background = '#2a2540';
+        statusEl.style.background = '#d1fae5';
         statusEl.style.color = '#94a3b8';
       }
     }
@@ -2891,9 +2899,9 @@ async function loadHeygenAvatares() {
     const d = await r.json();
     if (!d.ok) { listEl.textContent = '❌ ' + (d.error || 'Error'); return; }
     if (!d.avatares.length) { listEl.textContent = 'Sin avatares en la cuenta.'; return; }
-    listEl.innerHTML = '<div style="font-weight:600;margin-bottom:6px;color:#c4b5fd">Clic para seleccionar:</div>' +
-      d.avatares.map(a => `<div onclick="document.getElementById('heygenAvatarId').value='${a.avatar_id}'" style="padding:5px 8px;border-radius:6px;cursor:pointer;color:#e8e0ff;margin-bottom:3px;background:#1a1730;border:.5px solid #2a2540">
-        ${a.avatar_name || a.avatar_id} <span style="color:#7b6fa0;font-size:10px">${a.avatar_id}</span>
+    listEl.innerHTML = '<div style="font-weight:600;margin-bottom:6px;color:#059669">Clic para seleccionar:</div>' +
+      d.avatares.map(a => `<div onclick="document.getElementById('heygenAvatarId').value='${a.avatar_id}'" style="padding:5px 8px;border-radius:6px;cursor:pointer;color:#0f172a;margin-bottom:3px;background:#f0fdf4;border:.5px solid #d1fae5">
+        ${a.avatar_name || a.avatar_id} <span style="color:#64748b;font-size:10px">${a.avatar_id}</span>
       </div>`).join('');
   } catch(e) { listEl.textContent = '❌ ' + e.message; }
 }
@@ -2908,9 +2916,9 @@ async function loadHeygenVoces() {
     const d = await r.json();
     if (!d.ok) { listEl.textContent = '❌ ' + (d.error || 'Error'); return; }
     if (!d.voces.length) { listEl.textContent = 'Sin voces en español.'; return; }
-    listEl.innerHTML = '<div style="font-weight:600;margin-bottom:6px;color:#c4b5fd">Clic para seleccionar:</div>' +
-      d.voces.map(v => `<div onclick="document.getElementById('heygenVoiceId').value='${v.voice_id}'" style="padding:5px 8px;border-radius:6px;cursor:pointer;color:#e8e0ff;margin-bottom:3px;background:#1a1730;border:.5px solid #2a2540">
-        ${v.display_name || v.voice_id} <span style="color:#7b6fa0;font-size:10px">${v.gender || ''} · ${v.language || ''}</span>
+    listEl.innerHTML = '<div style="font-weight:600;margin-bottom:6px;color:#059669">Clic para seleccionar:</div>' +
+      d.voces.map(v => `<div onclick="document.getElementById('heygenVoiceId').value='${v.voice_id}'" style="padding:5px 8px;border-radius:6px;cursor:pointer;color:#0f172a;margin-bottom:3px;background:#f0fdf4;border:.5px solid #d1fae5">
+        ${v.display_name || v.voice_id} <span style="color:#64748b;font-size:10px">${v.gender || ''} · ${v.language || ''}</span>
       </div>`).join('');
   } catch(e) { listEl.textContent = '❌ ' + e.message; }
 }
@@ -2941,7 +2949,7 @@ async function loadFacebookStatusDB() {
 
     if (statusEl) {
       statusEl.textContent = fbConnected ? '● Conectado' : 'Sin configurar';
-      statusEl.style.background = fbConnected ? '#064e3b' : '#2a2540';
+      statusEl.style.background = fbConnected ? '#064e3b' : '#d1fae5';
       statusEl.style.color = fbConnected ? '#10b981' : '#94a3b8';
     }
     if (pageInfo) pageInfo.style.display = fbConnected ? '' : 'none';
@@ -3318,17 +3326,17 @@ function renderStepContent() {
     <div class="step-desc">Marca las que tiene el cliente.</div>
     <div class="choice-grid" style="margin-bottom:16px">${['Twilio','Stripe','Facebook Ads','WhatsApp Business','Gmail/SendGrid','Google Calendar','HeyGen'].map(int => `<button class="choice ${onboardingData.integrations.includes(int)?'selected':''}" onclick="toggleChoice(this,'integration','${int}');renderStepContent()"><span class="choice-icon">🔌</span><span class="choice-label">${int}</span></button>`).join('')}</div>
     ${onboardingData.integrations.includes('HeyGen') ? `
-    <div style="background:#1a1730;border:.5px solid #7c5cfc;border-radius:12px;padding:16px;margin-top:4px">
-      <div style="font-size:12px;font-weight:600;color:#c4b5fd;margin-bottom:12px">🎭 Configuración HeyGen</div>
+    <div style="background:#f0fdf4;border:.5px solid #059669;border-radius:12px;padding:16px;margin-top:4px">
+      <div style="font-size:12px;font-weight:600;color:#059669;margin-bottom:12px">🎭 Configuración HeyGen</div>
       <div class="field-group" style="margin-bottom:10px">
-        <label class="field-label">Avatar ID <span style="color:#7b6fa0;font-size:11px">(cópialo desde HeyGen → Avatars)</span></label>
+        <label class="field-label">Avatar ID <span style="color:#64748b;font-size:11px">(cópialo desde HeyGen → Avatars)</span></label>
         <input class="field-input" placeholder="ej: avatar_0001abc..." value="${onboardingData.heygen_avatar_id||''}" oninput="onboardingData.heygen_avatar_id=this.value" />
       </div>
       <div class="field-group">
-        <label class="field-label">Voice ID <span style="color:#7b6fa0;font-size:11px">(cópialo desde HeyGen → Voices)</span></label>
+        <label class="field-label">Voice ID <span style="color:#64748b;font-size:11px">(cópialo desde HeyGen → Voices)</span></label>
         <input class="field-input" placeholder="ej: 1bd001a9aa..." value="${onboardingData.heygen_voice_id||''}" oninput="onboardingData.heygen_voice_id=this.value" />
       </div>
-      <div style="font-size:11px;color:#7b6fa0;margin-top:8px">💡 También puedes configurarlo después desde Telegram: <code>/heygen_avatares</code> y <code>/heygen_config</code></div>
+      <div style="font-size:11px;color:#64748b;margin-top:8px">💡 También puedes configurarlo después desde Telegram: <code>/heygen_avatares</code> y <code>/heygen_config</code></div>
     </div>` : ''}
   `;
 
@@ -3407,7 +3415,7 @@ async function nextStep() {
             <a href="sms:?body=${smsMsg}" style="padding:10px;border-radius:10px;background:#3b82f6;color:#fff;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center">📱 SMS</a>
             <a href="mailto:${encodeURIComponent(clientEmail)}?subject=${emailSub}&body=${emailBody}" style="padding:10px;border-radius:10px;background:#6366f1;color:#fff;font-size:13px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center">📧 Email</a>
           </div>
-          <button onclick="document.getElementById('inviteOverlay').style.display='none';resetOnboarding();loadConfigClientes();loadClientSwitcher();" style="width:100%;padding:11px;border-radius:10px;border:none;background:var(--accent,#7c5cfc);color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px">Entendido →</button>
+          <button onclick="document.getElementById('inviteOverlay').style.display='none';resetOnboarding();loadConfigClientes();loadClientSwitcher();" style="width:100%;padding:11px;border-radius:10px;border:none;background:var(--accent,#059669);color:#fff;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px">Entendido →</button>
         </div>`;
         overlay.style.display = 'flex';
         btn.textContent = '🚀 Lanzar cliente'; btn.disabled = false;
@@ -3671,7 +3679,7 @@ const REF_SLOTS_DEF = [
   { key: 'last_frame',   label: '🏁 Last Frame',           type: 'image', multi: false, max: 1, color: '#10b981' },
   { key: 'ref_images',   label: '🖼️ Imagen de referencia', type: 'image', multi: true,  max: 9, color: 'var(--accent)', tip: 'Recomendado: 3-4 ángulos (overhead, 45°, frontal, detalle)' },
   { key: 'ref_videos',   label: '🎬 Video de referencia',  type: 'video', multi: true,  max: 3, color: 'var(--info)',    tip: 'Máx 3 videos · duración total ≤ 15 seg' },
-  { key: 'ref_audios',   label: '🎵 Audio de referencia',  type: 'audio', multi: true,  max: 3, color: '#a78bfa',       tip: 'Máx 3 audios · duración total ≤ 15 seg' },
+  { key: 'ref_audios',   label: '🎵 Audio de referencia',  type: 'audio', multi: true,  max: 3, color: '#10b981',       tip: 'Máx 3 audios · duración total ≤ 15 seg' },
 ];
 
 // Data: gen and ms each have their own slots
@@ -3702,14 +3710,14 @@ function renderRefSlots(ctx) {
     const tipHtml = slot.tip ? `<span title="${slot.tip}" style="font-size:10px;color:#6b7280;cursor:help;flex-shrink:0;">ⓘ</span>` : '';
     const btnLabel = slot.type === 'image' ? '+ imagen' : slot.type === 'video' ? '+ video' : '+ audio';
     const btn = atMax ? '' : `<button onclick="openRefPicker('${ctx}','${slot.key}','${slot.type}')"
-      style="background:${isMs?'#1a1730':'var(--bg-elevated)'};border:${isMs?'.5px solid #2a2540':'1px solid var(--border)'};
-      border-radius:8px;padding:4px 10px;font-size:11px;color:${isMs?'#9b8ec4':'var(--text-muted)'};cursor:pointer;white-space:nowrap;flex-shrink:0;">
+      style="background:${isMs?'#f0fdf4':'var(--bg-elevated)'};border:${isMs?'.5px solid #d1fae5':'1px solid var(--border)'};
+      border-radius:8px;padding:4px 10px;font-size:11px;color:${isMs?'#64748b':'var(--text-muted)'};cursor:pointer;white-space:nowrap;flex-shrink:0;">
       ${btnLabel}</button>`;
     const showBtn = slot.multi ? !atMax : !files.length;
     const separator = i === 1 ? mutualNote : '';
-    return `${separator}<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid ${isMs?'#1a1730':'var(--border)'};">
+    return `${separator}<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid ${isMs?'#f0fdf4':'var(--border)'};">
       <span style="font-size:12px;font-weight:600;color:${slot.color};min-width:160px;flex-shrink:0;">${slot.label} ${tipHtml}</span>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;">${chips || `<span style="font-size:11px;color:${isMs?'#7b6fa0':'var(--text-dim)'}">Sin archivo</span>`}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;flex:1;">${chips || `<span style="font-size:11px;color:${isMs?'#64748b':'var(--text-dim)'}">Sin archivo</span>`}</div>
       ${counter}
       ${showBtn ? btn : ''}
     </div>`;
@@ -3929,18 +3937,18 @@ let msAvatarOn = false;
 let msAudioOn = true;
 
 function msSelect(el, id) {
-  document.querySelectorAll('.ms-preset-card').forEach(c => { c.style.borderColor='#2a2540'; c.style.background='#1a1730'; });
-  el.style.borderColor = '#7c5cfc'; el.style.background = '#1e1a3a';
+  document.querySelectorAll('.ms-preset-card').forEach(c => { c.style.borderColor='#d1fae5'; c.style.background='#f0fdf4'; });
+  el.style.borderColor = '#059669'; el.style.background = '#dcfce7';
   msPreset = id;
 }
 function msAR(el, val) {
-  document.querySelectorAll('.ms-ar-btn').forEach(b => { b.style.borderColor='#2a2540'; b.style.background='#150f25'; b.style.color='#9b8ec4'; });
-  el.style.borderColor = '#7c5cfc'; el.style.background = '#1e1a3a'; el.style.color = '#e8e0ff';
+  document.querySelectorAll('.ms-ar-btn').forEach(b => { b.style.borderColor='#d1fae5'; b.style.background='#f8fafb'; b.style.color='#64748b'; });
+  el.style.borderColor = '#059669'; el.style.background = '#dcfce7'; el.style.color = '#0f172a';
   msAspectRatio = val;
 }
 function msDur(el, val) {
-  document.querySelectorAll('.ms-dur-btn').forEach(b => { b.style.borderColor='#2a2540'; b.style.background='#150f25'; b.style.color='#9b8ec4'; });
-  el.style.borderColor = '#7c5cfc'; el.style.background = '#1e1a3a'; el.style.color = '#e8e0ff';
+  document.querySelectorAll('.ms-dur-btn').forEach(b => { b.style.borderColor='#d1fae5'; b.style.background='#f8fafb'; b.style.color='#64748b'; });
+  el.style.borderColor = '#059669'; el.style.background = '#dcfce7'; el.style.color = '#0f172a';
   msDuration = val;
 }
 function msToggle(type) {
@@ -3948,16 +3956,16 @@ function msToggle(type) {
     msAvatarOn = !msAvatarOn;
     const t = document.getElementById('ms-avatar-toggle');
     const k = document.getElementById('ms-avatar-knob');
-    t.style.background = msAvatarOn ? '#7c5cfc' : '#2a2540';
+    t.style.background = msAvatarOn ? '#059669' : '#d1fae5';
     k.style.left = msAvatarOn ? '14px' : '2px';
-    k.style.background = msAvatarOn ? '#fff' : '#7b6fa0';
+    k.style.background = msAvatarOn ? '#fff' : '#64748b';
   } else {
     msAudioOn = !msAudioOn;
     const t = document.getElementById('ms-audio-toggle');
     const k = document.getElementById('ms-audio-knob');
-    t.style.background = msAudioOn ? '#7c5cfc' : '#2a2540';
+    t.style.background = msAudioOn ? '#059669' : '#d1fae5';
     k.style.left = msAudioOn ? '14px' : '2px';
-    k.style.background = msAudioOn ? '#fff' : '#7b6fa0';
+    k.style.background = msAudioOn ? '#fff' : '#64748b';
   }
 }
 async function msGenerar() {
@@ -4045,13 +4053,13 @@ async function loadMSJobs() {
     el.innerHTML = jobs.map(j => {
       const ts = j.ts ? new Date(j.ts).toLocaleString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
       const statusIcon = j.status === 'processing' ? '⏳' : j.status === 'error' ? '❌' : '✓';
-      const statusColor = j.status === 'processing' ? '#a78bfa' : j.status === 'error' ? '#f87171' : '#34d399';
-      return `<div style="background:#1a1730;border:.5px solid #2a2540;border-radius:8px;padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:10px">
+      const statusColor = j.status === 'processing' ? '#10b981' : j.status === 'error' ? '#f87171' : '#34d399';
+      return `<div style="background:#f0fdf4;border:.5px solid #d1fae5;border-radius:8px;padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:10px">
         <span style="font-size:16px">${{ugc:'👤',tutorial:'📋',tv_spot:'📺',hyper_motion:'⚡',review:'⭐',wild_card:'🃏'}[j.preset]||'🎬'}</span>
         <div style="flex:1;min-width:0">
-          <div style="font-size:12px;color:#e8e0ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.brief || '—'}</div>
-          <div style="font-size:10px;color:#7b6fa0;margin-top:2px">${j.preset} · ${j.aspect_ratio} · ${j.duration}s · ${ts}</div>
-          ${j.job_id ? `<div style="font-size:10px;color:#7b6fa0;margin-top:1px">ID: ${j.job_id}</div>` : ''}
+          <div style="font-size:12px;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${j.brief || '—'}</div>
+          <div style="font-size:10px;color:#64748b;margin-top:2px">${j.preset} · ${j.aspect_ratio} · ${j.duration}s · ${ts}</div>
+          ${j.job_id ? `<div style="font-size:10px;color:#64748b;margin-top:1px">ID: ${j.job_id}</div>` : ''}
         </div>
         <span style="color:${statusColor};font-size:13px">${statusIcon}</span>
       </div>`;
