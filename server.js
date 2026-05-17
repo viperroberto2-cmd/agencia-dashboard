@@ -1340,6 +1340,7 @@ app.post('/api/chat/:agentId', (req, res) => {
   const payload = Object.assign({}, req.body);
   if (payload.message && !payload.mensaje) payload.mensaje = payload.message;
   if (payload.client && !payload.cliente) payload.cliente = payload.client;
+  if (payload.client) payload.cliente_id = payload.client;  // organizador Pydantic model uses cliente_id
   const body = JSON.stringify(payload);
   const u = new URL(target);
   const opts = {

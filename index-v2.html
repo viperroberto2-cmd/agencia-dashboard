@@ -4723,7 +4723,8 @@ async function loadClientSwitcher() {
     list.innerHTML = d.clientes.map(c => {
       const emoji = SECTOR_EMOJI[c.industria] || '🏢';
       const sub = [c.industria, c.precio_producto ? '$' + c.precio_producto : null].filter(Boolean).join(' · ');
-      return `<button class="dropdown-item ${currentClient === c.nombre ? 'active' : ''}" data-client="${c.nombre}" onclick="selectClient('${c.nombre}','${emoji}','${c.nombre}',event)">
+      const cid = c.user_id || c.nombre;
+      return `<button class="dropdown-item ${currentClient === cid ? 'active' : ''}" data-client="${cid}" onclick="selectClient('${cid}','${emoji}','${c.nombre}',event)">
         <div class="client-avatar">${emoji}</div>
         <div>
           <div style="font-weight:600;">${c.nombre}</div>
@@ -4735,7 +4736,7 @@ async function loadClientSwitcher() {
     if (!currentClient) {
       const first = d.clientes[0];
       const emoji = SECTOR_EMOJI[first.industria] || '🏢';
-      selectClient(first.nombre, emoji, first.nombre, null);
+      selectClient(first.user_id || first.nombre, emoji, first.nombre, null);
     }
   } catch(e) { console.warn('loadClientSwitcher:', e.message); }
 }
