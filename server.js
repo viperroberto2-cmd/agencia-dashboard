@@ -1288,7 +1288,7 @@ app.post('/api/document-docx', async (req, res) => {
       body
     });
     const d = await r.json();
-    res.json({ response: d.content?.[0]?.text || 'Sin respuesta' });
+    res.json({ response: d.content?.[0]?.text || 'Sin respuesta', texto: text.slice(0, 12000) });
   } catch(e) { res.json({ response: 'Error procesando DOCX: ' + e.message }); }
 });
 

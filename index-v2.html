@@ -3157,7 +3157,16 @@ async function handleAttach(input) {
     try {
       const r = await fetch('/api/document-docx', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({doc_b64:b64,caption,filename:file.name,client:currentClient})});
       const d = await r.json();
-      setBotReply(d.response || d.respuesta || 'Sin respuesta');
+      const reply = d.response || d.respuesta || 'Sin respuesta';
+      setBotReply(reply);
+      // Agregar documento al historial para que mensajes siguientes lo tengan
+      if (activeAgent && activeAgent.id) {
+        if (!chatHistories[activeAgent.id]) chatHistories[activeAgent.id] = [];
+        const docTexto = d.texto ? `[${file.name}]:\n${d.texto}\n\n${caption}` : caption;
+        chatHistories[activeAgent.id].push({ role: 'user', content: docTexto });
+        chatHistories[activeAgent.id].push({ role: 'assistant', content: reply });
+        if (chatHistories[activeAgent.id].length > 20) chatHistories[activeAgent.id].splice(0, 2);
+      }
     } catch(e) { setBotReply('⚠ Error: ' + e.message); }
 
   } else if (isText) {
