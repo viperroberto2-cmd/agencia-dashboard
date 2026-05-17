@@ -3057,7 +3057,7 @@ function sendMessage() {
 
   const agentCfg = window.AGENT_MAP && window.AGENT_MAP[activeAgent.id];
   if (!agentCfg) {
-    document.getElementById(loadId).querySelector('.message').textContent = simulateReply(text);
+    document.getElementById(loadId).querySelector('.message').innerHTML = renderMd(simulateReply(text));
     return;
   }
   // Track history per agent (cap at 20 messages to avoid token overflow)
@@ -3075,7 +3075,7 @@ function sendMessage() {
     const reply = d.response || d.respuesta || d.message || d.reply || d.content || JSON.stringify(d);
     chatHistories[activeAgent.id].push({ role: 'assistant', content: reply });
     document.getElementById(loadId).querySelector('.message').style.opacity = '1';
-    document.getElementById(loadId).querySelector('.message').textContent = reply;
+    document.getElementById(loadId).querySelector('.message').innerHTML = renderMd(reply);
     msgs.scrollTop = msgs.scrollHeight;
   })
   .catch(e => {
@@ -3100,6 +3100,41 @@ function simulateReply(text) {
 
 function escapeHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
+function renderMd(s) {
+  if (!s) return '';
+  let h = escapeHtml(s);
+  // Code blocks
+  h = h.replace(/```[\s\S]*?```/g, m => `<pre style="background:var(--bg-card);padding:10px;border-radius:6px;overflow-x:auto;font-size:12px;margin:6px 0">${m.slice(3,-3).replace(/^[a-z]*\n/,'')}</pre>`);
+  // Inline code
+  h = h.replace(/`([^`]+)`/g, '<code style="background:var(--bg-card);padding:2px 5px;border-radius:3px;font-size:12px">$1</code>');
+  // Headers
+  h = h.replace(/^### (.+)$/gm, '<strong style="font-size:13px;display:block;margin:8px 0 4px">$1</strong>');
+  h = h.replace(/^## (.+)$/gm, '<strong style="font-size:14px;display:block;margin:10px 0 5px;color:var(--accent)">$1</strong>');
+  h = h.replace(/^# (.+)$/gm, '<strong style="font-size:15px;display:block;margin:12px 0 6px;color:var(--accent)">$1</strong>');
+  // Bold / italic
+  h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Horizontal rule
+  h = h.replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid var(--border);margin:8px 0">');
+  // Tables (basic)
+  h = h.replace(/^\|(.+)\|$/gm, (m, row) => {
+    if (/^[-| ]+$/.test(row)) return '';
+    const cells = row.split('|').map(c => `<td style="padding:3px 8px;border:1px solid var(--border)">${c.trim()}</td>`).join('');
+    return `<tr>${cells}</tr>`;
+  });
+  h = h.replace(/(<tr>[\s\S]*?<\/tr>)/g, '<table style="border-collapse:collapse;font-size:12px;margin:6px 0;width:100%">$1</table>');
+  // Lists
+  h = h.replace(/^[\s]*[-*•] (.+)$/gm, '<li style="margin:2px 0;padding-left:4px">$1</li>');
+  h = h.replace(/(<li[\s\S]*?<\/li>)/g, '<ul style="padding-left:18px;margin:4px 0">$1</ul>');
+  h = h.replace(/<\/ul>\s*<ul[^>]*>/g, '');
+  // Numbered lists
+  h = h.replace(/^\d+\. (.+)$/gm, '<li style="margin:2px 0;padding-left:4px">$1</li>');
+  // Newlines
+  h = h.replace(/\n\n/g, '<br><br>');
+  h = h.replace(/\n/g, '<br>');
+  return h;
+}
+
 async function handleAttach(input) {
   const file = input.files[0];
   if (!file) return;
@@ -3120,7 +3155,7 @@ async function handleAttach(input) {
   }
   function setBotReply(text) {
     const el = document.getElementById(loadId);
-    if (el) { el.querySelector('.message').style.opacity='1'; el.querySelector('.message').textContent=text; }
+    if (el) { el.querySelector('.message').style.opacity='1'; el.querySelector('.message').innerHTML=renderMd(text); }
     msgs.scrollTop = msgs.scrollHeight;
   }
 
