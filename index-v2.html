@@ -1631,6 +1631,7 @@ input, textarea { font-family: inherit; }
         <div class="nav-label">Operación</div>
         <button class="nav-item" data-section="crm" onclick="goSection('crm')"><span class="nav-icon">👥</span> CRM<span class="nav-count" id="navCrmCount"></span></button>
         <button class="nav-item" data-section="scheduler" onclick="goSection('scheduler')"><span class="nav-icon">📅</span> Scheduler</button>
+        <button class="nav-item" data-section="grabaciones" onclick="goSection('grabaciones')"><span class="nav-icon">🎙️</span> Grabaciones</button>
         <button class="nav-item" data-section="marketing" onclick="goSection('marketing')"><span class="nav-icon">🎬</span> Marketing Studio</button>
         <button class="nav-item" data-section="onboarding" onclick="goSection('onboarding')"><span class="nav-icon">🚀</span> Onboarding</button>
       </div>
@@ -1800,8 +1801,7 @@ input, textarea { font-family: inherit; }
     <!-- GRABACIONES -->
     <section class="section" id="section-grabaciones">
       <div class="section-header">
-        <div><div class="section-title">🎙️ Grabaciones de llamadas</div><div class="section-subtitle">Llamadas de María (Arranca) y Sofía (clínica) · transcript automático</div></div>
-        <button class="btn btn-ghost" onclick="alert('Descargando todas las grabaciones...')">⬇ Descargar todo</button>
+        <div><div class="section-title">🎙️ Grabaciones de llamadas</div><div class="section-subtitle" id="recordingsSubtitle">Selecciona un cliente para ver sus llamadas</div></div>
       </div>
       <div class="filter-bar" id="recordingFilters"></div>
       <div class="recordings-table" id="recordingsTable"></div>
@@ -2274,6 +2274,7 @@ input, textarea { font-family: inherit; }
       <div class="nav-label">Operación</div>
       <button class="nav-item" data-section="crm" onclick="goSection('crm'); toggleDrawer()"><span class="nav-icon">👥</span> CRM</button>
       <button class="nav-item" data-section="scheduler" onclick="goSection('scheduler'); toggleDrawer()"><span class="nav-icon">📅</span> Scheduler</button>
+      <button class="nav-item" data-section="grabaciones" onclick="goSection('grabaciones'); toggleDrawer()"><span class="nav-icon">🎙️</span> Grabaciones</button>
       <button class="nav-item" data-section="marketing" onclick="goSection('marketing'); toggleDrawer()"><span class="nav-icon">🎬</span> Marketing Studio</button>
       <button class="nav-item" data-section="onboarding" onclick="goSection('onboarding'); toggleDrawer()"><span class="nav-icon">🚀</span> Onboarding</button>
     </div>
@@ -2396,6 +2397,9 @@ function selectClient(id, emoji, name, ev) {
     loadHeygenConfigDB();
     loadFacebookStatusDB();
   }
+  // Si estamos en grabaciones, recargar por el cliente nuevo
+  const secGrab = document.getElementById('section-grabaciones');
+  if (secGrab && secGrab.classList.contains('active')) loadRecordingsFromAPI();
 }
 
 function toggleDrawer() {
@@ -4997,6 +5001,11 @@ async function createUserManual() {
 
 // ── RECORDINGS REAL ───────────────────────────────────────────────
 async function loadRecordingsFromAPI() {
+  const subtitle = document.getElementById('recordingsSubtitle');
+  if (subtitle) {
+    const clientName = currentClient || 'todos los clientes';
+    subtitle.textContent = `Llamadas grabadas por Twilio · ${clientName}`;
+  }
   try {
     const clienteParam = currentClient ? `?cliente=${encodeURIComponent(currentClient)}` : '';
     const res = await fetch(`/api/recordings${clienteParam}`);
