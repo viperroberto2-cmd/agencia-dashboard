@@ -2817,6 +2817,8 @@ function populatePortal(d) {
   loadPortalStats();
   loadPortalLeads();
   loadPortalRecordings();
+  // Mostrar chat con Cerebro
+  if (window.showCerebroFab) window.showCerebroFab();
 }
 
 // ── Settings Edit Mode ────────────────────────────────────────────────────────
@@ -3259,6 +3261,204 @@ function populateSocialStatus(d) {
   const savedEmail = sessionStorage.getItem('rg_email');
   const savedPw    = sessionStorage.getItem('rg_pw');
   if (savedEmail && savedPw) _authWithCredentials(savedEmail, savedPw);
+})();
+</script>
+
+<!-- ═══════════════════════════════════════ CEREBRO CHAT WIDGET ══════════════ -->
+<style>
+#cerebro-fab{
+  position:fixed;bottom:24px;right:24px;width:56px;height:56px;
+  background:var(--primary,#059669);border:none;border-radius:50%;
+  box-shadow:0 4px 20px rgba(5,150,105,.4);cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  font-size:24px;z-index:9000;transition:transform .15s;
+}
+#cerebro-fab:hover{transform:scale(1.08)}
+#cerebro-fab .fab-badge{
+  position:absolute;top:-2px;right:-2px;width:14px;height:14px;
+  background:#ef4444;border-radius:50%;border:2px solid #fff;
+  display:none;
+}
+#cerebro-drawer{
+  position:fixed;bottom:88px;right:24px;width:340px;
+  background:#fff;border-radius:16px;
+  box-shadow:0 8px 40px rgba(0,0,0,.18);
+  display:none;flex-direction:column;overflow:hidden;
+  z-index:9001;max-height:500px;
+}
+#cerebro-drawer.open{display:flex}
+.cerebro-header{
+  background:var(--primary,#059669);color:#fff;
+  padding:14px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.cerebro-header .ch-avatar{
+  width:34px;height:34px;background:rgba(255,255,255,.2);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;
+}
+.cerebro-header .ch-info{flex:1}
+.cerebro-header .ch-name{font-size:14px;font-weight:700}
+.cerebro-header .ch-sub{font-size:11px;opacity:.8}
+.cerebro-header .ch-close{background:none;border:none;color:#fff;cursor:pointer;font-size:18px;padding:4px}
+#cerebro-msgs{
+  flex:1;overflow-y:auto;padding:12px;
+  display:flex;flex-direction:column;gap:8px;
+  background:#f8fafb;
+}
+.cerebro-bubble{
+  max-width:80%;padding:8px 12px;border-radius:12px;
+  font-size:13px;line-height:1.5;
+}
+.cerebro-bubble.bot{
+  background:#fff;border:1px solid #e5e9ee;
+  border-bottom-left-radius:4px;align-self:flex-start;color:#0f172a;
+}
+.cerebro-bubble.user{
+  background:var(--primary,#059669);color:#fff;
+  border-bottom-right-radius:4px;align-self:flex-end;
+}
+.cerebro-bubble.typing{color:#94a3b8;font-style:italic}
+#cerebro-input-row{
+  padding:10px 12px;background:#fff;border-top:1px solid #e5e9ee;
+  display:flex;gap:8px;flex-shrink:0;
+}
+#cerebro-input{
+  flex:1;padding:8px 12px;border:1.5px solid #e5e9ee;border-radius:10px;
+  font-size:13px;font-family:inherit;outline:none;resize:none;
+}
+#cerebro-input:focus{border-color:var(--primary,#059669)}
+#cerebro-send{
+  width:36px;height:36px;background:var(--primary,#059669);border:none;
+  border-radius:10px;cursor:pointer;color:#fff;font-size:16px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+</style>
+
+<!-- Floating button (shown after login) -->
+<button id="cerebro-fab" onclick="toggleCerebroChat()" title="Chat con Cerebro">
+  🧠
+  <span class="fab-badge" id="cerebro-badge"></span>
+</button>
+
+<!-- Chat drawer -->
+<div id="cerebro-drawer">
+  <div class="cerebro-header">
+    <div class="ch-avatar">🧠</div>
+    <div class="ch-info">
+      <div class="ch-name">Cerebro</div>
+      <div class="ch-sub">Tu agente de marketing</div>
+    </div>
+    <button class="ch-close" onclick="toggleCerebroChat()">✕</button>
+  </div>
+  <div id="cerebro-msgs"></div>
+  <div id="cerebro-input-row">
+    <textarea id="cerebro-input" rows="1" placeholder="Escríbeme..." onkeydown="cerebroKey(event)"></textarea>
+    <button id="cerebro-send" onclick="cerebroSend()">➤</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var _msgs = [];
+  var _open = false;
+  var _sending = false;
+
+  function getClientId(){
+    if(typeof portalClient !== 'undefined' && portalClient){
+      return portalClient.cliente_id || portalClient.user_id || portalClient.nombre || 'arranca';
+    }
+    return 'arranca';
+  }
+
+  function getNombre(){
+    if(typeof portalClient !== 'undefined' && portalClient){
+      return (portalClient.owner||portalClient.nombre||'').split(' ')[0] || 'Cliente';
+    }
+    return 'Cliente';
+  }
+
+  window.showCerebroFab = function(){
+    var fab = document.getElementById('cerebro-fab');
+    if(fab){ fab.style.display='flex'; }
+    if(_msgs.length === 0){
+      addMsg('bot', '¡Hola ' + getNombre() + '! 👋 Soy Cerebro, tu agente de marketing. ¿En qué te puedo ayudar hoy?');
+    }
+  };
+
+  window.toggleCerebroChat = function(){
+    _open = !_open;
+    var drawer = document.getElementById('cerebro-drawer');
+    if(_open){ drawer.classList.add('open'); scrollBottom(); }
+    else { drawer.classList.remove('open'); }
+  };
+
+  function addMsg(who, text){
+    _msgs.push({who, text});
+    var div = document.createElement('div');
+    div.className = 'cerebro-bubble ' + who;
+    div.textContent = text;
+    var container = document.getElementById('cerebro-msgs');
+    if(container){ container.appendChild(div); scrollBottom(); }
+  }
+
+  function scrollBottom(){
+    var c = document.getElementById('cerebro-msgs');
+    if(c) c.scrollTop = c.scrollHeight;
+  }
+
+  function showTyping(){
+    var c = document.getElementById('cerebro-msgs');
+    if(!c) return;
+    var d = document.createElement('div');
+    d.className = 'cerebro-bubble bot typing';
+    d.id = 'cerebro-typing';
+    d.textContent = 'Cerebro está escribiendo...';
+    c.appendChild(d);
+    scrollBottom();
+    return d;
+  }
+
+  function removeTyping(){
+    var t = document.getElementById('cerebro-typing');
+    if(t) t.remove();
+  }
+
+  window.cerebroKey = function(e){
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); cerebroSend(); }
+  };
+
+  window.cerebroSend = async function(){
+    if(_sending) return;
+    var inp = document.getElementById('cerebro-input');
+    var msg = (inp.value || '').trim();
+    if(!msg) return;
+    inp.value = '';
+    _sending = true;
+    addMsg('user', msg);
+    var typing = showTyping();
+    var historial = _msgs.slice(0,-1).filter(m => m.who !== 'bot' || !m.typing).map(m => ({
+      role: m.who === 'user' ? 'user' : 'assistant',
+      content: m.text
+    }));
+    try {
+      var r = await fetch('/api/chat/organizador', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          mensaje: msg,
+          cliente_id: getClientId(),
+          user_id: getClientId(),
+          historial: historial
+        })
+      });
+      var d = await r.json();
+      removeTyping();
+      addMsg('bot', d.respuesta || d.response || d.reply || 'No pude procesar tu mensaje.');
+    } catch(e) {
+      removeTyping();
+      addMsg('bot', 'Error de conexión. Intenta de nuevo.');
+    }
+    _sending = false;
+  };
 })();
 </script>
 </body>
