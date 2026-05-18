@@ -1349,6 +1349,29 @@ app.get('/api/mensajes/organizador', (req, res) => {
   pr.end();
 });
 
+// Streaming dedicado para el organizador
+app.post('/api/stream/organizador', (req, res) => {
+  const payload = Object.assign({}, req.body);
+  if (payload.message && !payload.mensaje) payload.mensaje = payload.message;
+  if (payload.client && !payload.cliente) payload.cliente = payload.client;
+  if (payload.client) payload.cliente_id = payload.client;
+  const body = JSON.stringify(payload);
+  const u = new URL(`${ORG_BASE}/organizador/stream`);
+  const opts = {
+    hostname: u.hostname, path: u.pathname, method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+    timeout: 120000,
+  };
+  res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no' });
+  const pr = https.request(opts, (r) => {
+    r.on('data', chunk => res.write(chunk));
+    r.on('end', () => res.end());
+  });
+  pr.on('error', e => { res.write(`data: ${JSON.stringify({error: e.message})}\n\n`); res.end(); });
+  pr.on('timeout', () => { pr.destroy(); res.write('data: [DONE]\n\n'); res.end(); });
+  pr.write(body); pr.end();
+});
+
 app.post('/api/chat/:agentId', (req, res) => {
   const target = CHAT_TARGETS[req.params.agentId];
   if (!target) return res.status(404).json({ response: 'Agente no encontrado.' });
@@ -1357,27 +1380,6 @@ app.post('/api/chat/:agentId', (req, res) => {
   if (payload.client && !payload.cliente) payload.cliente = payload.client;
   if (payload.client) payload.cliente_id = payload.client;
   const body = JSON.stringify(payload);
-
-  // Organizador usa streaming SSE
-  if (req.params.agentId === 'organizador') {
-    const u = new URL(target);
-    const opts = {
-      hostname: u.hostname, path: u.pathname, method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-      timeout: 120000,
-    };
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('X-Accel-Buffering', 'no');
-    const pr = https.request(opts, (r) => {
-      r.on('data', chunk => res.write(chunk));
-      r.on('end', () => res.end());
-    });
-    pr.on('error', e => { res.write(`data: ${JSON.stringify({error: e.message})}\n\n`); res.end(); });
-    pr.on('timeout', () => { pr.destroy(); res.write('data: [DONE]\n\n'); res.end(); });
-    pr.write(body); pr.end();
-    return;
-  }
   const u = new URL(target);
   const opts = {
     hostname: u.hostname, path: u.pathname, method: 'POST',

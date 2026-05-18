@@ -3067,16 +3067,18 @@ function sendMessage() {
   const historial = chatHistories[activeAgent.id].slice();
   const agentId = activeAgent.id;
   const msgEl = document.getElementById(loadId).querySelector('.message');
-  fetch(agentCfg.url + agentCfg.endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: text, mensaje: text, client: currentClient, historial })
-  }).then(r => {
-    const ct = r.headers.get('content-type') || '';
-    if (ct.includes('event-stream')) {
-      // Streaming SSE — token a token
-      let fullReply = '';
-      msgEl.style.opacity = '1';
+  const isOrg = agentId === 'organizador';
+  const fetchUrl = isOrg ? '/api/stream/organizador' : agentCfg.url + agentCfg.endpoint;
+
+  if (isOrg) {
+    // Streaming SSE directo
+    let fullReply = '';
+    msgEl.style.opacity = '1';
+    fetch(fetchUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, mensaje: text, client: currentClient, historial })
+    }).then(r => {
       const reader = r.body.getReader();
       const decoder = new TextDecoder();
       function pump() {
@@ -3096,33 +3098,33 @@ function sendMessage() {
               const obj = JSON.parse(raw);
               if (obj.token) { fullReply += obj.token; msgEl.innerHTML = renderMd(fullReply); msgs.scrollTop = msgs.scrollHeight; }
               else if (obj.error) { msgEl.textContent = '⚠ ' + obj.error; }
-              else if (obj.respuesta) { fullReply = obj.respuesta; msgEl.innerHTML = renderMd(fullReply); }
             } catch(e) {}
           });
           return pump();
         });
       }
-      pump().catch(e => { msgEl.textContent = '⚠ ' + e.message; });
-    } else {
-      // JSON normal
-      r.json().then(d => {
-        const reply = d.response || d.respuesta || d.message || d.reply || d.content || JSON.stringify(d);
-        chatHistories[agentId].push({ role: 'assistant', content: reply });
-        msgEl.style.opacity = '1';
-        msgEl.innerHTML = renderMd(reply);
-        msgs.scrollTop = msgs.scrollHeight;
-        if (agentId === 'organizador' && reply.includes('aparecerá aquí')) startBgPolling(currentClient);
-      }).catch(e => {
-        chatHistories[agentId].pop();
-        msgEl.style.opacity = '1';
-        msgEl.textContent = '⚠ Sin respuesta del agente (' + e.message + ')';
-      });
-    }
-  }).catch(e => {
-    chatHistories[agentId].pop();
-    msgEl.style.opacity = '1';
-    msgEl.textContent = '⚠ Sin respuesta (' + e.message + ')';
-  });
+      return pump();
+    }).catch(e => { msgEl.style.opacity='1'; msgEl.textContent = '⚠ ' + e.message; });
+  } else {
+    fetch(agentCfg.url + agentCfg.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, mensaje: text, client: currentClient, historial })
+    })
+    .then(r => r.json())
+    .then(d => {
+      const reply = d.response || d.respuesta || d.message || d.reply || d.content || JSON.stringify(d);
+      chatHistories[agentId].push({ role: 'assistant', content: reply });
+      msgEl.style.opacity = '1';
+      msgEl.innerHTML = renderMd(reply);
+      msgs.scrollTop = msgs.scrollHeight;
+    })
+    .catch(e => {
+      chatHistories[agentId].pop();
+      msgEl.style.opacity = '1';
+      msgEl.textContent = '⚠ Sin respuesta del agente (' + e.message + ')';
+    });
+  }
 }
 
 function sendQuick(text) { chatInput.value = text; sendMessage(); }
