@@ -1319,7 +1319,7 @@ app.post('/api/document', async (req, res) => {
 
 // ── Chat proxy — all agent chats go through here (avoids CORS) ───────────────
 const CHAT_TARGETS = {
-  organizador: 'https://web-production-77871.up.railway.app/organizador/chat',
+  organizador: 'https://web-production-77871.up.railway.app/organizador/stream',
   director:    'https://agencia-ai-production.up.railway.app/director/chat',
   crew:        'https://worker-production-34f9.up.railway.app/crew/chat',
   estrategia:  'https://worker-production-035f.up.railway.app/estratega/chat',
@@ -1352,12 +1352,32 @@ app.get('/api/mensajes/organizador', (req, res) => {
 app.post('/api/chat/:agentId', (req, res) => {
   const target = CHAT_TARGETS[req.params.agentId];
   if (!target) return res.status(404).json({ response: 'Agente no encontrado.' });
-  // Send both message and mensaje so bots using either field name work
   const payload = Object.assign({}, req.body);
   if (payload.message && !payload.mensaje) payload.mensaje = payload.message;
   if (payload.client && !payload.cliente) payload.cliente = payload.client;
-  if (payload.client) payload.cliente_id = payload.client;  // organizador Pydantic model uses cliente_id
+  if (payload.client) payload.cliente_id = payload.client;
   const body = JSON.stringify(payload);
+
+  // Organizador usa streaming SSE
+  if (req.params.agentId === 'organizador') {
+    const u = new URL(target);
+    const opts = {
+      hostname: u.hostname, path: u.pathname, method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+      timeout: 120000,
+    };
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('X-Accel-Buffering', 'no');
+    const pr = https.request(opts, (r) => {
+      r.on('data', chunk => res.write(chunk));
+      r.on('end', () => res.end());
+    });
+    pr.on('error', e => { res.write(`data: ${JSON.stringify({error: e.message})}\n\n`); res.end(); });
+    pr.on('timeout', () => { pr.destroy(); res.write('data: [DONE]\n\n'); res.end(); });
+    pr.write(body); pr.end();
+    return;
+  }
   const u = new URL(target);
   const opts = {
     hostname: u.hostname, path: u.pathname, method: 'POST',

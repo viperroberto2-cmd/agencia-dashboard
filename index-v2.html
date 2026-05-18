@@ -3065,6 +3065,52 @@ function sendMessage() {
   chatHistories[activeAgent.id].push({ role: 'user', content: text });
   if (chatHistories[activeAgent.id].length > 20) chatHistories[activeAgent.id].splice(0, 2);
   const historial = chatHistories[activeAgent.id].slice();
+  if (activeAgent.id === 'organizador') {
+    // Streaming para el organizador — respuesta token a token
+    let fullReply = '';
+    const msgEl = document.getElementById(loadId).querySelector('.message');
+    msgEl.style.opacity = '1';
+    fetch(agentCfg.url + agentCfg.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, mensaje: text, client: currentClient, historial })
+    }).then(r => {
+      const reader = r.body.getReader();
+      const decoder = new TextDecoder();
+      function pump() {
+        return reader.read().then(({ done, value }) => {
+          if (done) {
+            if (fullReply) {
+              chatHistories['organizador'].push({ role: 'assistant', content: fullReply });
+              if (fullReply.includes('aparecerá aquí')) startBgPolling(currentClient);
+            }
+            return;
+          }
+          const chunk = decoder.decode(value, { stream: true });
+          chunk.split('\n').forEach(line => {
+            if (!line.startsWith('data: ')) return;
+            const raw = line.slice(6).trim();
+            if (raw === '[DONE]') return;
+            try {
+              const obj = JSON.parse(raw);
+              if (obj.token) {
+                fullReply += obj.token;
+                msgEl.innerHTML = renderMd(fullReply);
+                msgs.scrollTop = msgs.scrollHeight;
+              } else if (obj.error) {
+                msgEl.textContent = '⚠ ' + obj.error;
+              }
+            } catch(e) {}
+          });
+          return pump();
+        });
+      }
+      pump();
+    }).catch(e => {
+      chatHistories['organizador'].pop();
+      msgEl.textContent = '⚠ Sin respuesta (' + e.message + ')';
+    });
+  } else {
   fetch(agentCfg.url + agentCfg.endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -3077,17 +3123,13 @@ function sendMessage() {
     document.getElementById(loadId).querySelector('.message').style.opacity = '1';
     document.getElementById(loadId).querySelector('.message').innerHTML = renderMd(reply);
     msgs.scrollTop = msgs.scrollHeight;
-    // Si es tarea background, arrancar polling
-    if (activeAgent.id === 'organizador' && reply && reply.includes('aparecerá aquí')) {
-      startBgPolling(currentClient);
-    }
   })
   .catch(e => {
-    // Remove the user message we added since the request failed
     chatHistories[activeAgent.id].pop();
     document.getElementById(loadId).querySelector('.message').textContent = '⚠ Sin respuesta del agente (' + e.message + ')';
     document.getElementById(loadId).querySelector('.message').style.opacity = '1';
   });
+  }
 }
 
 function sendQuick(text) { chatInput.value = text; sendMessage(); }
