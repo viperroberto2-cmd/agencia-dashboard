@@ -2342,7 +2342,17 @@ let calendarDayFilter = null;
 
 let activeAgent = agents[0];
 let currentClient = null;
-const chatHistories = {};  // per-agent conversation history for context
+// Chat history — persisted in localStorage so reloads don't wipe conversations
+function _saveChatHistories() {
+  try { localStorage.setItem('agencia_chat_histories', JSON.stringify(chatHistories)); } catch(e) {}
+}
+function _loadChatHistories() {
+  try {
+    const raw = localStorage.getItem('agencia_chat_histories');
+    if (raw) Object.assign(chatHistories, JSON.parse(raw));
+  } catch(e) {}
+}
+const chatHistories = {};
 let inboxFilter = 'all';
 let driveFilter = 'all';
 let recordingFilter = 'all';
@@ -2436,7 +2446,17 @@ function openChat(agentId) {
   document.getElementById('activeAgentEmoji').textContent = a.emoji;
   document.getElementById('activeAgentName').textContent = a.name;
   const msgs = document.getElementById('chatMessages');
-  msgs.innerHTML = `<div class="message-group"><div class="message-meta">${a.name} · ahora</div><div class="message bot">${getAgentGreeting(a)}</div></div>`;
+  // Render greeting + saved history
+  let html = `<div class="message-group"><div class="message-meta">${a.name} · ahora</div><div class="message bot">${getAgentGreeting(a)}</div></div>`;
+  for (const m of chatHistories[a.id]) {
+    if (m.role === 'user') {
+      html += `<div class="message-group user"><div class="message-meta" style="text-align:right">Tú · antes</div><div class="message user">${escapeHtml(m.content)}</div></div>`;
+    } else {
+      html += `<div class="message-group"><div class="message-meta">${a.name} · antes</div><div class="message bot">${renderMd(m.content)}</div></div>`;
+    }
+  }
+  msgs.innerHTML = html;
+  msgs.scrollTop = msgs.scrollHeight;
   goSection('chat');
 }
 
@@ -3065,6 +3085,7 @@ function sendMessage() {
   if (!chatHistories[activeAgent.id]) chatHistories[activeAgent.id] = [];
   chatHistories[activeAgent.id].push({ role: 'user', content: text });
   if (chatHistories[activeAgent.id].length > 20) chatHistories[activeAgent.id].splice(0, 2);
+  _saveChatHistories();
   const historial = chatHistories[activeAgent.id].slice();
   const agentId = activeAgent.id;
   const msgEl = document.getElementById(loadId).querySelector('.message');
@@ -3090,6 +3111,7 @@ function sendMessage() {
         return reader.read().then(({ done, value }) => {
           if (done) {
             chatHistories[agentId].push({ role: 'assistant', content: fullText });
+            _saveChatHistories();
             msgEl.innerHTML = renderMd(fullText);
             msgs.scrollTop = msgs.scrollHeight;
             if (fullText.includes('aparecerá aquí')) startBgPolling(currentClient);
@@ -3103,6 +3125,7 @@ function sendMessage() {
             const data = line.slice(6).trim();
             if (data === '[DONE]') {
               chatHistories[agentId].push({ role: 'assistant', content: fullText });
+              _saveChatHistories();
               msgEl.innerHTML = renderMd(fullText);
               msgs.scrollTop = msgs.scrollHeight;
               if (fullText.includes('aparecerá aquí')) startBgPolling(currentClient);
@@ -3141,6 +3164,7 @@ function sendMessage() {
     .then(d => {
       const reply = d.response || d.respuesta || d.message || d.reply || d.content || JSON.stringify(d);
       chatHistories[agentId].push({ role: 'assistant', content: reply });
+      _saveChatHistories();
       msgEl.style.opacity = '1';
       msgEl.innerHTML = renderMd(reply);
       msgs.scrollTop = msgs.scrollHeight;
@@ -3615,6 +3639,7 @@ function renderUsers() {
 }
 
 // ============ INIT ============
+_loadChatHistories();
 renderTeam();
 renderCRM();
 renderCalendar(); // draws empty shell with current month
