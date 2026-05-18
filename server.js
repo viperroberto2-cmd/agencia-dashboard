@@ -1333,6 +1333,22 @@ const CHAT_TARGETS = {
   compositor:  'https://compositorbot-production.up.railway.app/compositor/chat',
 };
 
+const ORG_BASE = 'https://web-production-77871.up.railway.app';
+
+app.get('/api/mensajes/organizador', (req, res) => {
+  const clientId = req.query.client || 'arranca';
+  const u = new URL(`${ORG_BASE}/organizador/mensajes/${encodeURIComponent(clientId)}`);
+  const opts = { hostname: u.hostname, path: u.pathname, method: 'GET', timeout: 8000 };
+  const pr = https.request(opts, (r) => {
+    let d = '';
+    r.on('data', c => d += c);
+    r.on('end', () => { try { res.json(JSON.parse(d)); } catch(e) { res.json({ mensajes: [] }); } });
+  });
+  pr.on('error', () => res.json({ mensajes: [] }));
+  pr.on('timeout', () => { pr.destroy(); res.json({ mensajes: [] }); });
+  pr.end();
+});
+
 app.post('/api/chat/:agentId', (req, res) => {
   const target = CHAT_TARGETS[req.params.agentId];
   if (!target) return res.status(404).json({ response: 'Agente no encontrado.' });

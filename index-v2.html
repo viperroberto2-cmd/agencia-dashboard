@@ -3077,6 +3077,10 @@ function sendMessage() {
     document.getElementById(loadId).querySelector('.message').style.opacity = '1';
     document.getElementById(loadId).querySelector('.message').innerHTML = renderMd(reply);
     msgs.scrollTop = msgs.scrollHeight;
+    // Si es tarea background, arrancar polling
+    if (activeAgent.id === 'organizador' && reply && reply.includes('aparecerá aquí')) {
+      startBgPolling(currentClient);
+    }
   })
   .catch(e => {
     // Remove the user message we added since the request failed
@@ -3087,6 +3091,30 @@ function sendMessage() {
 }
 
 function sendQuick(text) { chatInput.value = text; sendMessage(); }
+
+let _bgPollTimer = null;
+function startBgPolling(clientId) {
+  if (_bgPollTimer) clearInterval(_bgPollTimer);
+  let attempts = 0;
+  _bgPollTimer = setInterval(async () => {
+    attempts++;
+    if (attempts > 75) { clearInterval(_bgPollTimer); _bgPollTimer = null; return; } // max 5 min
+    try {
+      const r = await fetch(`/api/mensajes/organizador?client=${encodeURIComponent(clientId)}`);
+      const d = await r.json();
+      if (d.mensajes && d.mensajes.length > 0) {
+        clearInterval(_bgPollTimer); _bgPollTimer = null;
+        const msgs = document.getElementById('chatMessages');
+        d.mensajes.forEach(msg => {
+          if (!chatHistories['organizador']) chatHistories['organizador'] = [];
+          chatHistories['organizador'].push({ role: 'assistant', content: msg });
+          msgs.innerHTML += `<div class="message-group"><div class="message-meta">Organizador · ahora</div><div class="message bot">${renderMd(msg)}</div></div>`;
+        });
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+    } catch(e) {}
+  }, 4000);
+}
 
 function simulateReply(text) {
   const t = text.toLowerCase();
