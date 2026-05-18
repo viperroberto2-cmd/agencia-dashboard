@@ -2342,17 +2342,55 @@ let calendarDayFilter = null;
 
 let activeAgent = agents[0];
 let currentClient = null;
-// Chat history — persisted in localStorage so reloads don't wipe conversations
+// Chat history — persisted in Supabase (cross-device) + localStorage (instant fallback)
+const chatHistories = {};
+
 function _saveChatHistories() {
   try { localStorage.setItem('agencia_chat_histories', JSON.stringify(chatHistories)); } catch(e) {}
 }
-function _loadChatHistories() {
+
+// Append the last message of an agent to Supabase (append-only, fast)
+async function _saveAgentHistory(agentId) {
+  _saveChatHistories(); // localStorage always instant
+  const msgs = chatHistories[agentId];
+  if (!msgs || !msgs.length) return;
+  const last = msgs[msgs.length - 1];
+  try {
+    await fetch('/api/chat/history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: 'roberto', agent_id: agentId, messages: [last] })
+    });
+  } catch(e) { console.warn('chat history save failed:', e.message); }
+}
+
+// Load all agents' histories from Supabase on startup
+async function _loadChatHistories() {
+  // Use localStorage immediately so UI is fast
   try {
     const raw = localStorage.getItem('agencia_chat_histories');
     if (raw) Object.assign(chatHistories, JSON.parse(raw));
   } catch(e) {}
+  // Then hydrate from Supabase (source of truth, works cross-device)
+  try {
+    const r = await fetch('/api/chat/history?user_id=roberto&limit=200');
+    const data = await r.json();
+    if (data.ok && data.messages.length) {
+      // Group by agent_id
+      const fresh = {};
+      for (const row of data.messages) {
+        if (!fresh[row.agent_id]) fresh[row.agent_id] = [];
+        fresh[row.agent_id].push({ role: row.role, content: row.content });
+      }
+      Object.assign(chatHistories, fresh);
+      localStorage.setItem('agencia_chat_histories', JSON.stringify(chatHistories));
+      // Re-render active agent chat with fresh data
+      if (typeof selectAgent === 'function' && window._activeAgentObj) {
+        selectAgent(window._activeAgentObj);
+      }
+    }
+  } catch(e) { console.warn('chat history load from Supabase failed:', e.message); }
 }
-const chatHistories = {};
 let inboxFilter = 'all';
 let driveFilter = 'all';
 let recordingFilter = 'all';
@@ -2457,6 +2495,7 @@ function openChat(agentId) {
   }
   msgs.innerHTML = html;
   msgs.scrollTop = msgs.scrollHeight;
+  window._activeAgentObj = a;
   goSection('chat');
 }
 
@@ -3085,7 +3124,7 @@ function sendMessage() {
   if (!chatHistories[activeAgent.id]) chatHistories[activeAgent.id] = [];
   chatHistories[activeAgent.id].push({ role: 'user', content: text });
   if (chatHistories[activeAgent.id].length > 20) chatHistories[activeAgent.id].splice(0, 2);
-  _saveChatHistories();
+  _saveAgentHistory(activeAgent.id);
   const historial = chatHistories[activeAgent.id].slice();
   const agentId = activeAgent.id;
   const msgEl = document.getElementById(loadId).querySelector('.message');
@@ -3111,7 +3150,7 @@ function sendMessage() {
         return reader.read().then(({ done, value }) => {
           if (done) {
             chatHistories[agentId].push({ role: 'assistant', content: fullText });
-            _saveChatHistories();
+            _saveAgentHistory(agentId);
             msgEl.innerHTML = renderMd(fullText);
             msgs.scrollTop = msgs.scrollHeight;
             if (fullText.includes('aparecerá aquí')) startBgPolling(currentClient);
@@ -3125,7 +3164,7 @@ function sendMessage() {
             const data = line.slice(6).trim();
             if (data === '[DONE]') {
               chatHistories[agentId].push({ role: 'assistant', content: fullText });
-              _saveChatHistories();
+              _saveAgentHistory(agentId);
               msgEl.innerHTML = renderMd(fullText);
               msgs.scrollTop = msgs.scrollHeight;
               if (fullText.includes('aparecerá aquí')) startBgPolling(currentClient);
@@ -3164,7 +3203,7 @@ function sendMessage() {
     .then(d => {
       const reply = d.response || d.respuesta || d.message || d.reply || d.content || JSON.stringify(d);
       chatHistories[agentId].push({ role: 'assistant', content: reply });
-      _saveChatHistories();
+      _saveAgentHistory(agentId);
       msgEl.style.opacity = '1';
       msgEl.innerHTML = renderMd(reply);
       msgs.scrollTop = msgs.scrollHeight;
@@ -3639,7 +3678,7 @@ function renderUsers() {
 }
 
 // ============ INIT ============
-_loadChatHistories();
+_loadChatHistories(); // async — starts loading from Supabase in background
 renderTeam();
 renderCRM();
 renderCalendar(); // draws empty shell with current month

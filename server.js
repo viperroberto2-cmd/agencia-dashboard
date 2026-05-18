@@ -1656,6 +1656,48 @@ app.get('/api/devagent/runs', async (req, res) => {
 
 app.get('/devagent', (_req, res) => res.sendFile(path.join(__dirname, 'devagent.html')));
 
+// ── Chat history — Supabase persistence ──────────────────────────────────────
+// GET /api/chat/history?agent_id=organizador&user_id=roberto&limit=40
+app.get('/api/chat/history', async (req, res) => {
+  try {
+    const { agent_id, user_id = 'roberto', limit = 40 } = req.query;
+    let path = `/chat_history?user_id=eq.${encodeURIComponent(user_id)}&order=created_at.asc&limit=${limit}`;
+    if (agent_id) path += `&agent_id=eq.${encodeURIComponent(agent_id)}`;
+    const r = await sbFetch(path, { prefer: 'return=representation' });
+    const rows = await r.json();
+    if (!r.ok) return res.json({ ok: false, error: rows });
+    res.json({ ok: true, messages: rows });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+// POST /api/chat/history — save a batch of messages
+// body: { user_id, agent_id, messages: [{role, content}] }
+app.post('/api/chat/history', async (req, res) => {
+  try {
+    const { user_id = 'roberto', agent_id, messages = [] } = req.body;
+    if (!agent_id || !messages.length) return res.json({ ok: true });
+    const rows = messages.map(m => ({ user_id, agent_id, role: m.role, content: m.content }));
+    const r = await sbFetch('/chat_history', {
+      method: 'POST',
+      body: JSON.stringify(rows),
+      prefer: 'return=minimal',
+    });
+    if (!r.ok) { const e = await r.text(); return res.json({ ok: false, error: e }); }
+    res.json({ ok: true });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
+// DELETE /api/chat/history?agent_id=organizador&user_id=roberto — clear chat
+app.delete('/api/chat/history', async (req, res) => {
+  try {
+    const { agent_id, user_id = 'roberto' } = req.query;
+    let path = `/chat_history?user_id=eq.${encodeURIComponent(user_id)}`;
+    if (agent_id) path += `&agent_id=eq.${encodeURIComponent(agent_id)}`;
+    const r = await sbFetch(path, { method: 'DELETE', prefer: 'return=minimal' });
+    res.json({ ok: r.ok });
+  } catch (e) { res.json({ ok: false, error: e.message }); }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Dashboard running on port ${PORT}`));
 
