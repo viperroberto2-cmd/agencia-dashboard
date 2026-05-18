@@ -1319,7 +1319,7 @@ app.post('/api/document', async (req, res) => {
 
 // ── Chat proxy — all agent chats go through here (avoids CORS) ───────────────
 const CHAT_TARGETS = {
-  organizador: 'https://web-production-77871.up.railway.app/organizador/stream',
+  organizador: 'https://web-production-77871.up.railway.app/organizador/chat',
   director:    'https://agencia-ai-production.up.railway.app/director/chat',
   crew:        'https://worker-production-34f9.up.railway.app/crew/chat',
   estrategia:  'https://worker-production-035f.up.railway.app/estratega/chat',
