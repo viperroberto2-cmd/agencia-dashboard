@@ -454,6 +454,8 @@ input, textarea { font-family: inherit; }
   animation: blink 1s infinite;
 }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.cursor-blink { animation: cursor-pulse 0.7s steps(1) infinite; font-weight: 300; }
+@keyframes cursor-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
 /* TEAM */
 .team-grid {
@@ -3050,7 +3052,6 @@ function sendMessage() {
   chatInput.style.height = 'auto';
   msgs.scrollTop = msgs.scrollHeight;
 
-  // Loading indicator
   const loadId = 'load-' + Date.now();
   msgs.innerHTML += `<div class="message-group" id="${loadId}"><div class="message-meta">${activeAgent.name} · ahora</div><div class="message bot" style="opacity:.5">⏳ Pensando...</div></div>`;
   msgs.scrollTop = msgs.scrollHeight;
@@ -3060,52 +3061,76 @@ function sendMessage() {
     document.getElementById(loadId).querySelector('.message').innerHTML = renderMd(simulateReply(text));
     return;
   }
-  // Track history per agent (cap at 20 messages to avoid token overflow)
   if (!chatHistories[activeAgent.id]) chatHistories[activeAgent.id] = [];
   chatHistories[activeAgent.id].push({ role: 'user', content: text });
   if (chatHistories[activeAgent.id].length > 20) chatHistories[activeAgent.id].splice(0, 2);
   const historial = chatHistories[activeAgent.id].slice();
   const agentId = activeAgent.id;
   const msgEl = document.getElementById(loadId).querySelector('.message');
-  const isOrg = agentId === 'organizador';
-  const fetchUrl = isOrg ? '/api/stream/organizador' : agentCfg.url + agentCfg.endpoint;
 
-  if (isOrg) {
-    // Streaming SSE directo
-    let fullReply = '';
+  if (agentId === 'organizador') {
+    // Streaming SSE — token a token como Claude.ai
+    let fullText = '';
+    let buffer = '';
     msgEl.style.opacity = '1';
-    fetch(fetchUrl, {
+    msgEl.innerHTML = '<span class="cursor-blink">▍</span>';
+
+    fetch('/api/stream/organizador', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, mensaje: text, client: currentClient, historial })
-    }).then(r => {
-      const reader = r.body.getReader();
+      body: JSON.stringify({ message: text, mensaje: text, client: currentClient, cliente_id: currentClient, historial })
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const reader = response.body.getReader();
       const decoder = new TextDecoder();
+
       function pump() {
         return reader.read().then(({ done, value }) => {
           if (done) {
-            if (fullReply) {
-              chatHistories[agentId].push({ role: 'assistant', content: fullReply });
-              if (fullReply.includes('aparecerá aquí')) startBgPolling(currentClient);
-            }
+            chatHistories[agentId].push({ role: 'assistant', content: fullText });
+            msgEl.innerHTML = renderMd(fullText);
+            msgs.scrollTop = msgs.scrollHeight;
+            if (fullText.includes('aparecerá aquí')) startBgPolling(currentClient);
             return;
           }
-          decoder.decode(value, { stream: true }).split('\n').forEach(line => {
-            if (!line.startsWith('data: ')) return;
-            const raw = line.slice(6).trim();
-            if (raw === '[DONE]') return;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop(); // guardar línea incompleta
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') {
+              chatHistories[agentId].push({ role: 'assistant', content: fullText });
+              msgEl.innerHTML = renderMd(fullText);
+              msgs.scrollTop = msgs.scrollHeight;
+              if (fullText.includes('aparecerá aquí')) startBgPolling(currentClient);
+              return;
+            }
             try {
-              const obj = JSON.parse(raw);
-              if (obj.token) { fullReply += obj.token; msgEl.innerHTML = renderMd(fullReply); msgs.scrollTop = msgs.scrollHeight; }
-              else if (obj.error) { msgEl.textContent = '⚠ ' + obj.error; }
+              const parsed = JSON.parse(data);
+              if (parsed.token) {
+                fullText += parsed.token;
+                msgEl.innerHTML = renderMd(fullText) + '<span class="cursor-blink">▍</span>';
+                msgs.scrollTop = msgs.scrollHeight;
+              } else if (parsed.error) {
+                msgEl.innerHTML = '⚠ ' + escapeHtml(parsed.error);
+              }
             } catch(e) {}
-          });
+          }
           return pump();
         });
       }
       return pump();
-    }).catch(e => { msgEl.style.opacity='1'; msgEl.textContent = '⚠ ' + e.message; });
+    })
+    .catch(e => {
+      chatHistories[agentId].pop();
+      msgEl.style.opacity = '1';
+      msgEl.textContent = '⚠ Error conectando al organizador (' + e.message + ')';
+    });
+
   } else {
+    // JSON normal para los demás agentes
     fetch(agentCfg.url + agentCfg.endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
