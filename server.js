@@ -1705,43 +1705,54 @@ app.post('/api/stream/organizador', async (req, res) => {
   if (!ANTHROPIC_KEY) { tok('❌ ANTHROPIC_API_KEY no configurada en Railway.'); return done(); }
 
   try {
-    // Cargar perfil del cliente desde Supabase
-    let perfilCliente = '';
-    if (SB_URL && SB_KEY) {
+    const sbHdr = SB_URL && SB_KEY ? { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } : null;
+    const clientKey = clientId.toLowerCase().trim();
+    const clientFirstWord = clientKey.split(/\s+/)[0];
+
+    // Cargar memoria + historial persistido en paralelo
+    let perfilCliente = '', persistedMsgs = [];
+    if (sbHdr) {
       try {
-        const [memRes, clienteRes] = await Promise.all([
-          fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=eq.${encodeURIComponent(clientId.toLowerCase())}&select=datos`,
-            { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }),
+        const [memRes, crmRes, histRes] = await Promise.all([
+          fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=ilike.*${encodeURIComponent(clientFirstWord)}*&select=datos&limit=1`,
+            { headers: sbHdr }),
           fetch(`${SB_URL}/rest/v1/clientes?user_id=eq.roberto_agencia&select=data`,
-            { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } })
+            { headers: sbHdr }),
+          // Cargar últimas 40 interacciones para contexto persistente
+          fetch(`${SB_URL}/rest/v1/chat_history?agent_id=eq.organizador&order=created_at.desc&limit=40&select=role,content`,
+            { headers: sbHdr })
         ]);
-        const [memData, clienteData] = await Promise.all([memRes.json(), clienteRes.json()]);
+        const [memData, crmData, histData] = await Promise.all([memRes.json(), crmRes.json(), histRes.json()]);
         const memoria = memData?.[0]?.datos;
-        const crm     = clienteData?.[0]?.data?.clientes?.[clientId] || clienteData?.[0]?.data?.clientes?.[clientId.toLowerCase()];
+        const crm = crmData?.[0]?.data?.clientes?.[clientId] || crmData?.[0]?.data?.clientes?.[clientKey];
         if (memoria || crm) {
           perfilCliente = '\n\nPERFIL DEL CLIENTE ACTIVO:\n';
           if (crm) perfilCliente += JSON.stringify(crm, null, 2).slice(0, 1500);
-          if (memoria) perfilCliente += '\n\nMEMORIA OPERATIVA:\n' + JSON.stringify(memoria, null, 2).slice(0, 1000);
+          if (memoria) perfilCliente += '\n\nMEMORIA OPERATIVA:\n' + JSON.stringify(memoria, null, 2).slice(0, 1500);
+        }
+        // Historial persistido: solo usar si el frontend no mandó historial (sesión nueva)
+        if (Array.isArray(histData) && histData.length > 0 && historial.length === 0) {
+          persistedMsgs = histData.reverse(); // oldest first
         }
       } catch(_) {}
     }
 
+    const hoy = new Date().toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
     const systemPrompt = `Eres el CEO y Productor General de Agencia AI — vives en el dashboard. Roberto te da dirección desde aquí.
-Manejas una agencia de producción profesional que sirve a múltiples clientes.
-Tienes herramientas REALES. Sus resultados son reales — NUNCA los inventes.
+Hoy es ${hoy}.
+Tienes herramientas REALES que ejecutan acciones reales. NUNCA finjas haber hecho algo sin usar la herramienta.
 Responde SIEMPRE en español.
 
+MEMORIA ENTRE SESIONES: Tu historial de conversación está cargado. Si ya publicaste algo antes, aparece en el historial — no digas que no recuerdas.
+
 REGLAS DE EJECUCIÓN (sin excepción):
-1. EJECUTA con la herramienta correcta. Nunca pidas confirmación antes de actuar.
-2. "ok", "sí", "dale", "adelante" → usa historial y ejecuta de inmediato.
-3. Dato menor faltante → asume valor razonable y ejecuta.
-4. Solo pregunta si falta un dato CRÍTICO imposible de asumir.
-5. Nunca te reintroduzcas. Máximo 1 oración + la acción.
-6. Nunca respondas solo con texto cuando hay herramienta aplicable.
-7. PROHIBIDO decir "no tengo acceso a internet". TIENES buscar_web. ÚSALA.
-8. PROHIBIDO inventar datos. Si herramienta falla → di exactamente qué falló.
-9. Cuando Roberto comparta estrategia, corrija algo, o dé instrucciones nuevas → guarda con guardar_memoria de inmediato.
-10. Cuando cometas un error y te corrijan → guarda la corrección en memoria para no repetirlo.
+1. EJECUTA con la herramienta. Nunca pidas confirmación antes de actuar.
+2. "ok", "sí", "dale" → ejecuta de inmediato usando el contexto del historial.
+3. Dato menor faltante → asume y ejecuta. Solo pregunta si es CRÍTICO e imposible de asumir.
+4. PROHIBIDO decir "no tengo acceso a internet". TIENES buscar_web.
+5. PROHIBIDO inventar resultados. Si falla una herramienta → di exactamente qué falló.
+6. Cuando Roberto comparta estrategia o corrija algo → llama guardar_memoria DE INMEDIATO, no al final.
+7. Si Roberto sube un documento → extrae lo importante y llama guardar_memoria antes de responder.
 
 CÓMO USAR TUS ESPECIALISTAS:
 Tienes un equipo de especialistas disponible via cargar_skill(). Úsalos así:
@@ -1803,10 +1814,18 @@ Para leer memoria usa exactamente: leer_memoria_cliente con cliente="${clientId}
         } } },
     ];
 
-    const messages = [
-      ...historial.map(h => ({ role: h.role, content: h.content })),
-      { role: 'user', content: msg }
-    ];
+    // Construir mensajes: historial persistido (sesión nueva) + historial de frontend (sesión activa)
+    // El frontend ya incluye el mensaje actual en historial — no duplicar
+    const frontendMsgs = historial.map(h => ({ role: h.role, content: h.content }));
+    const allMsgs = persistedMsgs.length > 0
+      ? [...persistedMsgs.map(h => ({ role: h.role, content: String(h.content).slice(0, 800) })), ...frontendMsgs]
+      : frontendMsgs;
+
+    // Garantizar que el último mensaje sea del user y sea el actual
+    const lastMsg = allMsgs[allMsgs.length - 1];
+    const messages = (lastMsg?.role === 'user' && lastMsg?.content === msg)
+      ? allMsgs
+      : [...allMsgs, { role: 'user', content: msg }];
 
     let fullResponse = '';
     let continueLoop = true;
