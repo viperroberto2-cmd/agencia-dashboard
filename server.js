@@ -1430,37 +1430,68 @@ function _resolvePageId(cliente) {
   return key ? _FB_PAGES[key] : null;
 }
 
-// ── Higgsfield via Managed Agents (usa infraestructura de Anthropic → sin 522) ──
-async function _generarImagenViaManagedAgent(prompt, agentId) {
-  const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-  const sessionRes = await fetch(`https://api.anthropic.com/v1/agents/${agentId}/sessions`, {
-    method: 'POST',
-    headers: {
-      'x-api-key': ANTHROPIC_KEY,
-      'anthropic-version': '2023-06-01',
-      'anthropic-beta': 'managed-agents-2026-04-01',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      messages: [{ role: 'user', content: `Generate this image and return only the image URL: ${prompt}` }],
-      max_tokens: 1024
-    }),
+// ── Higgsfield directo via MCP protocol (Railway → mcp.higgsfield.ai, sin 522) ──
+async function _generarImagenHiggsfieldMCP(prompt) {
+  const HF_KEY = process.env.HIGGSFIELD_API_KEY;
+  if (!HF_KEY) throw new Error('HIGGSFIELD_API_KEY no configurada');
+  const MCP_URL = 'https://mcp.higgsfield.ai/mcp';
+  const hdrs = { 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream', 'Authorization': `Bearer ${HF_KEY}` };
+
+  // 1. Initialize session
+  const initRes = await fetch(MCP_URL, {
+    method: 'POST', headers: hdrs,
+    body: JSON.stringify({ jsonrpc: '2.0', method: 'initialize',
+      params: { protocolVersion: '2024-11-05', capabilities: {}, clientInfo: { name: 'agencia-ai', version: '1.0' } }, id: 1 }),
+    signal: AbortSignal.timeout(15000)
+  });
+  const sessionId = initRes.headers.get('Mcp-Session-Id');
+  const initData = await _parseMcpResponse(initRes);
+  if (initData.error) throw new Error(`MCP init: ${initData.error.message}`);
+
+  const sh = sessionId ? { ...hdrs, 'Mcp-Session-Id': sessionId } : hdrs;
+
+  // 2. Notify initialized
+  await fetch(MCP_URL, { method: 'POST', headers: sh,
+    body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized', params: {} }),
+    signal: AbortSignal.timeout(5000) }).catch(() => {});
+
+  // 3. Call generate_image
+  const callRes = await fetch(MCP_URL, {
+    method: 'POST', headers: sh,
+    body: JSON.stringify({ jsonrpc: '2.0', method: 'tools/call',
+      params: { name: 'generate_image', arguments: { prompt, steps: 30, task: 'text-to-image' } }, id: 2 }),
     signal: AbortSignal.timeout(180000)
   });
-  if (!sessionRes.ok) {
-    const errText = await sessionRes.text();
-    throw new Error(`Session ${sessionRes.status}: ${errText.slice(0, 300)}`);
-  }
-  const data = await sessionRes.json();
-  for (const block of (data.content || [])) {
-    if (block.type === 'text') {
-      const urlMatch = block.text.match(/https?:\/\/[^\s"'<>]+\.(jpg|jpeg|png|webp|gif)/i)
-        || block.text.match(/IMAGE_URL:\s*(https?:\/\/[^\s]+)/i)
-        || block.text.match(/https?:\/\/[^\s"'<>]{20,}/);
-      if (urlMatch) return urlMatch[1] || urlMatch[0];
+  const callData = await _parseMcpResponse(callRes);
+  if (callData.error) throw new Error(`MCP generate: ${callData.error.message}`);
+
+  // Extract URL from result
+  const content = callData.result?.content || [];
+  for (const item of content) {
+    if (item.type === 'text') {
+      const m = item.text.match(/https?:\/\/[^\s"'<>]+/);
+      if (m) return m[0];
     }
+    if (item.type === 'image' && item.url) return item.url;
   }
-  throw new Error(`Sin URL en respuesta: ${JSON.stringify(data.content || []).slice(0, 400)}`);
+  const raw = JSON.stringify(callData.result || callData);
+  const m = raw.match(/https?:\/\/[^\s"'\\]+/);
+  if (m) return m[0];
+  throw new Error(`Sin URL en MCP: ${raw.slice(0, 400)}`);
+}
+
+async function _parseMcpResponse(res) {
+  const ct = res.headers.get('Content-Type') || '';
+  const text = await res.text();
+  if (ct.includes('text/event-stream')) {
+    for (const line of text.split('\n')) {
+      if (line.startsWith('data: ')) {
+        try { const d = JSON.parse(line.slice(6)); if (d.result || d.error) return d; } catch(_) {}
+      }
+    }
+    return {};
+  }
+  try { return JSON.parse(text); } catch(_) { return { raw: text }; }
 }
 
 // Test + setup: primero prueba conectividad directa al MCP, luego crea agente si aplica
@@ -1486,31 +1517,11 @@ app.post('/api/setup/higgsfield-agent', async (req, res) => {
     results.mcp_direct = { status: mcpRes.status, body: mcpText.slice(0, 400) };
   } catch(e) { results.mcp_direct = { error: e.message }; }
 
-  // Test 2: Managed Agents — crear agente sin auth explícita (Higgsfield puede leer Bearer del header de sesión)
+  // Test 2: prueba generate_image directo via MCP protocol
   try {
-    const agentRes = await fetch('https://api.anthropic.com/v1/agents', {
-      method: 'POST',
-      headers: {
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'managed-agents-2026-04-01',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: 'Agencia AI — Higgsfield Image Generator',
-        model: 'claude-sonnet-4-6',
-        system: 'You are an image generator specialist. Use the Higgsfield generate_image tool immediately when asked. Respond with ONLY the image URL after generating.',
-        mcp_servers: [{ type: 'url', name: 'higgsfield', url: 'https://mcp.higgsfield.ai/mcp' }]
-      }),
-      signal: AbortSignal.timeout(15000)
-    });
-    const agentData = await agentRes.json();
-    results.managed_agent = { status: agentRes.status, data: agentData };
-    if (agentRes.ok) {
-      results.agent_id = agentData.id;
-      results.next_step = `Agrega HIGGSFIELD_AGENT_ID=${agentData.id} en Railway Dashboard → Variables`;
-    }
-  } catch(e) { results.managed_agent = { error: e.message }; }
+    const testUrl = await _generarImagenHiggsfieldMCP('professional financial education photo, Hispanic family, warm lighting, studio quality');
+    results.mcp_generate_image = { ok: true, url: testUrl };
+  } catch(e) { results.mcp_generate_image = { error: e.message }; }
 
   return res.json(results);
 });
@@ -1559,15 +1570,14 @@ async function _ejecutarHerramienta(name, input) {
       let imageUrl = null;
       let imageSource = '';
 
-      // Intento 1: Higgsfield via Managed Agent (usa suscripción anual)
-      const HF_AGENT_ID = process.env.HIGGSFIELD_AGENT_ID;
-      if (HF_AGENT_ID && process.env.ANTHROPIC_API_KEY) {
+      // Intento 1: Higgsfield directo via MCP (usa suscripción anual, sin 522)
+      if (process.env.HIGGSFIELD_API_KEY) {
         try {
-          imageUrl = await _generarImagenViaManagedAgent(input.prompt_imagen, HF_AGENT_ID);
+          imageUrl = await _generarImagenHiggsfieldMCP(input.prompt_imagen);
           imageSource = 'Higgsfield';
-          console.log('[generar_y_publicar] Higgsfield OK:', imageUrl);
+          console.log('[generar_y_publicar] Higgsfield MCP OK:', imageUrl);
         } catch(e) {
-          console.error('[generar_y_publicar] Higgsfield agent falló:', e.message);
+          console.error('[generar_y_publicar] Higgsfield MCP falló:', e.message);
           imageUrl = null;
         }
       }
