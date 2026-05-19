@@ -1627,12 +1627,19 @@ async function _ejecutarHerramienta(name, input) {
     }
     if (name === 'leer_memoria_cliente') {
       if (!SB_URL || !SB_KEY) return 'Supabase no configurado.';
+      const sbHdr = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` };
       const ck = (input.cliente || '').toLowerCase().trim();
-      const r = await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=eq.${encodeURIComponent(ck)}&select=datos`,
-        { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
-      const d = await r.json();
-      if (!Array.isArray(d) || !d[0]) return `Sin memoria para '${input.cliente}'.`;
-      return JSON.stringify(d[0].datos, null, 2).slice(0, 2000);
+      // 1. Exact match
+      let r = await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=eq.${encodeURIComponent(ck)}&select=cliente,datos`, { headers: sbHdr });
+      let d = await r.json();
+      // 2. ilike partial match (ej: "arranca financial" → "arranca")
+      if (!Array.isArray(d) || !d[0]) {
+        const firstWord = ck.split(/\s+/)[0];
+        r = await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=ilike.*${encodeURIComponent(firstWord)}*&select=cliente,datos`, { headers: sbHdr });
+        d = await r.json();
+      }
+      if (!Array.isArray(d) || !d[0]) return `Sin memoria para '${input.cliente}'. Comparte la estrategia aquí para que pueda usarla.`;
+      return `[Memoria de "${d[0].cliente}"]\n` + JSON.stringify(d[0].datos, null, 2).slice(0, 2000);
     }
     if (name === 'cargar_skill') {
       const nombres = Array.isArray(input.nombres) ? input.nombres : [input.nombre || input.nombres];
@@ -1723,7 +1730,8 @@ CICLO DE LA AGENCIA POR CLIENTE:
 Tú produces el contenido → se publica → genera leads → los leads llaman al agente de voz (ej: María para Arranca Financial) → María cierra → el resultado alimenta la siguiente campaña.
 Cada cliente tiene su perfil, su voz de marca, sus objetivos y su agente de voz específico.
 
-CLIENTE ACTIVO: ${clientId}${perfilCliente}`;
+CLIENTE ACTIVO: ${clientId}
+Para leer memoria usa exactamente: leer_memoria_cliente con cliente="${clientId}"${perfilCliente}`;
 
     const tools = [
       { name: 'buscar_web', description: 'Busca en internet. Úsalo para competencia, tendencias, mercados.',
