@@ -1604,13 +1604,15 @@ async function _ejecutarHerramienta(name, input) {
       }
 
       const pageId = _resolvePageId(input.cliente);
-      if (!pageId) return `✅ Imagen generada (${imageSource}): ${imageUrl}\n❌ Cliente '${input.cliente}' sin página Facebook. Disponibles: ${Object.keys(_FB_PAGES).join(', ')}`;
+      console.log('[generar_y_publicar] cliente:', input.cliente, '→ pageId:', pageId, '→ imageUrl:', imageUrl?.slice(0,80));
+      if (!pageId) return `✅ Imagen (${imageSource}): ${imageUrl}\n❌ Cliente '${input.cliente}' no reconocido. Usa exactamente: arranca, arranca financial, red de salud hispana, horizon wound care, rg photo`;
       const pubRes = await fetch('https://backend.blotato.com/v2/posts',
         { method: 'POST', headers: { 'blotato-api-key': BL_KEY, 'Content-Type': 'application/json' },
           body: JSON.stringify({ post: { accountId: '32320', target: { targetType: 'facebook', pageId },
             content: { text: input.copy_post, platform: 'facebook', mediaUrls: [imageUrl] } } }) });
       const pubData = await pubRes.json();
-      if (!pubRes.ok) return `✅ Imagen (${imageSource}): ${imageUrl}\n❌ Error Blotato: ${JSON.stringify(pubData).slice(0, 200)}`;
+      console.log('[blotato] status:', pubRes.status, JSON.stringify(pubData).slice(0, 300));
+      if (!pubRes.ok) return `✅ Imagen (${imageSource}): ${imageUrl}\n❌ Blotato ${pubRes.status}: ${JSON.stringify(pubData).slice(0, 300)}`;
       return `✅ Imagen generada (${imageSource}) y publicada en Facebook (${input.cliente}).\nPost ID: ${pubData.postSubmissionId || pubData.id || '✓'}\nImagen: ${imageUrl}`;
     }
     if (name === 'leer_memoria_cliente') {
