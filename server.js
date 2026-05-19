@@ -1475,7 +1475,7 @@ app.post('/api/setup/higgsfield-agent', async (req, res) => {
     const vaultRes = await fetch('https://api.anthropic.com/v1/vaults/credentials', {
       method: 'POST',
       headers: baseHeaders,
-      body: JSON.stringify({ name: 'higgsfield-api-key', type: 'bearer_token', value: HF_KEY })
+      body: JSON.stringify({ type: 'bearer_token', value: HF_KEY })
     });
     const vaultData = await vaultRes.json();
     console.log('[setup-agent] Vault:', vaultRes.status, JSON.stringify(vaultData).slice(0, 300));
