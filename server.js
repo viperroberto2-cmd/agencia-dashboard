@@ -1462,15 +1462,30 @@ app.post('/api/setup/higgsfield-agent', async (req, res) => {
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'No ANTHROPIC_API_KEY' });
   if (!HF_KEY) return res.status(500).json({ error: 'No HIGGSFIELD_API_KEY' });
 
+  const BETA = 'managed-agents-2026-04-01';
+  const baseHeaders = {
+    'x-api-key': ANTHROPIC_KEY,
+    'anthropic-version': '2023-06-01',
+    'anthropic-beta': BETA,
+    'Content-Type': 'application/json'
+  };
+
   try {
+    // Paso 1: crear vault credential con la Higgsfield API key
+    const vaultRes = await fetch('https://api.anthropic.com/v1/vaults/credentials', {
+      method: 'POST',
+      headers: baseHeaders,
+      body: JSON.stringify({ name: 'higgsfield-api-key', type: 'bearer_token', value: HF_KEY })
+    });
+    const vaultData = await vaultRes.json();
+    console.log('[setup-agent] Vault:', vaultRes.status, JSON.stringify(vaultData).slice(0, 300));
+    if (!vaultRes.ok) return res.status(500).json({ error: 'Vault creation failed', detail: vaultData });
+    const vaultCredId = vaultData.id;
+
+    // Paso 2: crear el agente con el vault credential
     const agentRes = await fetch('https://api.anthropic.com/v1/agents', {
       method: 'POST',
-      headers: {
-        'x-api-key': ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'managed-agents-2026-04-01',
-        'Content-Type': 'application/json'
-      },
+      headers: baseHeaders,
       body: JSON.stringify({
         name: 'Agencia AI — Higgsfield Image Generator',
         model: 'claude-sonnet-4-6',
@@ -1479,16 +1494,17 @@ app.post('/api/setup/higgsfield-agent', async (req, res) => {
           type: 'url',
           name: 'higgsfield',
           url: 'https://mcp.higgsfield.ai/mcp',
-          authorization_token: HF_KEY
+          vault_credential_id: vaultCredId
         }]
       })
     });
     const agentData = await agentRes.json();
-    console.log('[setup-agent] Response:', agentRes.status, JSON.stringify(agentData).slice(0, 400));
-    if (!agentRes.ok) return res.status(500).json({ error: 'Agent creation failed', detail: agentData });
+    console.log('[setup-agent] Agent:', agentRes.status, JSON.stringify(agentData).slice(0, 400));
+    if (!agentRes.ok) return res.status(500).json({ error: 'Agent creation failed', detail: agentData, vault_id: vaultCredId });
     return res.json({
       ok: true,
       agent_id: agentData.id,
+      vault_credential_id: vaultCredId,
       next_step: `Agrega HIGGSFIELD_AGENT_ID=${agentData.id} en Railway Dashboard service → Variables`
     });
   } catch(e) {
