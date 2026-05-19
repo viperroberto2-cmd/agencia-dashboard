@@ -1455,62 +1455,56 @@ async function _generarImagenViaManagedAgent(prompt, agentId) {
   throw new Error(`Sin URL en respuesta: ${JSON.stringify(data.content || []).slice(0, 400)}`);
 }
 
-// Setup one-time: crea el Managed Agent con Higgsfield MCP
+// Test + setup: primero prueba conectividad directa al MCP, luego crea agente si aplica
 app.post('/api/setup/higgsfield-agent', async (req, res) => {
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
   const HF_KEY = process.env.HIGGSFIELD_API_KEY;
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'No ANTHROPIC_API_KEY' });
   if (!HF_KEY) return res.status(500).json({ error: 'No HIGGSFIELD_API_KEY' });
 
-  const BETA = 'managed-agents-2026-04-01';
-  const baseHeaders = {
-    'x-api-key': ANTHROPIC_KEY,
-    'anthropic-version': '2023-06-01',
-    'anthropic-beta': BETA,
-    'Content-Type': 'application/json'
-  };
+  const results = {};
 
+  // Test 1: conectividad directa MCP (initialize)
   try {
-    // Paso 1: crear vault credential con la Higgsfield API key
-    const vaultRes = await fetch('https://api.anthropic.com/v1/vaults/credentials', {
+    const mcpRes = await fetch('https://mcp.higgsfield.ai/mcp', {
       method: 'POST',
-      headers: baseHeaders,
-      body: JSON.stringify({ type: 'bearer_token', value: HF_KEY })
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${HF_KEY}` },
+      body: JSON.stringify({ jsonrpc: '2.0', method: 'initialize',
+        params: { protocolVersion: '2024-11-05', capabilities: {}, clientInfo: { name: 'agencia-ai', version: '1.0' } },
+        id: 1 }),
+      signal: AbortSignal.timeout(10000)
     });
-    const vaultData = await vaultRes.json();
-    console.log('[setup-agent] Vault:', vaultRes.status, JSON.stringify(vaultData).slice(0, 300));
-    if (!vaultRes.ok) return res.status(500).json({ error: 'Vault creation failed', detail: vaultData });
-    const vaultCredId = vaultData.id;
+    const mcpText = await mcpRes.text();
+    results.mcp_direct = { status: mcpRes.status, body: mcpText.slice(0, 400) };
+  } catch(e) { results.mcp_direct = { error: e.message }; }
 
-    // Paso 2: crear el agente con el vault credential
+  // Test 2: Managed Agents — crear agente sin auth explícita (Higgsfield puede leer Bearer del header de sesión)
+  try {
     const agentRes = await fetch('https://api.anthropic.com/v1/agents', {
       method: 'POST',
-      headers: baseHeaders,
+      headers: {
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'managed-agents-2026-04-01',
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         name: 'Agencia AI — Higgsfield Image Generator',
         model: 'claude-sonnet-4-6',
-        system: 'You are an image generator specialist. When asked to generate an image, use the Higgsfield generate_image tool immediately. After generating, respond with ONLY the image URL, nothing else.',
-        mcp_servers: [{
-          type: 'url',
-          name: 'higgsfield',
-          url: 'https://mcp.higgsfield.ai/mcp',
-          vault_credential_id: vaultCredId
-        }]
-      })
+        system: 'You are an image generator specialist. Use the Higgsfield generate_image tool immediately when asked. Respond with ONLY the image URL after generating.',
+        mcp_servers: [{ type: 'url', name: 'higgsfield', url: 'https://mcp.higgsfield.ai/mcp' }]
+      }),
+      signal: AbortSignal.timeout(15000)
     });
     const agentData = await agentRes.json();
-    console.log('[setup-agent] Agent:', agentRes.status, JSON.stringify(agentData).slice(0, 400));
-    if (!agentRes.ok) return res.status(500).json({ error: 'Agent creation failed', detail: agentData, vault_id: vaultCredId });
-    return res.json({
-      ok: true,
-      agent_id: agentData.id,
-      vault_credential_id: vaultCredId,
-      next_step: `Agrega HIGGSFIELD_AGENT_ID=${agentData.id} en Railway Dashboard service → Variables`
-    });
-  } catch(e) {
-    console.error('[setup-agent]', e.message);
-    return res.status(500).json({ error: e.message });
-  }
+    results.managed_agent = { status: agentRes.status, data: agentData };
+    if (agentRes.ok) {
+      results.agent_id = agentData.id;
+      results.next_step = `Agrega HIGGSFIELD_AGENT_ID=${agentData.id} en Railway Dashboard → Variables`;
+    }
+  } catch(e) { results.managed_agent = { error: e.message }; }
+
+  return res.json(results);
 });
 
 async function _ejecutarHerramienta(name, input) {
