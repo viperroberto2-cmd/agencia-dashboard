@@ -1467,22 +1467,25 @@ async function _ejecutarHerramienta(name, input) {
       if (!BL_KEY)  return '❌ BLOTATO_API_KEY no configurada en Railway (Dashboard service).';
       const genRes = await fetch('https://api.higgsfield.ai/v1/generations',
         { method: 'POST', headers: { 'Authorization': `Bearer ${HF_KEY}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: input.prompt_imagen, width: 1024, height: 576, model: 'flux' }),
+          body: JSON.stringify({ task: 'text-to-image', model: 'flux', prompt: input.prompt_imagen, width: 1024, height: 576, steps: 30 }),
           signal: AbortSignal.timeout(30000) });
-      if (!genRes.ok) return `❌ Higgsfield error: ${await genRes.text()}`;
+      if (!genRes.ok) return `❌ Higgsfield error ${genRes.status}: ${await genRes.text()}`;
       const genData = await genRes.json();
-      const jobId = genData.id || genData.job_id;
-      if (!jobId) return `❌ Higgsfield sin job_id: ${JSON.stringify(genData).slice(0, 200)}`;
-      let imageUrl = null;
-      for (let i = 0; i < 30; i++) {
-        await new Promise(ok => setTimeout(ok, 3000));
-        const p = await fetch(`https://api.higgsfield.ai/v1/generations/${jobId}`,
-          { headers: { 'Authorization': `Bearer ${HF_KEY}` } });
-        const pd = await p.json();
-        if (pd.status === 'completed' || pd.status === 'success') { imageUrl = pd.output?.[0] || pd.url || pd.image_url; break; }
-        if (pd.status === 'failed') return `❌ Higgsfield falló: ${pd.error || 'unknown'}`;
+      // Si la URL viene directa (respuesta síncrona)
+      let imageUrl = genData.output_url || genData.url || genData.image_url || null;
+      if (!imageUrl) {
+        const jobId = genData.id || genData.job_id;
+        if (!jobId) return `❌ Higgsfield sin job_id: ${JSON.stringify(genData).slice(0, 200)}`;
+        for (let i = 0; i < 38; i++) {
+          await new Promise(ok => setTimeout(ok, 8000));
+          const p = await fetch(`https://api.higgsfield.ai/v1/generations/${jobId}`,
+            { headers: { 'Authorization': `Bearer ${HF_KEY}` } });
+          const pd = await p.json();
+          if (pd.status === 'completed') { imageUrl = pd.output_url || pd.url || pd.image_url || pd.result?.url; break; }
+          if (['failed','cancelled','error'].includes(pd.status)) return `❌ Higgsfield falló: ${pd.error || pd.status}`;
+        }
       }
-      if (!imageUrl) return '❌ Timeout: Higgsfield tardó más de 90 segundos.';
+      if (!imageUrl) return '❌ Timeout: Higgsfield tardó más de 5 minutos.';
       const ck = (input.cliente || 'arranca').toLowerCase().trim();
       const pageId = _FB_PAGES[ck];
       if (!pageId) return `✅ Imagen generada: ${imageUrl}\n❌ Cliente sin página Facebook.`;
