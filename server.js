@@ -1641,6 +1641,25 @@ async function _ejecutarHerramienta(name, input) {
       if (!Array.isArray(d) || !d[0]) return `Sin memoria para '${input.cliente}'. Comparte la estrategia aquí para que pueda usarla.`;
       return `[Memoria de "${d[0].cliente}"]\n` + JSON.stringify(d[0].datos, null, 2).slice(0, 2000);
     }
+    if (name === 'guardar_memoria') {
+      if (!SB_URL || !SB_KEY) return 'Supabase no configurado.';
+      const sbHdr = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
+      const ck = (input.cliente || '').toLowerCase().trim();
+      // Leer memoria existente
+      const existing = await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=ilike.*${encodeURIComponent(ck.split(/\s+/)[0])}*&select=cliente,datos`, { headers: sbHdr });
+      const rows = await existing.json();
+      const clienteKey = rows?.[0]?.cliente || ck;
+      const datosPrev = rows?.[0]?.datos || {};
+      const datosNew = { ...datosPrev, ...input.datos, _actualizado: new Date().toISOString() };
+      if (rows?.[0]) {
+        await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=eq.${encodeURIComponent(clienteKey)}`,
+          { method: 'PATCH', headers: { ...sbHdr, Prefer: 'return=minimal' }, body: JSON.stringify({ datos: datosNew }) });
+      } else {
+        await fetch(`${SB_URL}/rest/v1/memoria_clientes`,
+          { method: 'POST', headers: { ...sbHdr, Prefer: 'return=minimal' }, body: JSON.stringify({ cliente: ck, datos: datosNew }) });
+      }
+      return `✅ Memoria de "${clienteKey}" actualizada. Campos guardados: ${Object.keys(input.datos).join(', ')}`;
+    }
     if (name === 'cargar_skill') {
       const nombres = Array.isArray(input.nombres) ? input.nombres : [input.nombre || input.nombres];
       const resultados = nombres.filter(Boolean).map(n => _cargarSkill(n));
@@ -1701,6 +1720,8 @@ REGLAS DE EJECUCIÓN (sin excepción):
 6. Nunca respondas solo con texto cuando hay herramienta aplicable.
 7. PROHIBIDO decir "no tengo acceso a internet". TIENES buscar_web. ÚSALA.
 8. PROHIBIDO inventar datos. Si herramienta falla → di exactamente qué falló.
+9. Cuando Roberto comparta estrategia, corrija algo, o dé instrucciones nuevas → guarda con guardar_memoria de inmediato.
+10. Cuando cometas un error y te corrijan → guarda la corrección en memoria para no repetirlo.
 
 CÓMO USAR TUS ESPECIALISTAS:
 Tienes un equipo de especialistas disponible via cargar_skill(). Úsalos así:
@@ -1750,6 +1771,11 @@ Para leer memoria usa exactamente: leer_memoria_cliente con cliente="${clientId}
         }, required: ['cliente', 'prompt_imagen', 'copy_post'] } },
       { name: 'leer_memoria_cliente', description: 'Lee datos del cliente desde la base de datos.',
         input_schema: { type: 'object', properties: { cliente: { type: 'string' } }, required: ['cliente'] } },
+      { name: 'guardar_memoria', description: 'Guarda o actualiza datos del cliente en la base de datos. Úsalo cuando Roberto corrija algo, comparta estrategia, o cuando aprendas algo nuevo del cliente. También úsalo para corregir tus propios errores anteriores.',
+        input_schema: { type: 'object', properties: {
+          cliente: { type: 'string', description: 'Nombre del cliente' },
+          datos: { type: 'object', description: 'Objeto con los datos a guardar/actualizar. Se mezcla con la memoria existente.' }
+        }, required: ['cliente', 'datos'] } },
       { name: 'cargar_skill', description: 'Carga el conocimiento de uno o varios especialistas. Úsalo ANTES de producir contenido profesional. Puedes cargar múltiples skills a la vez pasando un array en "nombres".',
         input_schema: { type: 'object', properties: {
           nombre:  { type: 'string', description: 'Nombre de una sola skill (ej: "psicologia_venta")' },
