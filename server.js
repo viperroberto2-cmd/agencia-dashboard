@@ -1349,27 +1349,230 @@ app.get('/api/mensajes/organizador', (req, res) => {
   pr.end();
 });
 
-// Streaming dedicado para el organizador
-app.post('/api/stream/organizador', (req, res) => {
-  const payload = Object.assign({}, req.body);
-  if (payload.message && !payload.mensaje) payload.mensaje = payload.message;
-  if (payload.client && !payload.cliente) payload.cliente = payload.client;
-  if (payload.client) payload.cliente_id = payload.client;
-  const body = JSON.stringify(payload);
-  const u = new URL(`${ORG_BASE}/organizador/stream`);
-  const opts = {
-    hostname: u.hostname, path: u.pathname, method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-    timeout: 120000,
-  };
-  res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no' });
-  const pr = https.request(opts, (r) => {
-    r.on('data', chunk => res.write(chunk));
-    r.on('end', () => res.end());
-  });
-  pr.on('error', e => { res.write(`data: ${JSON.stringify({error: e.message})}\n\n`); res.end(); });
-  pr.on('timeout', () => { pr.destroy(); res.write('data: [DONE]\n\n'); res.end(); });
-  pr.write(body); pr.end();
+// ── Claude Directo — herramientas reales en el dashboard ─────────────────────
+const _FB_PAGES = {
+  'arranca':              '1037617602773646',
+  'arranca financial':    '1037617602773646',
+  'red de salud hispana': '1069131969608041',
+  'salud hispana':        '1069131969608041',
+  'horizon wound care':   '441343592402827',
+  'rg photo':             '268664976335314',
+  'rg photo & video':     '268664976335314',
+};
+
+async function _ejecutarHerramienta(name, input) {
+  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL;
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY;
+  const BL_KEY = process.env.BLOTATO_API_KEY;
+  const HF_KEY = process.env.HIGGSFIELD_API_KEY;
+  try {
+    if (name === 'buscar_web') {
+      const q = encodeURIComponent(input.query || '');
+      const r = await fetch(`https://api.duckduckgo.com/?q=${q}&format=json&no_redirect=1&no_html=1&skip_disambig=1`,
+        { headers: { 'User-Agent': 'AgenciaAI/1.0' }, signal: AbortSignal.timeout(10000) });
+      const d = await r.json();
+      const parts = [];
+      if (d.Abstract) parts.push(`Resumen: ${d.Abstract}`);
+      (d.RelatedTopics || []).slice(0, 6).forEach(t => { if (t.Text) parts.push(`• ${t.Text}`); });
+      return parts.length ? parts.join('\n') : 'Sin resultados directos. Intenta términos más específicos.';
+    }
+    if (name === 'fetch_url') {
+      const r = await fetch(input.url,
+        { headers: { 'User-Agent': 'Mozilla/5.0 AgenciaAI/1.0' }, signal: AbortSignal.timeout(15000) });
+      const html = await r.text();
+      return html
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[\s\S]*?<\/style>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ').trim().slice(0, 3000) || 'No se pudo extraer contenido.';
+    }
+    if (name === 'publicar_blotato') {
+      if (!BL_KEY) return '❌ BLOTATO_API_KEY no configurada en Railway (Dashboard service).';
+      const ck = (input.cliente || 'arranca').toLowerCase().trim();
+      const pageId = _FB_PAGES[ck];
+      if (!pageId) return `❌ Cliente '${input.cliente}' sin página Facebook. Disponibles: ${Object.keys(_FB_PAGES).join(', ')}`;
+      const postBody = { post: { accountId: '32320', target: { targetType: 'facebook', pageId },
+        content: { text: input.texto, platform: 'facebook', mediaUrls: input.media_url ? [input.media_url] : [] } } };
+      if (input.programado_iso) postBody.post.scheduledAt = input.programado_iso;
+      const r = await fetch('https://backend.blotato.com/v2/posts',
+        { method: 'POST', headers: { 'blotato-api-key': BL_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(postBody) });
+      const d = await r.json();
+      if (!r.ok) return `❌ Blotato error: ${JSON.stringify(d).slice(0, 200)}`;
+      return `✅ Publicado en Facebook (${input.cliente}). ID: ${d.postSubmissionId || d.id || '✓'}${input.media_url ? '\nImagen: ' + input.media_url : ''}`;
+    }
+    if (name === 'generar_y_publicar') {
+      if (!HF_KEY)  return '❌ HIGGSFIELD_API_KEY no configurada en Railway (Dashboard service).';
+      if (!BL_KEY)  return '❌ BLOTATO_API_KEY no configurada en Railway (Dashboard service).';
+      const genRes = await fetch('https://api.higgsfield.ai/v1/generations',
+        { method: 'POST', headers: { 'Authorization': `Bearer ${HF_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: input.prompt_imagen, width: 1024, height: 576, model: 'flux' }),
+          signal: AbortSignal.timeout(30000) });
+      if (!genRes.ok) return `❌ Higgsfield error: ${await genRes.text()}`;
+      const genData = await genRes.json();
+      const jobId = genData.id || genData.job_id;
+      if (!jobId) return `❌ Higgsfield sin job_id: ${JSON.stringify(genData).slice(0, 200)}`;
+      let imageUrl = null;
+      for (let i = 0; i < 30; i++) {
+        await new Promise(ok => setTimeout(ok, 3000));
+        const p = await fetch(`https://api.higgsfield.ai/v1/generations/${jobId}`,
+          { headers: { 'Authorization': `Bearer ${HF_KEY}` } });
+        const pd = await p.json();
+        if (pd.status === 'completed' || pd.status === 'success') { imageUrl = pd.output?.[0] || pd.url || pd.image_url; break; }
+        if (pd.status === 'failed') return `❌ Higgsfield falló: ${pd.error || 'unknown'}`;
+      }
+      if (!imageUrl) return '❌ Timeout: Higgsfield tardó más de 90 segundos.';
+      const ck = (input.cliente || 'arranca').toLowerCase().trim();
+      const pageId = _FB_PAGES[ck];
+      if (!pageId) return `✅ Imagen generada: ${imageUrl}\n❌ Cliente sin página Facebook.`;
+      const pubRes = await fetch('https://backend.blotato.com/v2/posts',
+        { method: 'POST', headers: { 'blotato-api-key': BL_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ post: { accountId: '32320', target: { targetType: 'facebook', pageId },
+            content: { text: input.copy_post, platform: 'facebook', mediaUrls: [imageUrl] } } }) });
+      const pubData = await pubRes.json();
+      if (!pubRes.ok) return `✅ Imagen: ${imageUrl}\n❌ Error Blotato: ${JSON.stringify(pubData).slice(0, 200)}`;
+      return `✅ Imagen generada y publicada en Facebook (${input.cliente}).\nPost ID: ${pubData.postSubmissionId || pubData.id || '✓'}\nImagen: ${imageUrl}`;
+    }
+    if (name === 'leer_memoria_cliente') {
+      if (!SB_URL || !SB_KEY) return 'Supabase no configurado.';
+      const ck = (input.cliente || '').toLowerCase().trim();
+      const r = await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=eq.${encodeURIComponent(ck)}&select=datos`,
+        { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } });
+      const d = await r.json();
+      if (!Array.isArray(d) || !d[0]) return `Sin memoria para '${input.cliente}'.`;
+      return JSON.stringify(d[0].datos, null, 2).slice(0, 2000);
+    }
+    return `Herramienta '${name}' no implementada.`;
+  } catch (e) { return `❌ Error en ${name}: ${e.message}`; }
+}
+
+// Streaming directo — Claude con herramientas reales
+app.post('/api/stream/organizador', async (req, res) => {
+  const { mensaje, message, cliente, client, historial = [] } = req.body;
+  const msg     = mensaje || message || '';
+  const clientId = cliente || client || 'arranca';
+  const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL;
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY;
+
+  res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'Connection': 'keep-alive' });
+  const tok  = t => res.write(`data: ${JSON.stringify({ token: t })}\n\n`);
+  const done = () => { res.write('data: [DONE]\n\n'); res.end(); };
+
+  if (!ANTHROPIC_KEY) { tok('❌ ANTHROPIC_API_KEY no configurada en Railway.'); return done(); }
+
+  try {
+    const systemPrompt = [
+      'Eres el CEREBRO y CEO de Agencia AI — vives en el dashboard. Roberto te da dirección desde aquí.',
+      'Orquestas agentes especializados: Director, Crew, Compositor, Web, DevAgent.',
+      'Tienes herramientas REALES. Sus resultados son reales — NUNCA los inventes.',
+      'Responde SIEMPRE en español.\n',
+      'REGLAS (sin excepción):',
+      '1. EJECUTA con la herramienta correcta. Nunca pidas confirmación antes de actuar.',
+      '2. "ok", "sí", "dale", "adelante" → usa historial y ejecuta de inmediato.',
+      '3. Dato menor faltante → asume valor razonable y ejecuta.',
+      '4. Solo pregunta si falta un dato CRÍTICO imposible de asumir.',
+      '5. Nunca te reintroduzcas. Máximo 1 oración + la acción.',
+      '6. Nunca respondas solo con texto cuando hay herramienta aplicable.',
+      '7. PROHIBIDO decir "no tengo acceso a internet". TIENES buscar_web. ÚSALA.',
+      '8. PROHIBIDO inventar datos. Si herramienta falla → di exactamente qué falló.\n',
+      'CONTENIDO:',
+      'Posts de Facebook, copy, historias, scripts → ESCRÍBELOS TÚ directamente.',
+      'Usa psicología de venta, storytelling, urgencia, social proof en cada pieza.\n',
+      'FLUJO DE PUBLICACIÓN:',
+      '- Post solo texto → escríbelo tú → publicar_blotato',
+      '- Post con imagen → generar_y_publicar (genera imagen Y publica en un paso)',
+      '- NUNCA copies el mensaje del usuario literal como texto del post\n',
+      `CLIENTE ACTIVO: ${clientId}`,
+    ].join('\n');
+
+    const tools = [
+      { name: 'buscar_web', description: 'Busca en internet. Úsalo para competencia, tendencias, mercados.',
+        input_schema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] } },
+      { name: 'fetch_url', description: 'Lee texto plano de una URL. Sin diseño visual.',
+        input_schema: { type: 'object', properties: { url: { type: 'string' } }, required: ['url'] } },
+      { name: 'publicar_blotato', description: 'Publica post en Facebook del cliente via Blotato.',
+        input_schema: { type: 'object', properties: {
+          cliente: { type: 'string' }, texto: { type: 'string' },
+          media_url: { type: 'string' }, programado_iso: { type: 'string' }
+        }, required: ['cliente', 'texto'] } },
+      { name: 'generar_y_publicar', description: 'Genera imagen con Higgsfield y la publica en Facebook en un paso.',
+        input_schema: { type: 'object', properties: {
+          cliente: { type: 'string' }, prompt_imagen: { type: 'string', description: 'Descripción visual (inglés recomendado)' },
+          copy_post: { type: 'string', description: 'Texto del post de Facebook' }
+        }, required: ['cliente', 'prompt_imagen', 'copy_post'] } },
+      { name: 'leer_memoria_cliente', description: 'Lee datos del cliente desde la base de datos.',
+        input_schema: { type: 'object', properties: { cliente: { type: 'string' } }, required: ['cliente'] } },
+    ];
+
+    const messages = [
+      ...historial.map(h => ({ role: h.role, content: h.content })),
+      { role: 'user', content: msg }
+    ];
+
+    let fullResponse = '';
+    let continueLoop = true;
+
+    while (continueLoop) {
+      const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4096, system: systemPrompt, tools, messages, stream: true })
+      });
+      if (!claudeRes.ok) { tok(`❌ Error Claude API: ${(await claudeRes.text()).slice(0, 200)}`); return done(); }
+
+      const reader  = claudeRes.body.getReader();
+      const decoder = new TextDecoder();
+      let sseBuf = '', curTool = null, toolBlocks = [], stopReason = null, iterText = '';
+
+      while (true) {
+        const { done: rdone, value } = await reader.read();
+        if (rdone) break;
+        sseBuf += decoder.decode(value, { stream: true });
+        const lines = sseBuf.split('\n'); sseBuf = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          let evt; try { evt = JSON.parse(line.slice(6)); } catch(_) { continue; }
+          if (evt.type === 'content_block_start' && evt.content_block?.type === 'tool_use')
+            curTool = { id: evt.content_block.id, name: evt.content_block.name, rawInput: '' };
+          else if (evt.type === 'content_block_delta') {
+            if (evt.delta?.type === 'text_delta') { iterText += evt.delta.text; fullResponse += evt.delta.text; tok(evt.delta.text); }
+            else if (evt.delta?.type === 'input_json_delta' && curTool) curTool.rawInput += evt.delta.partial_json;
+          } else if (evt.type === 'content_block_stop' && curTool) {
+            try { curTool.input = JSON.parse(curTool.rawInput); } catch(_) { curTool.input = {}; }
+            toolBlocks.push(curTool); curTool = null;
+          } else if (evt.type === 'message_delta') stopReason = evt.delta?.stop_reason;
+        }
+      }
+
+      if (stopReason === 'tool_use' && toolBlocks.length > 0) {
+        const aContent = [];
+        if (iterText) aContent.push({ type: 'text', text: iterText });
+        for (const tb of toolBlocks) aContent.push({ type: 'tool_use', id: tb.id, name: tb.name, input: tb.input });
+        messages.push({ role: 'assistant', content: aContent });
+        const toolResults = [];
+        for (const tb of toolBlocks) {
+          tok(`\n\n🔧 *${tb.name}*...`);
+          const result = await _ejecutarHerramienta(tb.name, tb.input);
+          toolResults.push({ type: 'tool_result', tool_use_id: tb.id, content: result });
+        }
+        messages.push({ role: 'user', content: toolResults });
+        toolBlocks = []; iterText = '';
+      } else { continueLoop = false; }
+    }
+
+    // Persistir en Supabase (best-effort)
+    if (SB_URL && SB_KEY && msg && fullResponse) {
+      fetch(`${SB_URL}/rest/v1/chat_history`, {
+        method: 'POST',
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify([
+          { agent_id: 'organizador', user_id: 'roberto', role: 'user',      content: msg,          created_at: new Date().toISOString() },
+          { agent_id: 'organizador', user_id: 'roberto', role: 'assistant', content: fullResponse, created_at: new Date().toISOString() }
+        ])
+      }).catch(() => {});
+    }
+    done();
+  } catch (e) { tok(`\n❌ Error interno: ${e.message}`); done(); }
 });
 
 app.post('/api/chat/:agentId', (req, res) => {
