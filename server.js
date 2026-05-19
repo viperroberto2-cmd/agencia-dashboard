@@ -1623,6 +1623,26 @@ async function _ejecutarHerramienta(name, input) {
       const pubData = await pubRes.json();
       console.log('[blotato] status:', pubRes.status, JSON.stringify(pubData).slice(0, 300));
       if (!pubRes.ok) return `✅ Imagen (${imageSource}): ${imageUrl}\n❌ Blotato ${pubRes.status}: ${JSON.stringify(pubData).slice(0, 300)}`;
+      // Auto-guardar en memoria para que la próxima sesión sepa qué se publicó
+      if (SB_URL && SB_KEY) {
+        const ck = (input.cliente || 'arranca').toLowerCase().trim();
+        const firstWord = ck.split(/\s+/)[0];
+        const memR = await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=ilike.*${encodeURIComponent(firstWord)}*&select=cliente,datos`,
+          { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }).catch(() => null);
+        if (memR) {
+          const memRows = await memR.json().catch(() => []);
+          const clienteKey = memRows?.[0]?.cliente || ck;
+          const datos = memRows?.[0]?.datos || {};
+          const posts = datos.posts_publicados || [];
+          posts.unshift({ fecha: new Date().toISOString(), copy: input.copy_post?.slice(0,200), imagen: imageUrl, post_id: pubData.postSubmissionId || pubData.id, fuente: imageSource });
+          datos.posts_publicados = posts.slice(0, 20);
+          datos.ultimo_post = new Date().toISOString();
+          const method = memRows?.[0] ? 'PATCH' : 'POST';
+          const url = memRows?.[0] ? `${SB_URL}/rest/v1/memoria_clientes?cliente=eq.${encodeURIComponent(clienteKey)}` : `${SB_URL}/rest/v1/memoria_clientes`;
+          const body = memRows?.[0] ? { datos } : { cliente: ck, datos };
+          await fetch(url, { method, headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(body) }).catch(() => {});
+        }
+      }
       return `✅ Imagen generada (${imageSource}) y publicada en Facebook (${input.cliente}).\nPost ID: ${pubData.postSubmissionId || pubData.id || '✓'}\nImagen: ${imageUrl}`;
     }
     if (name === 'leer_memoria_cliente') {
