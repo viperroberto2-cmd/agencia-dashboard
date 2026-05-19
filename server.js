@@ -1422,6 +1422,81 @@ const _FB_PAGES = {
   'rg photo & video':     '268664976335314',
 };
 
+// ── Higgsfield via Managed Agents (usa infraestructura de Anthropic → sin 522) ──
+async function _generarImagenViaManagedAgent(prompt, agentId) {
+  const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+  const sessionRes = await fetch(`https://api.anthropic.com/v1/agents/${agentId}/sessions`, {
+    method: 'POST',
+    headers: {
+      'x-api-key': ANTHROPIC_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'managed-agents-2026-04-01',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      messages: [{ role: 'user', content: `Generate this image and return only the image URL: ${prompt}` }],
+      max_tokens: 1024
+    }),
+    signal: AbortSignal.timeout(180000)
+  });
+  if (!sessionRes.ok) {
+    const errText = await sessionRes.text();
+    throw new Error(`Session ${sessionRes.status}: ${errText.slice(0, 300)}`);
+  }
+  const data = await sessionRes.json();
+  for (const block of (data.content || [])) {
+    if (block.type === 'text') {
+      const urlMatch = block.text.match(/https?:\/\/[^\s"'<>]+\.(jpg|jpeg|png|webp|gif)/i)
+        || block.text.match(/IMAGE_URL:\s*(https?:\/\/[^\s]+)/i)
+        || block.text.match(/https?:\/\/[^\s"'<>]{20,}/);
+      if (urlMatch) return urlMatch[1] || urlMatch[0];
+    }
+  }
+  throw new Error(`Sin URL en respuesta: ${JSON.stringify(data.content || []).slice(0, 400)}`);
+}
+
+// Setup one-time: crea el Managed Agent con Higgsfield MCP
+app.post('/api/setup/higgsfield-agent', async (req, res) => {
+  const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
+  const HF_KEY = process.env.HIGGSFIELD_API_KEY;
+  if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'No ANTHROPIC_API_KEY' });
+  if (!HF_KEY) return res.status(500).json({ error: 'No HIGGSFIELD_API_KEY' });
+
+  try {
+    const agentRes = await fetch('https://api.anthropic.com/v1/agents', {
+      method: 'POST',
+      headers: {
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'managed-agents-2026-04-01',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: 'Agencia AI — Higgsfield Image Generator',
+        model: 'claude-sonnet-4-6',
+        system: 'You are an image generator specialist. When asked to generate an image, use the Higgsfield generate_image tool immediately. After generating, respond with ONLY the image URL, nothing else.',
+        mcp_servers: [{
+          type: 'url',
+          name: 'higgsfield',
+          url: 'https://mcp.higgsfield.ai/mcp',
+          authorization_token: HF_KEY
+        }]
+      })
+    });
+    const agentData = await agentRes.json();
+    console.log('[setup-agent] Response:', agentRes.status, JSON.stringify(agentData).slice(0, 400));
+    if (!agentRes.ok) return res.status(500).json({ error: 'Agent creation failed', detail: agentData });
+    return res.json({
+      ok: true,
+      agent_id: agentData.id,
+      next_step: `Agrega HIGGSFIELD_AGENT_ID=${agentData.id} en Railway Dashboard service → Variables`
+    });
+  } catch(e) {
+    console.error('[setup-agent]', e.message);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
 async function _ejecutarHerramienta(name, input) {
   const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL;
   const SB_KEY = process.env.SUPABASE_SECRET_KEY;
@@ -1463,47 +1538,64 @@ async function _ejecutarHerramienta(name, input) {
       return `✅ Publicado en Facebook (${input.cliente}). ID: ${d.postSubmissionId || d.id || '✓'}${input.media_url ? '\nImagen: ' + input.media_url : ''}`;
     }
     if (name === 'generar_y_publicar') {
-      if (!HF_KEY)  return '❌ HIGGSFIELD_API_KEY no configurada en Railway (Dashboard service).';
       if (!BL_KEY)  return '❌ BLOTATO_API_KEY no configurada en Railway (Dashboard service).';
-      // Genera imagen via kie.ai Nano Banana 2
-      const KIE_KEY = process.env.KIE_API_KEY;
-      if (!KIE_KEY) return '❌ KIE_API_KEY no configurada en Railway (Dashboard service).';
-      const kieRes = await fetch('https://api.kie.ai/api/v1/jobs/createTask', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${KIE_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'nano-banana-2', input: { prompt: input.prompt_imagen, aspect_ratio: '16:9', resolution: '1K' } }),
-        signal: AbortSignal.timeout(30000)
-      });
-      if (!kieRes.ok) return `❌ kie.ai error ${kieRes.status}: ${await kieRes.text()}`;
-      const kieData = await kieRes.json();
-      if (kieData.code !== 200) return `❌ kie.ai: ${kieData.msg || JSON.stringify(kieData)}`;
-      const taskId = kieData.data?.taskId;
-      if (!taskId) return `❌ kie.ai sin taskId: ${JSON.stringify(kieData)}`;
-      // Poll hasta completar
       let imageUrl = null;
-      for (let i = 0; i < 30; i++) {
-        await new Promise(ok => setTimeout(ok, 5000));
-        const poll = await fetch(`https://api.kie.ai/api/v1/jobs/recordInfo?taskId=${taskId}`,
-          { headers: { 'Authorization': `Bearer ${KIE_KEY}` } });
-        const pd = await poll.json();
-        const state = pd.data?.state;
-        if (state === 'success') {
-          try { imageUrl = JSON.parse(pd.data.resultJson).resultUrls?.[0]; } catch(_) {}
-          break;
+      let imageSource = '';
+
+      // Intento 1: Higgsfield via Managed Agent (usa suscripción anual)
+      const HF_AGENT_ID = process.env.HIGGSFIELD_AGENT_ID;
+      if (HF_AGENT_ID && process.env.ANTHROPIC_API_KEY) {
+        try {
+          imageUrl = await _generarImagenViaManagedAgent(input.prompt_imagen, HF_AGENT_ID);
+          imageSource = 'Higgsfield';
+          console.log('[generar_y_publicar] Higgsfield OK:', imageUrl);
+        } catch(e) {
+          console.error('[generar_y_publicar] Higgsfield agent falló:', e.message);
+          imageUrl = null;
         }
-        if (state === 'fail') return `❌ kie.ai falló: ${pd.data?.failMsg || 'error desconocido'}`;
       }
-      if (!imageUrl) return '❌ Timeout: kie.ai tardó más de 150 segundos.';
+
+      // Intento 2: kie.ai Nano Banana 2 (fallback)
+      if (!imageUrl) {
+        const KIE_KEY = process.env.KIE_API_KEY;
+        if (!KIE_KEY) return '❌ Sin imagen: HIGGSFIELD_AGENT_ID no configurado y KIE_API_KEY tampoco está.';
+        const kieRes = await fetch('https://api.kie.ai/api/v1/jobs/createTask', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${KIE_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'nano-banana-2', input: { prompt: input.prompt_imagen, aspect_ratio: '16:9', resolution: '1K' } }),
+          signal: AbortSignal.timeout(30000)
+        });
+        if (!kieRes.ok) return `❌ kie.ai error ${kieRes.status}: ${await kieRes.text()}`;
+        const kieData = await kieRes.json();
+        if (kieData.code !== 200) return `❌ kie.ai: ${kieData.msg || JSON.stringify(kieData)}`;
+        const taskId = kieData.data?.taskId;
+        if (!taskId) return `❌ kie.ai sin taskId: ${JSON.stringify(kieData)}`;
+        for (let i = 0; i < 30; i++) {
+          await new Promise(ok => setTimeout(ok, 5000));
+          const poll = await fetch(`https://api.kie.ai/api/v1/jobs/recordInfo?taskId=${taskId}`,
+            { headers: { 'Authorization': `Bearer ${KIE_KEY}` } });
+          const pd = await poll.json();
+          const state = pd.data?.state;
+          if (state === 'success') {
+            try { imageUrl = JSON.parse(pd.data.resultJson).resultUrls?.[0]; } catch(_) {}
+            break;
+          }
+          if (state === 'fail') return `❌ kie.ai falló: ${pd.data?.failMsg || 'error desconocido'}`;
+        }
+        if (!imageUrl) return '❌ Timeout: kie.ai tardó más de 150 segundos.';
+        imageSource = 'kie.ai';
+      }
+
       const ck = (input.cliente || 'arranca').toLowerCase().trim();
       const pageId = _FB_PAGES[ck];
-      if (!pageId) return `✅ Imagen generada: ${imageUrl}\n❌ Cliente sin página Facebook.`;
+      if (!pageId) return `✅ Imagen generada (${imageSource}): ${imageUrl}\n❌ Cliente sin página Facebook.`;
       const pubRes = await fetch('https://backend.blotato.com/v2/posts',
         { method: 'POST', headers: { 'blotato-api-key': BL_KEY, 'Content-Type': 'application/json' },
           body: JSON.stringify({ post: { accountId: '32320', target: { targetType: 'facebook', pageId },
             content: { text: input.copy_post, platform: 'facebook', mediaUrls: [imageUrl] } } }) });
       const pubData = await pubRes.json();
-      if (!pubRes.ok) return `✅ Imagen: ${imageUrl}\n❌ Error Blotato: ${JSON.stringify(pubData).slice(0, 200)}`;
-      return `✅ Imagen generada y publicada en Facebook (${input.cliente}).\nPost ID: ${pubData.postSubmissionId || pubData.id || '✓'}\nImagen: ${imageUrl}`;
+      if (!pubRes.ok) return `✅ Imagen (${imageSource}): ${imageUrl}\n❌ Error Blotato: ${JSON.stringify(pubData).slice(0, 200)}`;
+      return `✅ Imagen generada (${imageSource}) y publicada en Facebook (${input.cliente}).\nPost ID: ${pubData.postSubmissionId || pubData.id || '✓'}\nImagen: ${imageUrl}`;
     }
     if (name === 'leer_memoria_cliente') {
       if (!SB_URL || !SB_KEY) return 'Supabase no configurado.';
