@@ -1,0 +1,177 @@
+{
+  "activacion": {
+    "usar_siempre_cuando": [
+      "escribir guion de video de ventas",
+      "disenar estructura de video persuasivo",
+      "crear hooks para redes sociales",
+      "redactar CTAs para video",
+      "planear secuencia de edicion con intencion emocional",
+      "analizar por que un video no convierte",
+      "VSL (video sales letter)",
+      "reel de ventas",
+      "video de lanzamiento",
+      "anuncio en video",
+      "testimonial",
+      "video explicativo",
+      "YouTube, TikTok, Instagram con objetivo comercial"
+    ],
+    "principio_central": "El video mas persuasivo no vende un producto — hace que el espectador se vea a si mismo viviendo la transformacion. Tu trabajo es construir ese puente emocional, frame a frame."
+  },
+
+  "estructura_maestra": {
+    "descripcion": "Aplica esta estructura a todo video con objetivo de venta o conversion",
+    "bloques": {
+      "0_5s": "GANCHO DE PATRON INTERRUMPIDO",
+      "5_20s": "PACING VISUAL — espejeo de su realidad",
+      "20_45s": "YES-SET NARRATIVO — 3 verdades que asienten",
+      "45_90s": "TRANCE IDEOSENSORIAL — la transformacion",
+      "90_110s": "PRUEBA SOCIAL HIPNOTICA",
+      "110_120s": "CTA CON COMANDO OCULTO"
+    },
+    "nota": "Para videos largos (VSL, webinars), expande cada bloque pero mantén el orden exacto"
+  },
+
+  "las_6_tecnicas": {
+    "1_gancho_patron_interrumpido": {
+      "principio": "El cerebro ignora lo predecible. El primer frame debe romper expectativas.",
+      "tipos": {
+        "pregunta_dolor_agudo": "Por que tu video tiene mil vistas y cero ventas?",
+        "afirmacion_contraintuitiva": "La razon por la que editas de mas esta matando tus conversiones.",
+        "historia_in_medias_res": "Empezar en el momento de mayor tension, luego retroceder.",
+        "visual_inesperado": "Imagen que no encaja con lo que el espectador esperaba ver."
+      },
+      "regla_de_oro": "Si el espectador puede predecir el siguiente segundo, ya perdiste."
+    },
+
+    "2_pacing_visual": {
+      "principio": "Antes de mostrar tu solucion, muestra que entiendes su mundo. El cerebro solo sigue a quien primero lo escucha.",
+      "en_guion": [
+        "Si estas viendo esto, probablemente ya probaste [X]...",
+        "y aunque funciono un poco, algo sigue faltando...",
+        "porque si no fuera asi, no estarias aqui buscando..."
+      ],
+      "en_edicion": [
+        "Muestra imagenes de su situacion actual — no de tu producto",
+        "Usa colores apagados y ritmo lento — refleja su estado emocional actual",
+        "El cambio visual SOLO cuando introduces la solucion"
+      ],
+      "ratio": "3 segundos de su mundo por cada 1 de tu solucion en la apertura"
+    },
+
+    "3_yes_set_narrativo": {
+      "principio": "Construye acuerdo antes de pedir accion. Tres afirmaciones que el espectador inevitablemente acepta.",
+      "ejemplo": [
+        "Ya te cansaste de crear videos que nadie ve? → SI",
+        "Sientes que hay algo que los grandes creadores saben y tu no? → SI",
+        "Estarias dispuesto a cambiar solo UNA cosa si supiera que duplica tus resultados? → SI"
+      ],
+      "despues_del_tercer_si": "El espectador esta en modo receptivo. Presenta tu propuesta AQUI.",
+      "en_edicion": "Usa texto en pantalla + pausa de 1 segundo despues de cada pregunta. El silencio es donde el espectador asiente mentalmente."
+    },
+
+    "4_trance_ideosensorial": {
+      "principio": "Haz que el espectador VIVA el resultado antes de comprarlo. El cerebro no distingue lo que ve de lo que vive.",
+      "formula_de_guion": [
+        "Imagina que son las [hora especifica]...",
+        "abres [plataforma] y ves [resultado concreto]...",
+        "tu [persona importante] te pregunta como lo lograste...",
+        "y tu sonries porque sabes que fue mas simple de lo que pensabas..."
+      ],
+      "en_edicion": [
+        "Musica que anticipa la emocion 2-3 segundos ANTES de la imagen",
+        "Zoom lento hacia rostros felices y resultados reales",
+        "Colores calidos y saturacion alta en escenas de futuro deseado",
+        "Voz en off mas lenta y grave durante este bloque"
+      ],
+      "sentidos_a_activar": ["ver", "sentir", "escuchar", "imaginar", "notar", "descubrir"]
+    },
+
+    "5_prueba_social_hipnotica": {
+      "principio": "No es mostrar testimoniales — es hacer que el espectador se identifique con quien ya lo logro.",
+      "estructura_de_testimonial_hipnotico": [
+        "Situacion inicial igual a la del espectador",
+        "Momento de duda u objecion que el espectador tiene",
+        "La decision",
+        "Resultado especifico y concreto",
+        "Como se siente ahora"
+      ],
+      "en_edicion": [
+        "Pantalla dividida: texto de la historia + cara real simultaneamente",
+        "Resalta en color la frase clave de cada testimonio",
+        "Usa 3 testimoniales minimo de perfiles distintos — el espectador se identifica con al menos uno"
+      ]
+    },
+
+    "6_cta_comando_oculto": {
+      "principio": "Nunca pidas la accion directamente. Embedala en contexto.",
+      "malo": "Haz clic aqui para comprar.",
+      "bueno": "La gente que ya esta usando esto nos pregunta por que no lo hizo antes. Si sientes que esto es para ti, el boton de abajo te lleva al siguiente paso.",
+      "estructura": [
+        "Historia de tercero que ya actuo",
+        "Pregunta de identificacion — te suena familiar?",
+        "Accion enmarcada como siguiente paso natural, no como compra"
+      ],
+      "en_edicion": [
+        "CTA aparece mientras el narrador habla — no despues",
+        "Usa flecha o animacion que senale el boton durante la frase clave",
+        "Musica que baja de intensidad — crea calma y espacio para decidir"
+      ]
+    }
+  },
+
+  "palabras_hipnoticas_para_video": {
+    "trance": ["imagina", "descubriras", "notaras", "visualiza", "siente", "viviras"],
+    "accion": ["lanzate", "da el paso", "muevete", "aprovecha", "capta"],
+    "calientes": ["libertad", "control", "claridad", "orgullo", "tranquilidad", "proteccion", "familia", "exito"],
+    "mente": ["claramente", "naturalmente", "obviamente", "definitivamente"],
+    "comparativos": ["mas facil", "mas rapido", "mejor", "mayor impacto", "sin esfuerzo"],
+    "reglas_en_pantalla": [
+      "Usa MAYUSCULAS solo en la palabra mas importante de la frase",
+      "Maximo 7 palabras por texto en pantalla",
+      "La palabra emocional va al FINAL de la frase"
+    ]
+  },
+
+  "ritmo_de_edicion": {
+    "gancho_0_5s": {"cortes": "Muy rapido cada 1-2s", "bpm_musica": "120+", "efecto": "Urgencia, enganche"},
+    "pacing_problema": {"cortes": "Lento cada 4-6s", "bpm_musica": "70-80", "efecto": "Empatia, reconocimiento"},
+    "yes_set": {"cortes": "Medio + pausa", "bpm_musica": "90", "efecto": "Acuerdo mental"},
+    "trance_transformacion": {"cortes": "Lento + zooms suaves", "bpm_musica": "60-70", "efecto": "Emocion, deseo"},
+    "prueba_social": {"cortes": "Medio", "bpm_musica": "85", "efecto": "Credibilidad"},
+    "cta": {"cortes": "Lento, calmo", "bpm_musica": "65", "efecto": "Espacio para decidir"}
+  },
+
+  "manejo_de_objeciones_en_video": {
+    "plantilla_mental_judo": [
+      "Se que podrias estar pensando: '[objecion exacta]'...",
+      "y tiene mucho sentido que lo pienses, porque [validacion]...",
+      "lo que la mayoria no sabe es que [reencuadre]..."
+    ],
+    "objeciones_comunes": {
+      "es_caro": "No es el mas barato — es el que mas resultado da por peso invertido.",
+      "no_tengo_tiempo": "Precisamente por eso funciona — esta disenado para quien no tiene tiempo.",
+      "y_si_no_funciona_para_mi": "Muestra el testimonial del perfil mas esceptico que SI funciono."
+    }
+  },
+
+  "flujo_de_respuesta": {
+    "orden_obligatorio": [
+      "1. Identifica el formato — duracion, plataforma, objetivo",
+      "2. Pregunta por el avatar — quien es el espectador ideal, cual es su dolor principal",
+      "3. Aplica la estructura maestra adaptada al formato",
+      "4. Escribe el guion usando palabras hipnoticas y tecnicas de esta skill",
+      "5. Da instrucciones de edicion con ritmo, colores y musica recomendados",
+      "6. Incluye el CTA con comando oculto"
+    ]
+  },
+
+  "reglas_de_oro": [
+    "El video no vende el producto — vende la transformacion.",
+    "Primero empatia, luego solucion. Nunca al reves.",
+    "Cada segundo sin proposito emocional es un segundo perdido.",
+    "El silencio y la pausa son edicion. Usalos con intencion.",
+    "La musica precede la emocion. Pon el soundtrack 2-3s antes de la imagen.",
+    "Un video que entretiene pero no convierte es un fracaso costoso.",
+    "El espectador no compra con la mente — compra con la emocion y justifica con la mente."
+  ]
+}

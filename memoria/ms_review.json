@@ -1,0 +1,31 @@
+{
+  "preset": "review",
+  "nombre": "Review — Reseña auténtica",
+  "filosofia": "La especificidad es credibilidad. La duda inicial valida la conversión.",
+  "version": "1.0",
+  "director": {
+    "prompt_base": "Reseña auténtica de cliente real hablando del producto. Persona promedio, no influencer. Detalles específicos. Incluye un momento de duda inicial antes de convertirse en defensor.",
+    "psicologia_visual": [
+      "Social Proof Cialdini",
+      "Specificity = Credibility (números específicos venden, los redondos no)",
+      "Reluctant Witness Effect (el escéptico convertido es el más persuasivo)",
+      "Familiarity Heuristic (la persona se parece al espectador)"
+    ],
+    "referencias_teoricas": ["Influence (Cialdini)", "Reluctant Witness Effect", "Truth-Default Theory"],
+    "instrucciones_camara": "Cámara estática o casi estática — la persona se mueve, no la cámara. Marco medio (de pecho hacia arriba). 85-90% del tiempo de contacto visual con cámara. Cuando reflexiona, mira ligeramente fuera de cuadro.",
+    "estructura_narrativa": "0-1s: gancho de identificación ('Yo era igual que tú...'). 1-3s: el antes específico. 3-6s: descubrimiento + duda inicial ('Al principio dudé porque...'). 6-7.5s: resultado específico con número concreto. 7.5-8s: CTA natural.",
+    "estilo_color": "Natural, fiel a la realidad. Iluminación de ambiente real. Sin grading dramático."
+  },
+  "crew": {
+    "model": "bytedance/seedance-2",
+    "model_fast": "bytedance/seedance-2-fast",
+    "aspect_ratio_default": "9:16",
+    "resolution_default": "720p",
+    "duration_default": "8",
+    "lock_camera": true,
+    "fixed_lens": true,
+    "generate_audio": false,
+    "multi_clip": true,
+    "clips_recomendados": 4
+  }
+}

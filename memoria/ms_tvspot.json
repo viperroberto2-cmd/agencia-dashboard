@@ -1,0 +1,36 @@
+{
+  "preset": "tv_spot",
+  "nombre": "TV Spot — Comercial cinematográfico",
+  "filosofia": "Vendemos identidad, no producto. La transformación es el héroe.",
+  "version": "1.0",
+  "director": {
+    "prompt_base": "Comercial cinematográfico de alta producción. Narrativa emocional con arco transformacional claro. Cinematografía profesional con movimientos de cámara intencionales. El producto aparece como catalizador, no como protagonista.",
+    "psicologia_visual": [
+      "Identidad aspiracional (el espectador se proyecta en el 'después')",
+      "Peak-End Rule (el final emocional define el recuerdo)",
+      "Classical Conditioning (asociación producto ↔ emoción positiva)",
+      "Narrative Transportation (inmersión narrativa)"
+    ],
+    "referencias_teoricas": ["Peak-End Rule (Kahneman)", "Classical Conditioning (Pavlov)", "Hero's Journey (Campbell)", "Zettl Sight Sound Motion"],
+    "instrucciones_camara": "Movimientos cinematográficos intencionales: Push in (intimidad emocional), Pull out (revelar contexto), Orbital (transformación), Rack focus (guiar atención), Steadicam (naturalidad elegante).",
+    "estructura_narrativa": "5 actos: 1) Gancho visual impactante. 2) El antes (la fricción del personaje). 3) Transformación catalizada por el producto. 4) Nuevo yo emergente. 5) Beat final emocional con peak-end.",
+    "estilo_color_por_vertical": {
+      "healthcare": "azul-verde frío → dorado cálido",
+      "finanzas": "negro/gris → ámbar dorado",
+      "lifestyle": "naranja cálido sostenido"
+    }
+  },
+  "crew": {
+    "model": "bytedance/seedance-2",
+    "model_fast": "bytedance/seedance-2-fast",
+    "aspect_ratio_default": "16:9",
+    "resolution_default": "1080p",
+    "duration_default": "15",
+    "lock_camera": false,
+    "fixed_lens": false,
+    "generate_audio": true,
+    "multi_clip": true,
+    "clips_recomendados": 2,
+    "transicion": "match_cut"
+  }
+}

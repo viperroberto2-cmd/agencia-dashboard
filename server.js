@@ -1350,6 +1350,68 @@ app.get('/api/mensajes/organizador', (req, res) => {
 });
 
 // ── Claude Directo — herramientas reales en el dashboard ─────────────────────
+
+// Cargador de skills desde memoria/ (igual que _cargar_skills en cerebro.py)
+const _MEMORIA_DIR = path.join(__dirname, 'memoria');
+function _cargarSkill(nombre) {
+  try {
+    const ruta = path.join(_MEMORIA_DIR, `${nombre}.json`);
+    if (!fs.existsSync(ruta)) return `[Skill '${nombre}' no encontrada]`;
+    const data = JSON.parse(fs.readFileSync(ruta, 'utf8'));
+    const contenido = typeof data === 'object'
+      ? (data.contenido || data.content || data.conocimiento || JSON.stringify(data, null, 2))
+      : String(data);
+    return `[${nombre.toUpperCase().replace(/_/g,' ')}]\n${contenido}`;
+  } catch(e) { return `[Error cargando skill '${nombre}': ${e.message}]`; }
+}
+
+// Catálogo de skills disponibles (lo que Claude ve en el system prompt)
+const _CATALOGO_SKILLS = `EQUIPO DE ESPECIALISTAS DISPONIBLE (usa cargar_skill para activar cada uno):
+
+ESTRATEGA — psicología humana, ventas, storytelling, persuasión:
+  • psicologia_venta — diagnóstico del comprador, manejo de objeciones, cierre
+  • sleight_of_mouth — 14 patrones de reencuadre para transformar objeciones
+  • storytelling_master — estructura narrativa profesional, arcos emocionales
+  • story_persuasion — persuasión a través de historia, conexión emocional
+  • video_hypnotic_selling — venta hipnótica en video, lenguaje del inconsciente
+  • storytelling_series — storytelling en serie, episodios, continuidad
+
+DIRECTOR — dirección de cine, actores, escenas:
+  • director_cine — dirección de actores, mise en scène, lenguaje cinematográfico
+  • director_maestro — dirección avanzada, visión artística, toma de decisiones
+  • emotional_film_director — dirección emocional, performance, autenticidad
+  • storyboard_bong — storyboard estilo Bong Joon-ho, planificación visual
+
+CINEMATÓGRAFO — imagen, luz, composición:
+  • cinematografia — reglas de composición, movimientos de cámara, planos
+  • master_shots — planos maestros, cobertura de escena, continuidad
+  • zettl_estetica — estética visual de Zettl, color, forma, espacio
+  • millerson_iluminacion — iluminación profesional de estudio y locación
+  • visual_storytelling_arun — narrativa visual, metáforas visuales
+
+COMPOSITOR — música, audio, psicoacústica:
+  • film_scoring — composición musical para cine, emoción y ritmo
+  • cinematic_audio_composer — audio cinematográfico, leitmotifs, mezcla
+  • music_video_director — dirección de videos musicales, sincronización
+
+ESTRATEGIA DE MARCA Y MARKETING:
+  • branding_estrategia — identidad de marca, posicionamiento, diferenciación
+  • canales_publicidad — selección de canales, mix de medios, presupuesto
+  • diseno_publicitario — diseño de ads, jerarquía visual, CTA
+  • analytics_roas — métricas, ROAS, optimización de campañas
+  • web_design_conversion — landing pages, CRO, UX de conversión
+
+VENTAS AVANZADAS:
+  • sales_closer_elite — técnicas de cierre, manejo de presión, negociación
+
+FORMATOS DE VIDEO:
+  • ms_ugc — User Generated Content, autenticidad, testimoniales
+  • ms_tutorial — tutoriales, educación, paso a paso
+  • ms_tvspot — spots de TV/redes, 15-30-60 segundos
+  • ms_hyper_motion — hiper-motion, acción, energía
+  • ms_review — reviews de productos, credibilidad
+  • ms_wildcard — formato experimental, creatividad libre`;
+
 const _FB_PAGES = {
   'arranca':              '1037617602773646',
   'arranca financial':    '1037617602773646',
@@ -1441,6 +1503,11 @@ async function _ejecutarHerramienta(name, input) {
       if (!Array.isArray(d) || !d[0]) return `Sin memoria para '${input.cliente}'.`;
       return JSON.stringify(d[0].datos, null, 2).slice(0, 2000);
     }
+    if (name === 'cargar_skill') {
+      const nombres = Array.isArray(input.nombres) ? input.nombres : [input.nombre || input.nombres];
+      const resultados = nombres.filter(Boolean).map(n => _cargarSkill(n));
+      return resultados.join('\n\n---\n\n') || 'No se especificó ninguna skill.';
+    }
     return `Herramienta '${name}' no implementada.`;
   } catch (e) { return `❌ Error en ${name}: ${e.message}`; }
 }
@@ -1461,29 +1528,71 @@ app.post('/api/stream/organizador', async (req, res) => {
   if (!ANTHROPIC_KEY) { tok('❌ ANTHROPIC_API_KEY no configurada en Railway.'); return done(); }
 
   try {
-    const systemPrompt = [
-      'Eres el CEREBRO y CEO de Agencia AI — vives en el dashboard. Roberto te da dirección desde aquí.',
-      'Orquestas agentes especializados: Director, Crew, Compositor, Web, DevAgent.',
-      'Tienes herramientas REALES. Sus resultados son reales — NUNCA los inventes.',
-      'Responde SIEMPRE en español.\n',
-      'REGLAS (sin excepción):',
-      '1. EJECUTA con la herramienta correcta. Nunca pidas confirmación antes de actuar.',
-      '2. "ok", "sí", "dale", "adelante" → usa historial y ejecuta de inmediato.',
-      '3. Dato menor faltante → asume valor razonable y ejecuta.',
-      '4. Solo pregunta si falta un dato CRÍTICO imposible de asumir.',
-      '5. Nunca te reintroduzcas. Máximo 1 oración + la acción.',
-      '6. Nunca respondas solo con texto cuando hay herramienta aplicable.',
-      '7. PROHIBIDO decir "no tengo acceso a internet". TIENES buscar_web. ÚSALA.',
-      '8. PROHIBIDO inventar datos. Si herramienta falla → di exactamente qué falló.\n',
-      'CONTENIDO:',
-      'Posts de Facebook, copy, historias, scripts → ESCRÍBELOS TÚ directamente.',
-      'Usa psicología de venta, storytelling, urgencia, social proof en cada pieza.\n',
-      'FLUJO DE PUBLICACIÓN:',
-      '- Post solo texto → escríbelo tú → publicar_blotato',
-      '- Post con imagen → generar_y_publicar (genera imagen Y publica en un paso)',
-      '- NUNCA copies el mensaje del usuario literal como texto del post\n',
-      `CLIENTE ACTIVO: ${clientId}`,
-    ].join('\n');
+    // Cargar perfil del cliente desde Supabase
+    let perfilCliente = '';
+    if (SB_URL && SB_KEY) {
+      try {
+        const [memRes, clienteRes] = await Promise.all([
+          fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=eq.${encodeURIComponent(clientId.toLowerCase())}&select=datos`,
+            { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }),
+          fetch(`${SB_URL}/rest/v1/clientes?user_id=eq.roberto_agencia&select=data`,
+            { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } })
+        ]);
+        const [memData, clienteData] = await Promise.all([memRes.json(), clienteRes.json()]);
+        const memoria = memData?.[0]?.datos;
+        const crm     = clienteData?.[0]?.data?.clientes?.[clientId] || clienteData?.[0]?.data?.clientes?.[clientId.toLowerCase()];
+        if (memoria || crm) {
+          perfilCliente = '\n\nPERFIL DEL CLIENTE ACTIVO:\n';
+          if (crm) perfilCliente += JSON.stringify(crm, null, 2).slice(0, 1500);
+          if (memoria) perfilCliente += '\n\nMEMORIA OPERATIVA:\n' + JSON.stringify(memoria, null, 2).slice(0, 1000);
+        }
+      } catch(_) {}
+    }
+
+    const systemPrompt = `Eres el CEO y Productor General de Agencia AI — vives en el dashboard. Roberto te da dirección desde aquí.
+Manejas una agencia de producción profesional que sirve a múltiples clientes.
+Tienes herramientas REALES. Sus resultados son reales — NUNCA los inventes.
+Responde SIEMPRE en español.
+
+REGLAS DE EJECUCIÓN (sin excepción):
+1. EJECUTA con la herramienta correcta. Nunca pidas confirmación antes de actuar.
+2. "ok", "sí", "dale", "adelante" → usa historial y ejecuta de inmediato.
+3. Dato menor faltante → asume valor razonable y ejecuta.
+4. Solo pregunta si falta un dato CRÍTICO imposible de asumir.
+5. Nunca te reintroduzcas. Máximo 1 oración + la acción.
+6. Nunca respondas solo con texto cuando hay herramienta aplicable.
+7. PROHIBIDO decir "no tengo acceso a internet". TIENES buscar_web. ÚSALA.
+8. PROHIBIDO inventar datos. Si herramienta falla → di exactamente qué falló.
+
+CÓMO USAR TUS ESPECIALISTAS:
+Tienes un equipo de especialistas disponible via cargar_skill(). Úsalos así:
+
+- Antes de escribir copy o estrategia → carga psicologia_venta + sleight_of_mouth
+- Antes de escribir un script o historia → carga storytelling_master + story_persuasion
+- Antes de diseñar un video o commercial → carga director_cine + storyboard_bong
+- Antes de describir planos o imagen → carga cinematografia + zettl_estetica + master_shots
+- Antes de diseñar audio/música → carga film_scoring + cinematic_audio_composer
+- Antes de diseñar una campaña de marca → carga branding_estrategia + canales_publicidad
+- Para ventas o cierre → carga sales_closer_elite + sleight_of_mouth
+
+PIPELINE DE PRODUCCIÓN (para comerciales o campañas completas):
+Fase 1 ESTRATEGA: carga psicologia_venta + sleight_of_mouth + storytelling_master → produce brief de campaña
+Fase 2 GUIONISTA: carga story_persuasion + video_hypnotic_selling → produce script completo
+Fase 3 DIRECTOR: carga director_cine + emotional_film_director + storyboard_bong → produce shot list y dirección
+Fase 4 CINEMATÓGRAFO: carga cinematografia + zettl_estetica + master_shots → produce prompts visuales profesionales
+Fase 5 COMPOSITOR: carga film_scoring + cinematic_audio_composer → produce dirección musical
+Fase 6 PRODUCCIÓN: genera imágenes reales con generar_y_publicar → publica en redes
+
+Para posts simples: escríbelo tú directamente cargando psicologia_venta + sleight_of_mouth.
+NUNCA copies el mensaje del usuario como texto del post — escribe copy profesional.
+
+${_CATALOGO_SKILLS}
+
+CICLO DE LA AGENCIA POR CLIENTE:
+Tú produces el contenido → se publica → genera leads → los leads llaman al agente de voz (ej: María para Arranca Financial) → María cierra → el resultado alimenta la siguiente campaña.
+Cada cliente tiene su perfil, su voz de marca, sus objetivos y su agente de voz específico.
+
+CLIENTE ACTIVO: ${clientId}${perfilCliente}`;
 
     const tools = [
       { name: 'buscar_web', description: 'Busca en internet. Úsalo para competencia, tendencias, mercados.',
@@ -1502,6 +1611,11 @@ app.post('/api/stream/organizador', async (req, res) => {
         }, required: ['cliente', 'prompt_imagen', 'copy_post'] } },
       { name: 'leer_memoria_cliente', description: 'Lee datos del cliente desde la base de datos.',
         input_schema: { type: 'object', properties: { cliente: { type: 'string' } }, required: ['cliente'] } },
+      { name: 'cargar_skill', description: 'Carga el conocimiento de uno o varios especialistas. Úsalo ANTES de producir contenido profesional. Puedes cargar múltiples skills a la vez pasando un array en "nombres".',
+        input_schema: { type: 'object', properties: {
+          nombre:  { type: 'string', description: 'Nombre de una sola skill (ej: "psicologia_venta")' },
+          nombres: { type: 'array', items: { type: 'string' }, description: 'Array de skills a cargar juntas (ej: ["director_cine","storyboard_bong"])' }
+        } } },
     ];
 
     const messages = [

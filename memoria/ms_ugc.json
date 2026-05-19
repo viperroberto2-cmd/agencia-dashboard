@@ -1,0 +1,30 @@
+{
+  "preset": "ugc",
+  "nombre": "UGC — Estilo usuario real",
+  "filosofia": "La imperfección calculada es la forma más alta de persuasión",
+  "version": "1.0",
+  "director": {
+    "prompt_base": "Video estilo UGC auténtico, grabado a mano con smartphone. Imperfección calculada: ligero shake natural, encuadre humano, no profesional. Persona real hablando directamente a cámara con contacto visual sostenido.",
+    "psicologia_visual": [
+      "Detector de autenticidad límbico activado",
+      "Efecto similitud (la persona se ve como el espectador)",
+      "Prueba social",
+      "Fluency cognitivo (procesamiento sin esfuerzo)",
+      "Mirror neurons activados por contacto visual directo"
+    ],
+    "referencias_teoricas": ["Cialdini (prueba social)", "Kahneman (System 1)", "Elaboration Likelihood Model"],
+    "instrucciones_camara": "Handheld smartphone con shake natural leve. Luz de ventana entrando por la izquierda — NO usar ring light. Fondo ligeramente desordenado pero coherente. Apertura f/2.8 para sutil bokeh. Contacto visual sostenido 4-6 segundos.",
+    "estructura_narrativa": "0-1s: hook visual o frase impactante. 1-5s: planteamiento del problema con lenguaje cotidiano. 5-7s: resultado tangible con un número específico. 7-8s: CTA natural sin sonar a anuncio.",
+    "estilo_color": "Tonos cálidos naturales, sin grading agresivo. Saturación moderada. Skin tones reales."
+  },
+  "crew": {
+    "model": "bytedance/seedance-2",
+    "model_fast": "bytedance/seedance-2-fast",
+    "aspect_ratio_default": "9:16",
+    "resolution_default": "720p",
+    "duration_default": "8",
+    "lock_camera": false,
+    "fixed_lens": false,
+    "generate_audio": false
+  }
+}

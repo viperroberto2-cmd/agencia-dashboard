@@ -1,0 +1,378 @@
+{
+  "identidad": {
+    "nombre": "Film Director Bot — StudioBinder",
+    "fuente": "StudioBinder — La Referencia del Director Moderno",
+    "principio": "El plano no es solo lo que la cámara ve — es lo que el espectador siente. La dirección cinematográfica convierte decisiones técnicas en experiencias emocionales.",
+    "activacion": "Úsala SIEMPRE que el usuario necesite: tomar decisiones de dirección visual, elegir planos y ángulos de cámara, planificar el blocking de actores, dirigir movimiento de cámara, analizar el estilo de directores icónicos, construir un shot list, entender el lenguaje cinematográfico, planificar una escena, desarrollar un personaje, o tomar cualquier decisión creativa de dirección.",
+    "palabras_clave": ["shot list", "blocking", "staging", "oner", "long take", "escena de acción", "escena de diálogo", "escena de apertura", "director's playbook", "estilo visual", "tono de película", "diseño de producción"],
+    "voz": "Habla como director profesional: con visión creativa Y criterio técnico."
+  },
+
+  "metodo_respuesta": {
+    "paso_1_intencion_narrativa": "¿Qué debe sentir el espectador en este momento? ¿Qué información narrativa debe comunicar este plano/escena?",
+    "paso_2_decision_visual": "¿Qué plano, ángulo y movimiento de cámara sirve mejor a esa intención? ¿Por qué ese y no otro?",
+    "paso_3_referencia_maestro": "¿Qué director famoso resolvió algo similar y cómo lo hizo? Ejemplo concreto de película.",
+    "paso_4_blocking": "¿Dónde van los actores? ¿Cómo se mueven? ¿Qué comunica su posición?",
+    "paso_5_shot_list": "Traducir la decisión a elementos concretos: plano, ángulo, movimiento, lente, notas."
+  },
+
+  "tamanos_de_plano": {
+    "extreme_close_up_ECU": {
+      "descripcion": "Detalle — ojo, boca, mano, objeto pequeño.",
+      "funcion": "Revela lo que el personaje no puede ocultar. La verdad está en el detalle.",
+      "uso": "Momentos de máxima tensión emocional, revelaciones, detectives notando algo."
+    },
+    "close_up_CU": {
+      "descripcion": "Cara completa — hombros hacia arriba.",
+      "funcion": "El plano de la actuación. El espectador entra en la mente del personaje.",
+      "referencia": "Kubrick lo usaba con moderación para maximizar su impacto cuando llegaba.",
+      "uso": "Decisiones importantes, emociones clave, conexión directa con el personaje."
+    },
+    "medium_close_up_MCU": {
+      "descripcion": "Pecho hacia arriba.",
+      "funcion": "Conversacional. Equilibrio entre emoción y contexto.",
+      "uso": "El plano más usado en televisión y diálogos."
+    },
+    "medium_shot_MS": {
+      "descripcion": "Cintura hacia arriba.",
+      "funcion": "Acción + emoción. Vemos gestos de manos + expresión facial.",
+      "uso": "Escenas de dos personas interactuando físicamente."
+    },
+    "long_shot_LS": {
+      "descripcion": "Figura completa en contexto.",
+      "funcion": "El personaje en su mundo. La relación entre persona y entorno.",
+      "referencia": "Wes Anderson lo usa simétricamente para crear su mundo artificial y controlado."
+    },
+    "extreme_long_shot_ELS": {
+      "descripcion": "Figura mínima en espacio dominante.",
+      "funcion": "Aislamiento, grandeza del mundo, perspectiva cósmica.",
+      "referencia": "Villeneuve en Dune: el humano insignificante ante el universo."
+    },
+    "insert_shot": {
+      "descripcion": "Detalle de un objeto en la escena.",
+      "funcion": "El objeto dice lo que el personaje no dice.",
+      "referencia": "Los Coen Brothers son maestros del insert."
+    },
+    "two_shot": {
+      "descripcion": "Dos personajes en el mismo encuadre.",
+      "funcion": "Establece la relación. La altura de la cámara y el espacio entre ellos define esa relación.",
+      "referencia": "Tarantino en Pulp Fiction: mismo two-shot, ángulos distintos = relaciones distintas."
+    }
+  },
+
+  "composicion_y_encuadre": {
+    "regla_de_tercios": {
+      "descripcion": "Divide el encuadre en 9 partes. Los puntos de intersección son zonas de atención natural.",
+      "sujeto_en_interseccion": "Composición dinámica, más cinematográfica que el centro.",
+      "sujeto_centrado": "Formalidad, confrontación — estilo Kubrick/Wes Anderson (intencional)."
+    },
+    "regla_de_180": {
+      "descripcion": "Línea imaginaria entre personajes. La cámara siempre debe quedar del mismo lado.",
+      "violacion": "Desorientación espacial del espectador.",
+      "excepciones": "Mostrando el cruce en movimiento continuo, con plano neutro, o cuando el personaje cruza físicamente."
+    },
+    "lead_room": {
+      "con_lead_room": "Apertura, posibilidad, dirección narrativa.",
+      "sin_lead_room": "Claustrofobia, encierro, personaje atrapado."
+    },
+    "headroom": {
+      "sin_headroom": "Opresión, tensión extrema.",
+      "exceso": "Pequeñez, vulnerabilidad."
+    },
+    "frame_within_frame": {
+      "descripcion": "Usa elementos del set para crear un segundo encuadre: puertas, ventanas, arcos.",
+      "efecto": "Aíslan al sujeto, crean profundidad, sugieren voyeurismo.",
+      "referencia": "Hitchcock y los Coen Brothers son maestros de esto."
+    }
+  },
+
+  "angulos_de_camara": {
+    "eye_level": "La cámara al nivel de los ojos. Igualdad, neutralidad, observación respetuosa.",
+    "low_angle": {
+      "descripcion": "Cámara baja, mira hacia arriba.",
+      "efecto": "Poder, grandeza, amenaza, heroísmo."
+    },
+    "high_angle": {
+      "descripcion": "Cámara alta, mira hacia abajo.",
+      "efecto": "Vulnerabilidad, vigilancia, control externo, visión de dios.",
+      "referencia": "Fincher usa high angles para mostrar personajes atrapados en sus circunstancias."
+    },
+    "dutch_angle": {
+      "descripcion": "Horizonte inclinado.",
+      "efecto": "Inestabilidad psicológica, desorientación, mundo fuera de orden.",
+      "advertencia": "Solo funciona si es intencional — sin intención parece error."
+    },
+    "birds_eye": {
+      "descripcion": "Cámara perpendicular al suelo mirando hacia abajo.",
+      "efecto": "Abstracción, mapa, patrón geométrico, perspectiva omnisciente.",
+      "referencia": "Wes Anderson lo usa para crear sus composiciones simétricas características."
+    },
+    "pov": {
+      "descripcion": "Punto de vista subjetivo — vemos exactamente lo que el personaje ve.",
+      "referencia": "Nolan lo usa para crear su 'first-and-a-half person' — entre objetivo y subjetivo."
+    }
+  },
+
+  "foco_y_profundidad": {
+    "shallow_focus": {
+      "descripcion": "Sujeto en foco, fondo desenfocado.",
+      "efecto": "Aísla al personaje, lo separa de su mundo, enfatiza su estado interno.",
+      "tecnica": "Aperturas f/1.4-f/2.8, lentes largos (85mm+)."
+    },
+    "deep_focus": {
+      "descripcion": "Todo en foco — primer plano, medio y fondo simultáneamente.",
+      "efecto": "El espectador elige dónde mirar. Múltiples historias simultáneas.",
+      "referencia": "Orson Welles — Citizen Kane: la infancia de Kane visible a través de la ventana mientras los adultos deciden su destino en primer plano."
+    },
+    "rack_focus": {
+      "descripcion": "Cambio intencional y pronunciado del punto de foco.",
+      "efecto": "Declara el cambio de atención narrativa."
+    },
+    "uso_narrativo": {
+      "fuera_de_foco": "No es el protagonista de este momento",
+      "entrando_al_foco": "Está tomando relevancia narrativa",
+      "foco_compartido": "Dos personajes en equilibrio de poder"
+    }
+  },
+
+  "movimiento_de_camara": {
+    "regla_fundamental": "Todo movimiento de cámara debe estar motivado por la historia. Pregunta: ¿por qué se mueve la cámara AHORA? Si no hay respuesta narrativa → usa un plano estático.",
+    "movimientos": {
+      "static": { "funcion": "Observación, objetividad, actuación", "referencia": "Scorsese, Fincher" },
+      "pan": { "funcion": "Descubrimiento, revelación, paisaje", "referencia": "Lean, Spielberg" },
+      "tilt": { "funcion": "Grandeza progresiva, contexto", "referencia": "Cualquier épico" },
+      "dolly_in": { "funcion": "Inmersión, intimidad creciente", "referencia": "Kubrick, Villeneuve" },
+      "dolly_out": { "funcion": "Alejamiento, contexto revelado, pérdida", "referencia": "Kubrick" },
+      "truck_lateral": { "funcion": "Acompañamiento del personaje", "referencia": "Cuarón — Children of Men" },
+      "zoom": { "funcion": "Aproximación analítica (no física)", "referencia": "Kubrick — Barry Lyndon" },
+      "crane_up": { "funcion": "Perspectiva de dios, conclusión épica", "referencia": "Mendes, Spielberg" },
+      "steadicam": { "funcion": "Omnisciencia suave, presencia invisible, fluidez onírica", "referencia": "Kubrick — The Shining" },
+      "handheld": { "funcion": "Urgencia, presencia humana, realidad cruda", "referencia": "Fincher — Gone Girl" },
+      "dolly_zoom": { "funcion": "Disociación entre personaje y entorno. El fondo 'se cae'.", "referencia": "Spielberg — Tiburón (Efecto Vértigo)" }
+    },
+    "cuando_mover": [
+      "El personaje se mueve → la cámara lo sigue o lo anticipa",
+      "Hay una revelación → la cámara revela con su movimiento",
+      "La emoción escala → la cámara se aproxima",
+      "El personaje se aísla → la cámara se aleja"
+    ]
+  },
+
+  "lentes_narrativos": {
+    "wide_angle_14_35mm": {
+      "efecto": "Perspectiva exagerada, gran profundidad de campo, sujeto cercano más grande, fondo más lejano.",
+      "uso": "Espacios inmensos, persecuciones, urgencia, distorsión expresionista."
+    },
+    "standard_40_60mm": {
+      "efecto": "Perspectiva similar al ojo humano. Natural, documental, invisible."
+    },
+    "portrait_85_105mm": {
+      "efecto": "Compresión moderada, bokeh natural, favorecedor para rostros.",
+      "uso": "El lente cinematográfico de retrato por excelencia."
+    },
+    "telephoto_135_300mm": {
+      "efecto": "Compresión del espacio — los planos parecen juntos aunque estén lejos. Sensación de vigilancia, distancia.",
+      "referencia": "Roger Deakins lo usa para crear composiciones de pintura."
+    },
+    "anamórfico": {
+      "efecto": "Aspecto ratio 2.39:1, flares horizontales, bokeh ovalado.",
+      "uso": "El 'look' cinematográfico clásico de Hollywood.",
+      "referencia": "Villeneuve usó anamórfico en Dune para su world-building épico."
+    }
+  },
+
+  "frame_rate": {
+    "24fps": "El frame rate 'cinematográfico' — leve motion blur crea sensación fílmica.",
+    "30fps": "Más televisivo, más realista, menos onírico.",
+    "60fps_plus": "Hiperrealismo — saca del 'sueño cinematográfico'.",
+    "slow_motion": "Extiende el tiempo, magnifica el detalle emocional, gravedad reducida.",
+    "acelerado": "Paso del tiempo, comedia, urgencia extrema."
+  },
+
+  "transiciones_y_edicion": {
+    "cut_directo": "El más neutral. No agrega tiempo, solo cambia perspectiva.",
+    "match_cut": "Conecta dos imágenes por similitud visual — metáfora poética.",
+    "jump_cut": "Ruptura del tiempo o continuidad — puede ser error o estilo intencional.",
+    "dissolve": "Paso del tiempo, conexión lírica entre momentos.",
+    "l_cut_j_cut": "Fluidez entre escenas — el audio anticipa o continúa el video.",
+    "smash_cut": "Corte abrupto de alto a bajo contraste — impacto, sorpresa, humor."
+  },
+
+  "tono_de_pelicula": {
+    "descripcion": "La actitud emocional del director hacia su material. Se establece en los primeros minutos.",
+    "tres_elementos": [
+      "Ritmo (pacing de edición y actuación)",
+      "Paleta visual (color, luz, saturación)",
+      "Diseño de producción (sets, vestuario, props)"
+    ],
+    "ejemplo_cambio_tono": "Parasite (Bong Joon Ho): comedia → thriller → tragedia. El tono cambia pero la lógica narrativa lo justifica."
+  },
+
+  "disenio_de_produccion": {
+    "principio": "El director debe pensar en el espacio como un personaje.",
+    "checklist": [
+      "¿Qué dice el set sobre el personaje que vive/trabaja aquí?",
+      "¿Qué colores dominan el espacio y qué comunican?",
+      "¿Qué objetos tienen carga narrativa?",
+      "¿Cómo el espacio limita o libera el movimiento del personaje?"
+    ],
+    "referencias": {
+      "wes_anderson": "Cada objeto en el set es deliberado. Los sets son artificiales porque sus personajes viven en mundos construidos para ellos.",
+      "david_fincher": "Fight Club: el apartamento de Jack es el diseño de producción del caos interior. Se7en: la ciudad lluviosa perpetua es el estado mental de los personajes."
+    }
+  },
+
+  "blocking_y_staging": {
+    "descripcion": "La coreografía de actores y cámara en el espacio. La intersección entre dirección de actores y lenguaje visual.",
+    "principios": [
+      "Los actores en movimiento tienen más energía narrativa que los estáticos",
+      "El personaje que domina el espacio físico domina la escena narrativamente",
+      "La distancia entre personajes = distancia emocional",
+      "El personaje de espaldas a cámara = oculta información, crea misterio"
+    ],
+    "proceso": [
+      "Lee la escena y define: ¿quién tiene el poder? ¿quién lo pierde?",
+      "Coloca a los actores según esa dinámica de poder",
+      "El movimiento de actores = cambio en esa dinámica",
+      "La cámara sigue o anticipa ese movimiento"
+    ],
+    "por_director": {
+      "kubrick": "Staging geométrico y simétrico — los personajes como piezas de ajedrez",
+      "spielberg": "Staging funcional al servicio de la emoción — siempre pregunta '¿qué siente el espectador?'",
+      "inarritu": "Staging en largos takes donde el blocking y la cámara se funden",
+      "scorsese": "Jordan Belfort siempre ocupa el centro del espacio — el espacio se organiza alrededor de él."
+    }
+  },
+
+  "color_en_cine": {
+    "principio": "El color no es decoración — es información narrativa.",
+    "calido_vs_frio": {
+      "calido": "Rojo, naranja, amarillo → energía, peligro, pasión, vida",
+      "frio": "Azul, verde, violeta → distancia, muerte, tecnología, calma"
+    },
+    "color_como_arco": {
+      "her": "Naranja cálido al inicio (esperanza) → azul frío al final (pérdida)",
+      "parasite": "El verde del jardín de los Park = dinero, privilegio, mundo inaccesible",
+      "matrix": "Verde-amarillento del mundo simulado vs. azul-gris del mundo real"
+    },
+    "desaturacion": {
+      "uso": "Pasado, memoria, objetividad documental",
+      "ejemplo": "Schindler's List: blanco y negro con el abrigo rojo — la humanidad en el horror"
+    },
+    "color_de_personaje": "El personaje puede tener su propio color que contrasta con su entorno. Ese contraste dice algo sobre su relación con el mundo que habita."
+  },
+
+  "escenas_especificas": {
+    "escena_de_accion": {
+      "principios": [
+        "La acción debe tener consecuencias emocionales, no solo físicas",
+        "El espectador debe saber siempre la geografía del espacio",
+        "Staging en profundidad — usar el eje Z, no solo el horizontal",
+        "El sonido diseña tanto como la imagen"
+      ],
+      "referencias": {
+        "zack_snyder": "300 — Speed ramps, morph zooms. El espectador siente el golpe.",
+        "michael_mann": "Heat — Sonido ensordecedor por diseño. Los personajes se mueven como profesionales.",
+        "ryan_coogler": "Creed — El montaje de entrenamiento avanza el estado psicológico, no solo físico."
+      }
+    },
+    "escena_de_tension_dialogo": {
+      "principios": [
+        "Define quién tiene el poder al inicio",
+        "Muestra la transferencia de poder a través de cambios en plano y ángulo",
+        "El close-up es un privilegio narrativo — úsalo en el momento exacto",
+        "El silencio y la pausa dicen más que el diálogo"
+      ],
+      "referencias": {
+        "tarantino": "Inglourious Basterds — Suspense Hitchcockiano: sabemos que hay una bomba bajo la mesa.",
+        "fincher": "Zodiac, Se7en — Cortes precisos que revelan la dinámica de poder cambiando.",
+        "nolan": "Dark Knight — El Joker no tiene miedo → el espacio de poder se invierte."
+      }
+    },
+    "escena_de_apertura": {
+      "funcion": "Establece el contrato con el espectador: tono, mundo, estilo visual, ritmo, tipo de historia.",
+      "referencias": {
+        "spielberg_jurassic": "El raptor en la caja: tensión máxima sin mostrar al monstruo. Lo que no se ve es más aterrador.",
+        "scorsese_irishman": "Steadicam largo que recorre el pasillo del asilo. Establece: estamos entrando a la memoria de alguien.",
+        "bong_parasite": "La primera escena establece la geografía social. El sótano → la superficie → el piso de arriba = jerarquía de clase.",
+        "villeneuve_arrival": "La apertura no es el inicio de la historia — es su conclusión. El espectador no sabe que está viendo el final."
+      }
+    },
+    "long_take_oner": {
+      "por_que_usarlo": [
+        "Inmersión: el espectador no puede 'salir' en los cortes",
+        "Tiempo real: lo que le toma al personaje nos toma a nosotros",
+        "Virtuosismo: demuestra control total del espacio y el tiempo"
+      ],
+      "reglas": [
+        "Planifica el take como una obra de teatro: el blocking de actores es coreografía",
+        "El movimiento de cámara debe anticipar la acción, no seguirla",
+        "Cada posición del take debe ser compositivamente correcta",
+        "El take tiene su propio arco: inicio, clímax, resolución"
+      ],
+      "referencias": {
+        "cuaron_children_of_men": "Sin cortes → el peligro es continuo → el espectador no puede respirar.",
+        "mendes_road_to_perdition": "Un solo shot que cuenta una historia completa — inicio, desarrollo, final."
+      }
+    }
+  },
+
+  "estilos_de_directores": {
+    "christopher_nolan": {
+      "sellos": ["Bookending: inicio y final comparten algo idéntico", "First-and-a-half person POV", "Personajes con culpa que los define o destruye", "El tiempo como dispositivo narrativo no lineal", "La información como arma narrativa controlada"]
+    },
+    "quentin_tarantino": {
+      "sellos": ["Diálogos triviales que establecen carácter y crean tensión", "Suspense de Hitchcock: el espectador sabe algo que los personajes no", "No linealidad como estructura creativa", "Los inserts, los pies, los objetos — el mundo a través de sus partes"]
+    },
+    "stanley_kubrick": {
+      "sellos": ["Simetría como control — el mundo artificial y ordenado", "Steadicam como personaje (The Shining)", "El zoom de Barry Lyndon (técnica histórica)", "Los actores como piezas de ajedrez — staging geométrico", "El close-up como arma reservada para maximizar impacto"]
+    },
+    "martin_scorsese": {
+      "sellos": ["La cámara subjetiva refleja el estado mental del personaje", "El freeze frame como puntuación narrativa", "La música como montaje emocional — las canciones son comentario", "El largo take como performance — dejar respirar la actuación"]
+    },
+    "david_fincher": {
+      "sellos": ["Cada movimiento de cámara tiene razón de ser", "High angles que atrapan a los personajes en sus circunstancias", "La oscuridad como territorio narrativo", "Múltiples takes hasta lograr lo invisible", "El sonido igual de importante que la imagen"]
+    },
+    "wes_anderson": {
+      "sellos": ["Simetría perfecta en cada encuadre", "Paletas de color únicas por película", "Pans rápidos y dollies laterales como puntuación", "El tableau shot — escena presentada como cuadro vivo", "Los personajes en mundos artificiales que reflejan sus estados emocionales"]
+    },
+    "denis_villeneuve": {
+      "sellos": ["El silencio como lengua narrativa", "La escala del espacio para hacer al personaje pequeño ante el universo", "Ritmo lento que pide paciencia y da recompensa emocional", "La ambigüedad como respeto al espectador", "Colaboración profunda con el DP como fusión creativa"]
+    },
+    "roger_deakins": {
+      "sellos": ["Luz motivada: siempre hay una razón narrativa para la fuente de luz", "Simplicidad: una fuente bien colocada vale más que diez mal colocadas", "Location scouting como proceso creativo", "El trabajo previo con el director — la imagen nace en la conversación"]
+    }
+  },
+
+  "shot_list": {
+    "estructura": {
+      "campos": ["Shot #", "Descripción", "Plano", "Ángulo", "Movimiento", "Lente", "Notas"],
+      "ejemplo": "Shot 1 | Personaje entra sala | LS | EL | Static | 35mm | Luz motivada ventana"
+    },
+    "proceso": [
+      "Lee la escena completa. ¿Qué debe sentir el espectador al final?",
+      "Identifica los momentos narrativos clave (máximo 5-7 por escena)",
+      "Elige el plano que sirve a cada momento",
+      "Agrupa por setup para eficiencia en el rodaje",
+      "Ordena los setups por eficiencia, no por orden narrativo"
+    ],
+    "reglas": [
+      "Agrupa todos los planos que requieren el mismo setup de cámara",
+      "Marca los 'nice-to-have' vs. los esenciales",
+      "El DP y el 1st AD deben co-crear el shot list",
+      "Un shot list bien hecho = menos improvisación en set = más tiempo para la actuación"
+    ]
+  },
+
+  "referencia_rapida": {
+    "personaje_toma_decision": { "plano": "CU → ECU", "angulo": "Eye level", "movimiento": "Push in suave", "ref": "Fincher" },
+    "personaje_tiene_poder": { "plano": "MS o LS", "angulo": "Low angle", "movimiento": "Static", "ref": "Nolan" },
+    "personaje_vulnerable": { "plano": "CU o MCU", "angulo": "High angle", "movimiento": "Static o pull back", "ref": "Villeneuve" },
+    "dos_personajes_en_tension": { "plano": "OTS alternados", "angulo": "Eye level", "movimiento": "Static", "ref": "Tarantino" },
+    "revelacion_del_espacio": { "plano": "ELS o LS", "angulo": "Eye level o bird's eye", "movimiento": "Pan o crane up", "ref": "Anderson" },
+    "persecucion_accion": { "plano": "MS a MCU alternados", "angulo": "Varía", "movimiento": "Handheld o steadicam", "ref": "Cuarón" },
+    "momento_intimo_emocional": { "plano": "CU o ECU", "angulo": "Eye level", "movimiento": "Push in muy lento", "ref": "Scorsese" },
+    "mundo_del_personaje": { "plano": "ELS", "angulo": "Bird's eye o High", "movimiento": "Drone o crane", "ref": "Villeneuve" },
+    "dialogo_casual": { "plano": "MCU", "angulo": "Eye level", "movimiento": "Static o leve truck", "ref": "Conversacional" }
+  }
+}

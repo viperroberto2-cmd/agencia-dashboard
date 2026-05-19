@@ -1,0 +1,289 @@
+{
+  "director": {
+    "rol": "El director controla la narrativa, el ritmo, las emociones y la actuacion. Decide QUE historia se cuenta y COMO se siente.",
+    "estilos_por_industria": {
+      "abogados": {
+        "estilo": "Drama legal — tension, autoridad, resolucion",
+        "referencias": ["Aaron Sorkin (dialogo rapido y poderoso)", "Sidney Lumet (12 Angry Men — tension en espacios cerrados)", "David Fincher (precision, frio, calculado)"],
+        "tecnicas": [
+          "Comenzar con el momento de maxima tension, luego flashback al inicio del problema",
+          "Planos cortos y rapidos en momentos de confrontacion",
+          "Silencio dramatico antes del momento clave",
+          "Voz en off del abogado narrando mientras vemos al cliente sufriendo",
+          "Contraste visual: caos del problema vs orden de la solucion"
+        ],
+        "estructura_narrativa": "Problema urgente → Consecuencias devastadoras → Heroe aparece → Transformacion → Victoria"
+      },
+      "medicos": {
+        "estilo": "Drama humano — esperanza, cuidado, confianza",
+        "referencias": ["Steven Spielberg (conexion emocional inmediata)", "Alfonso Cuaron (planos largos y fluidos que crean intimidad)", "documentales de Errol Morris (testimonios autenticos)"],
+        "tecnicas": [
+          "Comenzar con el momento de esperanza — el paciente sonriendo despues",
+          "Flashback al momento de preocupacion inicial",
+          "Primer plano de las manos del doctor — transmite cuidado y habilidad",
+          "Musica que sube gradualmente con la recuperacion del paciente",
+          "Testimonio directo a camara sin edicion — autenticidad total"
+        ],
+        "estructura_narrativa": "Miedo → Encuentro con el doctor → Proceso de confianza → Resultado positivo → Vida transformada"
+      },
+      "car_dealers": {
+        "estilo": "Aspiracional y energico — emocion, liberacion, orgullo",
+        "referencias": ["Michael Bay (energia, movimiento, impacto visual)", "Zack Snyder (slow motion dramatico)", "commercials de Nike (aspiracion pura)"],
+        "tecnicas": [
+          "Abrir con el carro en movimiento — nunca estatico",
+          "Cortes rapidos al ritmo de la musica en momentos de emocion",
+          "Slow motion en el momento de entrega de llaves",
+          "Reaccion genuina del cliente — no actuada",
+          "Drone shot final alejandose del carro para mostrar grandiosidad"
+        ],
+        "estructura_narrativa": "Sueno del carro → Obstaculo (credito, precio) → Solucion del dealer → Momento de entrega → Vida nueva"
+      }
+    },
+    "direccion_de_actores": {
+      "para_no_actores": [
+        "Nunca digas 'actua natural' — pide que recuerden un momento real similar",
+        "Hazlos caminar hacia la camara — el movimiento elimina la rigidez",
+        "Graba 3-4 takes y usa el ultimo — ya perdieron el miedo",
+        "Cuéntales el resultado del cliente en la historia para que sientan emocion real",
+        "Para testimonios: pregunta '¿Como te sentias ANTES?' — eso activa la emocion autentica"
+      ],
+      "para_el_dueno_del_negocio": [
+        "Que hable de UN cliente especifico, no de todos en general",
+        "Que mire ligeramente sobre la camara, no directo al lente — mas natural",
+        "Grabarlo mientras camina por su espacio — da autoridad y naturalidad",
+        "Tres palabras clave que debe transmitir: confianza, experiencia, resultados"
+      ]
+    },
+    "ritmo_y_edicion": {
+      "comercial_15s": "Corte cada 2-3 segundos. Sin respiracion. Todo impacto.",
+      "comercial_30s": "Primeros 10s: cortes rapidos. Medio: 1 toma larga emocional. Final: corte rapido al CTA.",
+      "comercial_60s": "Construye lentamente. Deja que la emocion respire. El corte rapido llega solo al final.",
+      "regla_de_oro": "Corta en el momento de maxima emocion, no despues. Deja al espectador queriendo mas."
+    },
+    "storyboard_formato": {
+      "descripcion": "Formato para describir cada toma del comercial",
+      "estructura_por_toma": {
+        "toma": "numero",
+        "tipo_de_plano": "primerísimo primer plano / primer plano / plano medio / plano americano / plano general / plano detalle",
+        "angulo": "normal / picado (desde arriba) / contrapicado (desde abajo) / dutch (inclinado)",
+        "movimiento": "estatica / pan izquierda-derecha / tilt arriba-abajo / dolly in-out / handheld / drone",
+        "duracion": "segundos",
+        "accion": "que ocurre en escena",
+        "audio": "dialogo / musica / sonido ambiente / voz en off",
+        "emocion_objetivo": "que debe sentir el espectador",
+        "prompt_ia": "prompt listo para Midjourney o Kling"
+      }
+    }
+  },
+  "cinematografo": {
+    "rol": "El cinematografo (DP - Director of Photography) controla TODO lo visual: lentes, luz, composicion, color. Decide COMO se ve cada fotograma.",
+    "lentes_y_su_efecto": {
+      "14_24mm_gran_angular": {
+        "efecto": "Distorsion dramatica, espacios amplios, sensacion de grandiosidad o claustrofobia segun uso",
+        "uso_marketing": "Lote de carros para hacerlo ver enorme, sala de espera de clinica espaciosa, oficina de abogado imponente",
+        "prompt_ia": "ultra wide angle 14mm lens, dramatic perspective distortion, expansive space"
+      },
+      "35mm": {
+        "efecto": "Similar al ojo humano. Natural, cercano, documental",
+        "uso_marketing": "Testimonios de clientes, dia en la vida del doctor, escenas de familia con el carro nuevo",
+        "prompt_ia": "35mm lens, natural perspective, documentary feel, intimate"
+      },
+      "50mm": {
+        "efecto": "Exactamente como el ojo humano. Neutro y versatil",
+        "uso_marketing": "Entrevistas del abogado o doctor mirando a camara, producto en uso natural",
+        "prompt_ia": "50mm standard lens, natural human perspective, clean composition"
+      },
+      "85mm": {
+        "efecto": "Compresion suave, bokeh hermoso, muy favorecedor para rostros",
+        "uso_marketing": "Retratos del doctor o abogado, primer plano del cliente satisfecho, producto hero shot",
+        "prompt_ia": "85mm portrait lens, beautiful bokeh background blur, flattering compression, f/1.8"
+      },
+      "135mm_200mm_telefoto": {
+        "efecto": "Compresion fuerte, fondo muy difuminado, separa al sujeto perfectamente",
+        "uso_marketing": "Carro en carretera con fondo comprimido, abogado caminando hacia camara con ciudad de fondo",
+        "prompt_ia": "135mm telephoto lens, heavy background compression, subject isolation, cinematic depth"
+      }
+    },
+    "iluminacion_tecnica": {
+      "three_point_lighting": {
+        "key_light": "Luz principal a 45 grados del sujeto. Define las sombras. Más intensa.",
+        "fill_light": "Rellena las sombras del lado opuesto. 50% de la intensidad del key.",
+        "back_light": "Separa al sujeto del fondo. Crea un halo. Muy importante para profundidad.",
+        "prompt_ia": "three point lighting setup, key light at 45 degrees, subtle fill, rim light separation"
+      },
+      "luz_natural_ventana": {
+        "descripcion": "La luz de ventana lateral es la mas hermosa y accesible. Hora dorada (1 hora despues del amanecer o antes del atardecer).",
+        "setup": "Sujeto a 90 grados de la ventana. Reflector blanco del lado opuesto para suavizar sombras.",
+        "prompt_ia": "natural window light, soft diffused daylight, golden hour warmth, cinematic natural lighting"
+      },
+      "temperatura_de_color": {
+        "3200K_tungsteno": "Muy calido, naranja-dorado. Hogareño, nostalgico, intimo.",
+        "4500K_neutra": "Luz de dia nublado. Neutra, versatil, natural.",
+        "5600K_luz_dia": "Luz de dia directa. Limpia, profesional, medica.",
+        "6500K_sombra": "Ligeramente azulada. Fria, tecnologica, seria.",
+        "por_industria": {
+          "abogados": "4500K-5600K — serio y profesional",
+          "medicos": "5600K — limpio y clinico con toques de 4500K para calidez humana",
+          "car_dealers": "3200K-4500K para interiores del carro, 5600K para exteriores"
+        }
+      },
+      "modificadores_de_luz": {
+        "softbox": "Luz muy suave y difusa. Para rostros y entrevistas.",
+        "beauty_dish": "Luz suave pero con mas definicion. Para primeros planos del doctor o abogado.",
+        "reflector_plateado": "Rebota la luz con mas brillo. Para carros y superficies brillantes.",
+        "reflector_dorado": "Agrega calidez artificial. Para simular hora dorada.",
+        "difusor_tela_blanca": "Suaviza cualquier fuente de luz. Lo mas accesible y profesional."
+      }
+    },
+    "composicion_avanzada": {
+      "regla_de_tercios": "Ojos en el tercio superior. CTA o logo en el tercio inferior. Sujeto en intersecciones, nunca centrado.",
+      "lineas_guia": "Usa arquitectura, carreteras, pasillos para guiar el ojo al sujeto principal.",
+      "espacio_negativo": "Deja aire en la direccion hacia donde mira el sujeto. Crea tension y movimiento.",
+      "profundidad_de_campo": "Tres planos: primer plano (algo borroso), sujeto nitido, fondo borroso. Da dimension cinematografica.",
+      "simetria": "Para transmitir poder, control, autoridad. Muy efectiva para abogados y medicos.",
+      "regla_de_los_pares": "Dos elementos en frame crean tension narrativa. Tres crean armonia.",
+      "prompts_composicion": {
+        "autoridad": "low angle shot, subject dominates frame, symmetrical composition, leading lines converging on subject",
+        "confianza": "eye level shot, rule of thirds, warm bokeh background, direct eye contact with camera",
+        "aspiracion": "wide establishing shot, subject small in grand environment, leading lines to horizon",
+        "intimidad": "extreme close up, shallow depth of field, soft natural light, emotional expression"
+      }
+    },
+    "color_grading_tecnico": {
+      "proceso": "1. Balance de blancos correcto en camara. 2. Exposicion correcta (histograma centrado). 3. LUT cinematografico. 4. Ajuste de sombras y luces. 5. Color creativo por industria.",
+      "luts_recomendados": {
+        "abogados": "Teal and Orange desaturado — serio, cinematografico, HBO style",
+        "medicos": "Clean y bright con toque de verde — limpio, esperanzador, moderno",
+        "car_dealers": "Warm crush con negros intensos — impacto, lujo, energia"
+      },
+      "en_capcut_gratis": {
+        "abogados": "Filtro 'Film' o 'Moody' + reducir saturacion 20% + aumentar contraste 15%",
+        "medicos": "Filtro 'Natural' o 'Fresh' + aumentar highlights 10% + temperatura mas calida",
+        "car_dealers": "Filtro 'Vivid' o 'Bold' + aumentar saturacion 15% + crushear sombras"
+      },
+      "prompts_color": {
+        "abogados": "desaturated teal and orange color grade, cinematic contrast, dark moody atmosphere",
+        "medicos": "clean bright color grade, slight warm tones, high key lighting, hopeful atmosphere",
+        "car_dealers": "vibrant color grade, deep blacks, warm highlights, cinematic car commercial look"
+      }
+    },
+    "movimientos_de_camara_tecnicos": {
+      "steadicam": "Movimiento fluido mientras camina. Para seguir al doctor o abogado caminando con autoridad.",
+      "slider": "Movimiento lateral perfecto. Para revelar el carro o el consultorio lentamente.",
+      "jib_crane": "Movimiento de arriba hacia abajo o viceversa. Para revelar espacios grandes o momentos epicos.",
+      "drone": {
+        "tipos": ["Orbit — rodea al sujeto", "Reveal — sube desde detras de un obstaculo", "Hyperlapse — movimiento rapido de ciudad", "Top down — cenital, muy cinematografico"],
+        "prompt_ia": "aerial drone shot, smooth orbit movement, cinematic altitude, golden hour light"
+      },
+      "camara_en_mano": "Solo cuando quieres sensacion documental o urgencia. Para testimonios autenticos.",
+      "prompts_movimiento": {
+        "dolly_in": "slow cinematic dolly in movement, smooth tracking shot approaching subject",
+        "crane_up": "camera cranes up revealing grand environment, epic scale reveal",
+        "orbit": "smooth 360 degree orbit around subject, cinematic rotation"
+      }
+    },
+    "flujo_completo_produccion_ai": {
+      "paso_1_storyboard": "Claude genera el storyboard completo toma por toma",
+      "paso_2_imagenes": "Midjourney genera cada toma con prompts cinematograficos precisos",
+      "paso_3_animacion": "Runway ML anima con movimientos de camara especificos",
+      "paso_4_video_realista": "Kling 3.0 para escenas que requieren maxima calidad y realismo",
+      "paso_5_voz": "ElevenLabs para voz en off — elige voz segun industria",
+      "paso_6_musica": "Suno AI genera musica original o usa Epidemic Sound",
+      "paso_7_edicion": "CapCut para ensamble, color grading y subtitulos automaticos",
+      "paso_8_optimizacion": "Exportar en formato correcto por plataforma (9:16 para Reels, 16:9 para YouTube)"
+    }
+  },
+  "bananapro_ai": {
+    "plataforma": "https://bananaproai.com/video/",
+    "descripcion": "Plataforma con 4 modelos de video AI: Veo 3.1, Wan 2.5, Kling y Grok. Soporta texto a video e imagen a video. Exporta MP4 sin marca de agua.",
+    "modelos": {
+      "veo_3_1": {
+        "empresa": "Google",
+        "fortaleza": "Calidad cinematografica maxima, realismo fotorealistico, movimientos de camara fluidos",
+        "mejor_para": "Comerciales premium, escenas con personas, testimonios hiperrealistas, cualquier escena que necesite maxima credibilidad",
+        "duracion_tipica": "5-15 segundos por clip",
+        "formato_prompt": "Descripcion cinematografica detallada en ingles. Incluir: sujeto, accion, ambiente, iluminacion, camara, mood",
+        "tips": [
+          "Ser muy especifico con la accion — no solo 'abogado en oficina' sino 'confident attorney in dark suit walking purposefully toward camera in elegant law office'",
+          "Mencionar siempre la iluminacion — dramatic side lighting, soft window light, golden hour",
+          "Incluir movimiento de camara — slow dolly in, subtle pan left, static close-up",
+          "Mencionar el mood cinematografico — cinematic, dramatic, hopeful, energetic"
+        ],
+        "prompts_por_industria": {
+          "abogados": "Confident Hispanic male attorney in dark navy suit, walking purposefully toward camera in elegant law office with bookshelves, dramatic three-point lighting with warm key light, slow cinematic dolly in, serious and authoritative expression, shallow depth of field, dark cinematic color grade, 4K quality",
+          "medicos": "Caring female doctor in white coat gently listening to elderly patient in bright modern clinic, soft natural window light from left, warm 4500K color temperature, subtle camera movement, hopeful and compassionate mood, photorealistic, cinematic quality",
+          "car_dealers": "Sleek black SUV driving on open highway at golden hour, cinematic wide shot, camera tracking alongside vehicle, warm orange-gold light reflecting on glossy surface, dynamic motion blur on background, aspirational and powerful mood, commercial quality"
+        }
+      },
+      "wan_2_5": {
+        "empresa": "Wan AI",
+        "fortaleza": "Velocidad — genera en 30-60 segundos. Ideal para iteraciones rapidas y contenido de volumen",
+        "mejor_para": "Crear multiples variaciones rapidas, probar conceptos antes de usar Veo, contenido de redes sociales de alto volumen",
+        "duracion_tipica": "3-8 segundos por clip",
+        "formato_prompt": "Mas conciso que Veo. Enfocado en la accion principal y el estilo visual",
+        "tips": [
+          "Prompts mas cortos funcionan mejor — maximo 100 palabras",
+          "Enfocarse en UNA accion principal, no multiples",
+          "Ideal para probar diferentes angulos del mismo concepto rapidamente",
+          "Usar para crear el primer borrador — luego refinar con Veo"
+        ],
+        "prompts_por_industria": {
+          "abogados": "Attorney in suit at desk, reviewing legal documents, dramatic lighting, cinematic, professional",
+          "medicos": "Doctor with stethoscope smiling at patient, bright clinic, warm light, trustworthy, medical commercial style",
+          "car_dealers": "Sports car on empty road, sunset, dynamic camera, commercial style, vibrant colors"
+        }
+      },
+      "kling": {
+        "empresa": "Kuaishou",
+        "version": "Kling 3.0 disponible en BananaPro",
+        "fortaleza": "Personalizacion extensa, multiples resoluciones hasta 4K, muy bueno con movimiento de objetos",
+        "mejor_para": "Carros en movimiento, escenas de accion, tomas de producto con movimiento fluido, cuando necesitas control preciso del resultado",
+        "duracion_tipica": "5-10 segundos",
+        "formato_prompt": "Detallado en ingles. Muy bueno respondiendo a instrucciones de camara especificas",
+        "tips": [
+          "Excelente para carros — describe el movimiento del vehiculo con precision",
+          "Soporta instrucciones de camara muy especificas — usa terminologia de DP",
+          "Para imagen a video: sube imagen de Midjourney y describe el movimiento deseado",
+          "Muy bueno con slow motion — especificarlo en el prompt"
+        ],
+        "prompts_por_industria": {
+          "abogados": "Low angle shot slowly tilting up from leather shoes to face of confident attorney standing in courthouse, dramatic lighting, justice scale visible in background, slow cinematic tilt, dark authoritative color grade",
+          "medicos": "Close up of doctor's hands placing stethoscope on patient, soft defocused clinic background, warm natural light, gentle camera pull back revealing compassionate doctor face, hopeful atmosphere",
+          "car_dealers": "Black luxury SUV performing smooth 180 turn in empty parking lot at night, wet asphalt reflecting city lights, slow motion tire screech, dramatic side lighting, cinematic car commercial, 4K"
+        }
+      },
+      "grok_imagine": {
+        "empresa": "xAI (Elon Musk)",
+        "fortaleza": "Estilos artisticos distintivos, experimentacion creativa, resultados inesperados que sorprenden",
+        "mejor_para": "Contenido creativo diferente, thumbnails llamativos para YouTube, imagenes conceptuales de campanas, cuando quieres romper el molde",
+        "formato_prompt": "Acepta prompts creativos y experimentales. Responde bien a referencias artisticas y estilos",
+        "tips": [
+          "Usar cuando quieres algo visualmente impactante y diferente a lo convencional",
+          "Ideal para thumbnails de YouTube que necesitan destacar",
+          "Combinar con Veo — Grok para la imagen base, Veo para animar",
+          "Experimentar con estilos artisticos mezclados"
+        ],
+        "prompts_por_industria": {
+          "abogados": "Dramatic editorial illustration of justice scales and gavel, bold graphic style, deep navy and gold palette, high contrast, powerful legal symbolism, magazine cover quality",
+          "medicos": "Modern healthcare hero concept, doctor as superhero silhouette, hope and healing visual metaphor, bold colors, inspirational poster style",
+          "car_dealers": "Futuristic car showroom concept, neon reflections on polished surface, cyberpunk meets luxury aesthetic, bold contrast, aspirational lifestyle"
+        }
+      }
+    },
+    "flujo_recomendado_bananapro": {
+      "paso_1": "Usa Wan 2.5 para probar conceptos rapido (30-60 segundos por video)",
+      "paso_2": "Selecciona el mejor concepto y refinalo con Veo 3.1 (maxima calidad)",
+      "paso_3": "Para escenas de carros o movimiento preciso, usa Kling 3.0",
+      "paso_4": "Para thumbnails o imagenes creativas de campana, usa Grok Imagine",
+      "paso_5": "Ensambla en CapCut con los clips de BananaPro + voz de ElevenLabs + musica de Suno"
+    },
+    "flujo_imagen_a_video": {
+      "descripcion": "El flujo mas poderoso para comerciales profesionales sin camara",
+      "paso_1": "Genera imagen base en Midjourney con prompt cinematografico",
+      "paso_2": "Sube la imagen a BananaPro",
+      "paso_3": "Selecciona el modelo segun la escena (Veo para realismo, Kling para movimiento preciso)",
+      "paso_4": "Describe el movimiento deseado en el prompt de animacion",
+      "resultado": "Video cinematografico de alta calidad sin necesidad de camara ni actor real"
+    }
+  }
+}

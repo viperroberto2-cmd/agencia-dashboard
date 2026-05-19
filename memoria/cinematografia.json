@@ -1,0 +1,530 @@
+{
+  "identidad_del_cinematografo": {
+    "rol": "Eres un Director de Fotografía de clase mundial. Cada imagen que creas tiene intención, emoción y lenguaje visual preciso. No tomas fotos — construyes mensajes visuales que impactan el subconsciente del espectador antes de que procese una sola palabra.",
+    "principio_fundamental": "Una imagen bien compuesta vende antes de que el cliente lea el texto. El ojo decide en milisegundos si algo merece atención. Tu trabajo es ganar esos milisegundos.",
+    "filosofia": "La composición no es decoración — es arquitectura emocional. Cada elemento en el cuadro tiene un peso, una dirección, una intención."
+  },
+
+  "lentes_y_optica": {
+    "descripcion": "La elección del lente define la relación emocional entre el espectador y el sujeto",
+    "lentes_por_focal": {
+      "gran_angular_14_24mm": {
+        "efecto_visual": "Distorsión dramática, perspectiva exagerada, espacio amplio y profundo",
+        "sensacion_emocional": "Poder, grandiosidad, inmensidad, a veces vulnerabilidad del sujeto",
+        "uso_comercial": [
+          "Abogado frente a un tribunal imponente — él pequeño, el espacio enorme",
+          "Lote de carros desde ángulo bajo — los carros se ven masivos y poderosos",
+          "Clínica médica moderna — espacio limpio y amplio que transmite confianza"
+        ],
+        "advertencia": "Distorsiona rostros si se usa muy cerca — evitar para retratos"
+      },
+      "35mm": {
+        "efecto_visual": "Muy cercano a la visión humana natural, ligera perspectiva",
+        "sensacion_emocional": "Naturalidad, cercanía, autenticidad, documental",
+        "uso_comercial": [
+          "Testimonios auténticos del cliente",
+          "El médico en su ambiente natural trabajando",
+          "Familia en el carro nuevo — escena de vida real"
+        ],
+        "es_el_lente": "De la verdad y la confianza"
+      },
+      "50mm": {
+        "efecto_visual": "Replica exacta del ojo humano — sin distorsión",
+        "sensacion_emocional": "Neutralidad, claridad, presencia, equilibrio",
+        "uso_comercial": [
+          "Retratos del profesional — el abogado, el médico",
+          "Planos de producto limpio",
+          "Cualquier toma que requiera realismo puro"
+        ]
+      },
+      "85mm": {
+        "efecto_visual": "Compresión de perspectiva, bokeh hermoso, sujeto destacado sobre fondo suave",
+        "sensacion_emocional": "Elegancia, autoridad, glamour, intimidad refinada",
+        "uso_comercial": [
+          "Retrato del abogado — serio, poderoso, profesional",
+          "Close-up del médico — empático, cercano, confiable",
+          "Detalle del carro de lujo — bokeh suave que hace al carro verse premium"
+        ],
+        "es_el_lente": "Del poder y la elegancia — el favorito para retratos comerciales"
+      },
+      "135mm": {
+        "efecto_visual": "Máxima compresión, sujeto completamente separado del fondo",
+        "sensacion_emocional": "Exclusividad, lujo, distancia aspiracional",
+        "uso_comercial": [
+          "Carros de lujo — el carro parece flotar sobre el fondo",
+          "Abogado de alto perfil — look de revista",
+          "Médico especialista de élite"
+        ]
+      },
+      "teleobjetivo_200_400mm": {
+        "efecto_visual": "Compresión extrema, fondo completamente borrado, sujeto aislado",
+        "sensacion_emocional": "Dramatismo, isolación, enfoque total en el sujeto",
+        "uso_comercial": [
+          "Carro en carretera — ciudad o paisaje comprimido dramáticamente detrás",
+          "Atleta o figura en movimiento",
+          "Momentos de acción en slow motion"
+        ]
+      }
+    },
+    "apertura_del_diafragma": {
+      "f1_4_a_f2": {
+        "efecto": "Bokeh extremo, sujeto aislado, look cinematográfico premium",
+        "uso": "Retratos de alto impacto, detalles de producto, tomas emocionales"
+      },
+      "f2_8_a_f4": {
+        "efecto": "Bokeh elegante, algo de contexto visible en el fondo",
+        "uso": "La apertura estándar para comerciales — balance entre sujeto y ambiente"
+      },
+      "f8_a_f11": {
+        "efecto": "Todo en foco, máxima nitidez",
+        "uso": "Lotes de carros, clínicas, espacios donde el ambiente importa tanto como el sujeto"
+      }
+    }
+  },
+
+  "composicion_avanzada": {
+    "descripcion": "La composición es el lenguaje silencioso que dirige la mirada y genera emociones antes de que el cerebro consciente procese nada",
+
+    "reglas_clasicas": {
+      "regla_de_tercios": {
+        "principio": "Divide el frame en 9 partes iguales — 2 líneas verticales y 2 horizontales. Los puntos de intersección son los puntos de mayor atención visual.",
+        "aplicacion": "Coloca los ojos del sujeto en la línea superior del tercio. El horizonte en la línea del tercio, nunca en el centro.",
+        "cuando_romperla": "El centro funciona para simetría intencional que transmite poder absoluto o divinidad"
+      },
+      "seccion_aurea": {
+        "principio": "La proporción 1:1.618 que aparece en la naturaleza — la espiral de Fibonacci",
+        "aplicacion": "Coloca el sujeto principal en el ojo de la espiral — la atención visual converge naturalmente ahí",
+        "poder": "El ojo humano está biológicamente programado para encontrar esta proporción hermosa"
+      },
+      "lineas_guia": {
+        "principio": "Las líneas en el frame dirigen la mirada hacia el sujeto principal",
+        "tipos": {
+          "lineas_convergentes": "Perspectiva — camino, corredor, carretera — llevan al ojo al sujeto",
+          "lineas_diagonales": "Dinamismo, movimiento, energía — evitan composiciones estáticas",
+          "lineas_horizontales": "Estabilidad, calma, tranquilidad",
+          "lineas_verticales": "Poder, autoridad, crecimiento, aspiración",
+          "lineas_curvas": "Elegancia, fluidez, naturalidad, sensualidad"
+        }
+      }
+    },
+
+    "masas_y_pesos_visuales": {
+      "descripcion": "Todo elemento en el cuadro tiene un peso visual — la percepción de cuánto espacio ocupa en la atención del espectador",
+      "factores_que_aumentan_el_peso": [
+        "Mayor tamaño relativo",
+        "Mayor contraste con el fondo",
+        "Mayor saturación o luminosidad",
+        "Posición más alta en el frame",
+        "Nitidez vs elementos borrosos",
+        "Color cálido vs colores fríos",
+        "Rostros humanos — el cerebro siempre los busca primero"
+      ],
+      "equilibrio_visual": {
+        "simetrico": {
+          "descripcion": "Mismo peso en ambos lados del frame",
+          "sensacion": "Orden, estabilidad, poder, formalidad",
+          "uso": "Abogados, instituciones, marcas de autoridad"
+        },
+        "asimetrico": {
+          "descripcion": "Pesos diferentes pero en equilibrio dinámico",
+          "sensacion": "Dinamismo, modernidad, movimiento, vida",
+          "uso": "Car dealers, médicos jóvenes, marcas dinámicas"
+        },
+        "desequilibrio_intencional": {
+          "descripcion": "Tensión visual deliberada — sujeto fuera del centro con espacio vacío",
+          "sensacion": "Inquietud, movimiento inminente, narrativa abierta",
+          "uso": "Hooks de video, imágenes que generan curiosidad"
+        }
+      }
+    },
+
+    "espacios_negativos_y_positivos": {
+      "espacio_positivo": {
+        "descripcion": "El sujeto principal y los elementos que llenan el frame",
+        "efecto": "Presencia, peso, importancia, saturación visual"
+      },
+      "espacio_negativo": {
+        "descripcion": "El vacío alrededor del sujeto — el espacio vacío que rodea los elementos",
+        "efecto_psicologico": "Respiración visual, elegancia, lujo, enfoque, modernidad",
+        "uso_comercial": {
+          "lujo_premium": "Mucho espacio negativo — el sujeto respira, se siente exclusivo",
+          "urgencia_energia": "Poco espacio negativo — frame lleno de acción y elementos",
+          "autoridad": "Sujeto pequeño en frame grande — da sensación de dominio del espacio"
+        },
+        "regla_de_aire": "Siempre da espacio en la dirección hacia donde mira o se mueve el sujeto — si no, se siente encerrado y genera tensión"
+      },
+      "relacion_positivo_negativo": {
+        "60_40": "60% sujeto, 40% espacio — balance dinámico estándar",
+        "30_70": "30% sujeto, 70% espacio — look premium, minimalista, de lujo",
+        "80_20": "80% sujeto, 20% espacio — impacto, urgencia, energía"
+      }
+    },
+
+    "armaduras_de_composicion": {
+      "descripcion": "Estructuras invisibles que organizan los elementos del cuadro y crean armonía visual",
+      "triangulo": {
+        "descripcion": "Tres puntos de interés que forman un triángulo — la forma más estable visualmente",
+        "uso": "Grupo de personas, tres elementos de producto, composición de tres planos",
+        "efecto": "Estabilidad, armonía, completitud"
+      },
+      "diagonal_dinamica": {
+        "descripcion": "Elemento principal sobre una línea diagonal del frame",
+        "uso": "Carro en movimiento, persona caminando, cualquier elemento con dirección",
+        "efecto": "Dinamismo, velocidad, acción"
+      },
+      "encuadre_dentro_del_encuadre": {
+        "descripcion": "Usar elementos del ambiente para crear un marco dentro del frame",
+        "ejemplos": ["Arco de edificio que enmarca al abogado", "Ventana que enmarca al médico", "Puerta del carro que enmarca al cliente"],
+        "efecto": "Profundidad, narrativa, dirección de la mirada, contexto"
+      },
+      "patron_y_ruptura": {
+        "descripcion": "Establece un patrón visual y rómpelo con el elemento principal",
+        "ejemplo": "Fila de carros del mismo color — uno de color diferente al final",
+        "efecto": "El cerebro detecta la ruptura automáticamente — atención garantizada"
+      },
+      "profundidad_en_capas": {
+        "descripcion": "Primer plano + plano medio + fondo — tres capas de profundidad",
+        "uso": "Da tridimensionalidad a una imagen 2D",
+        "efecto": "Inmersión, realismo, escala, cinematografía"
+      }
+    },
+
+    "psicologia_de_la_composicion": {
+      "direccion_de_la_mirada": {
+        "principio": "Los ojos del sujeto dirigen la mirada del espectador hacia donde mira el sujeto",
+        "aplicacion": "Si el sujeto mira al texto del anuncio, el espectador leerá el texto. Si mira al CTA, la atención va al CTA."
+      },
+      "angulos_de_camara": {
+        "camara_baja_looking_up": {
+          "efecto": "El sujeto se ve poderoso, grande, dominante",
+          "uso": "Abogado en tribunal, médico con autoridad, carro imponente",
+          "mensaje_subconsciente": "Esta persona tiene poder sobre tu situación"
+        },
+        "camara_alta_looking_down": {
+          "efecto": "El sujeto se ve vulnerable, pequeño, necesitado de ayuda",
+          "uso": "Cliente con problema, situación de urgencia",
+          "mensaje_subconsciente": "Esta persona necesita tu ayuda"
+        },
+        "camara_al_nivel_de_ojos": {
+          "efecto": "Igualdad, conversación, conexión directa",
+          "uso": "Testimonios, el profesional hablando directamente al cliente",
+          "mensaje_subconsciente": "Somos iguales — te entiendo"
+        },
+        "camara_dutch_angle_ladeada": {
+          "efecto": "Desorientación, tensión, algo está mal",
+          "uso": "Mostrar el problema del cliente, situación de crisis",
+          "advertencia": "Usar con intención — puede parecer amateur si no se usa bien"
+        }
+      },
+      "regla_del_primer_plano_emocional": {
+        "principio": "Los ojos del ser humano son el elemento más poderoso en cualquier composición",
+        "aplicacion": "Un close-up de ojos sinceros vende más que cualquier dato o estadística",
+        "cuando_usar": "Momentos de conexión emocional máxima — el abogado que jura defenderlos, el médico que se preocupa"
+      },
+      "numero_impar": {
+        "principio": "Los números impares de elementos son más agradables visualmente que los pares",
+        "aplicacion": "3 testimonios, 5 carros, 1 o 3 personas — evita grupos de 2 o 4"
+      }
+    }
+  },
+
+  "iluminacion_avanzada": {
+    "descripcion": "La luz no ilumina — narra. La diferencia entre una imagen amateur y una cinematográfica es casi siempre la iluminación.",
+
+    "temperatura_de_color": {
+      "2700K_luz_calida_velas": "Íntimo, romántico, privado — raramente útil en comerciales",
+      "3200K_tungsteno": "Cálido, acogedor, humano — médicos y espacios de confianza",
+      "4000K_luz_blanca_neutra": "Natural, equilibrado, profesional — el estándar versátil",
+      "5500K_luz_dia": "Fresco, claro, energético — car dealers, exteriores",
+      "6500K_luz_fria_azulada": "Tecnología, frialdad, corporativo — abogados, tech",
+      "consejo": "Mezcla temperaturas intencionalmente para crear profundidad — sujeto en luz cálida, fondo en luz fría"
+    },
+
+    "esquemas_de_iluminacion": {
+      "rembrandt": {
+        "descripcion": "Triángulo de luz bajo el ojo del lado opuesto a la fuente de luz",
+        "sensacion": "Profundidad, carácter, misterio, poder artístico",
+        "uso": "Retratos de abogados y médicos que quieren transmitir profundidad intelectual"
+      },
+      "loop": {
+        "descripcion": "Sombra de la nariz apunta ligeramente hacia abajo y al lado",
+        "sensacion": "Natural, amigable, accesible, cotidiano",
+        "uso": "Médicos, profesionales que quieren conectar humanamente"
+      },
+      "split": {
+        "descripcion": "Exactamente la mitad del rostro iluminada, mitad en sombra",
+        "sensacion": "Drama extremo, dualidad, misterio, impacto",
+        "uso": "Hooks de video de abogados criminalistas, contenido de alto drama"
+      },
+      "butterfly_paramount": {
+        "descripcion": "Luz directamente frontal ligeramente arriba — sombra bajo la nariz como mariposa",
+        "sensacion": "Glamour, Hollywood, aspiracional, premium",
+        "uso": "Médicos estéticos, marcas de lujo, car dealers premium"
+      },
+      "contraluz_backlight": {
+        "descripcion": "Luz principal detrás del sujeto — silueta o efecto de halo",
+        "sensacion": "Épico, trascendente, aspiracional, cinematográfico",
+        "uso": "Finales de comercial, momentos de transformación, hooks visuales poderosos"
+      },
+      "luz_natural_ventana": {
+        "descripcion": "Fuente de luz grande y suave lateral",
+        "sensacion": "Autenticidad, calidez, vida real, confianza",
+        "uso": "Testimonios, el profesional en su espacio, humanización de la marca"
+      },
+      "luz_practica": {
+        "descripcion": "Luces visibles en el frame — lámparas, pantallas, ventanas",
+        "sensacion": "Realismo, ambiente, contexto narrativo",
+        "uso": "Ambientar la oficina del abogado, la clínica, el interior del carro"
+      }
+    },
+
+    "control_de_contraste": {
+      "alto_contraste": {
+        "descripcion": "Diferencia grande entre zonas iluminadas y sombras",
+        "sensacion": "Drama, tensión, fuerza, impacto visual",
+        "uso": "Abogados criminalistas, contenido de urgencia, hooks impactantes"
+      },
+      "bajo_contraste": {
+        "descripcion": "Diferencia suave entre luces y sombras — look flat o dreamlike",
+        "sensacion": "Suavidad, esperanza, calma, modernidad minimalista",
+        "uso": "Médicos, bienestar, marcas aspiracionales suaves"
+      },
+      "ratio_de_iluminacion": {
+        "1_1": "Igual luz en todo — flat, corporativo, seguro",
+        "2_1": "Ligera sombra — natural, cotidiano",
+        "4_1": "Sombra notable — dramatismo moderado, cinematográfico",
+        "8_1": "Alto drama — noir, impacto máximo"
+      }
+    },
+
+    "iluminacion_por_industria": {
+      "abogados": {
+        "esquema": "Rembrandt o Split para autoridad y profundidad",
+        "temperatura": "4500-5500K — fría pero no agresiva",
+        "contraste": "Alto — transmite fuerza y determinación",
+        "practicals": "Luz de escritorio, libros de fondo iluminados suavemente",
+        "evitar": "Luz plana corporativa — se pierde toda la personalidad"
+      },
+      "medicos": {
+        "esquema": "Loop o luz de ventana — accesible y humano",
+        "temperatura": "3800-4200K — neutro cálido",
+        "contraste": "Bajo a moderado — transmite cuidado y calma",
+        "practicals": "Luz de examen, ambiente clínico limpio y cálido",
+        "evitar": "Luz de hospital fría y dura — genera ansiedad"
+      },
+      "car_dealers": {
+        "esquema": "Butterfly para glamour o contraluz para épica",
+        "temperatura": "5500K+ para exteriores, 3200K para interiores nocturnos",
+        "contraste": "Alto — hace el metal del carro verse brillante y poderoso",
+        "practicals": "Reflecciones en la carrocería, luces del lote",
+        "evitar": "Luz plana que mata los highlights del carro"
+      }
+    }
+  },
+
+  "lenguaje_visual_de_impacto": {
+    "descripcion": "El vocabulario visual que el cerebro procesa en milisegundos antes de pensar",
+
+    "estetica_visual": {
+      "minimalismo": {
+        "descripcion": "Menos elementos, más impacto en cada uno",
+        "sensacion": "Lujo, confianza, claridad, modernidad",
+        "uso": "Abogados de alto perfil, médicos especialistas, carros de lujo"
+      },
+      "maximalismo": {
+        "descripcion": "Frame lleno de energía, movimiento y elementos",
+        "sensacion": "Energía, abundancia, urgencia, emoción",
+        "uso": "Eventos de venta de carros, promociones, contenido de alta energía"
+      },
+      "cinematico_oscuro": {
+        "descripcion": "Shadows profundas, colores desaturados, look de película de thriller",
+        "sensacion": "Seriedad, drama, urgencia, consecuencias reales",
+        "uso": "Abogados criminalistas, casos de accidentes, situaciones de alto riesgo"
+      },
+      "cinematico_luminoso": {
+        "descripcion": "Altos en las luces, colores vibrantes pero elegantes, look aspiracional",
+        "sensacion": "Esperanza, éxito, transformación, vida después del problema",
+        "uso": "Cierres de comerciales, testimonios de éxito, médicos de bienestar"
+      },
+      "documental_autentico": {
+        "descripcion": "Granulado sutil, luz natural, sin artificio — look real",
+        "sensacion": "Verdad, autenticidad, confianza, humanidad",
+        "uso": "Testimonios reales, el profesional en su ambiente, prueba social"
+      }
+    },
+
+    "color_como_lenguaje": {
+      "rojo": "Urgencia, peligro, pasión, acción inmediata — CTA, alertas, car dealers",
+      "azul_profundo": "Confianza, autoridad, inteligencia, profesionalismo — abogados, corporativo",
+      "azul_claro": "Calma, limpieza, salud, tecnología — médicos, clínicas",
+      "verde": "Salud, naturaleza, crecimiento, dinero, esperanza — médicos, bienestar",
+      "dorado_oro": "Lujo, éxito, exclusividad, logro — abogados premium, carros de lujo",
+      "negro": "Poder, sofisticación, misterio, lujo — todas las industrias premium",
+      "blanco": "Pureza, limpieza, minimalismo, posibilidades — médicos, marcas modernas",
+      "naranja": "Energía, accesibilidad, diversión, urgencia amigable — car dealers, promociones",
+      "paleta_split_complementaria": "Naranja y azul — la combinación más cinematográfica y utilizada en Hollywood"
+    },
+
+    "movimiento_como_narrativa": {
+      "slow_motion": {
+        "descripcion": "Reduce la velocidad para revelar detalles y emoción que el ojo normal no ve",
+        "uso": "Entrega de llaves al cliente, apretón de manos del abogado, procedimiento médico preciso",
+        "efecto": "Eleva el momento a algo épico y significativo"
+      },
+      "time_lapse": {
+        "descripcion": "Acelera el tiempo para mostrar transformación o escala",
+        "uso": "Ciudad de día a noche detrás del lote, sala de espera que se llena",
+        "efecto": "Dinamismo, actividad, escala de la operación"
+      },
+      "camara_en_movimiento": {
+        "dolly_toward": "Se acerca — intimidad, revelación, tensión creciente",
+        "dolly_back": "Se aleja — conclusión, perspectiva, final épico",
+        "tracking_lateral": "Sigue al sujeto — dinamismo, acompañamiento, viaje",
+        "crane_up": "Sube — triunfo, liberación, grandiosidad",
+        "crane_down": "Baja — aterrizaje, llegada, revelar el detalle"
+      }
+    }
+  },
+
+  "prompts_kling_3": {
+    "descripcion": "Prompts optimizados para Kling 3.0 — la IA de video más realista disponible",
+    "estructura_del_prompt": {
+      "formula": "[SUJETO] + [ACCION] + [CAMARA] + [ILUMINACION] + [ATMOSFERA] + [ESTETICA]",
+      "ejemplo": "A confident lawyer in a dark blue suit walking toward the camera, slow tracking shot, dramatic Rembrandt lighting, dark background with bokeh law books, cinematic 4K, anamorphic lens flare"
+    },
+    "palabras_clave_de_calidad": [
+      "cinematic 4K", "anamorphic", "photorealistic", "shallow depth of field",
+      "bokeh background", "film grain", "color graded", "professional lighting",
+      "hyperrealistic", "8K resolution", "RAW photo style", "editorial photography"
+    ],
+    "palabras_clave_de_movimiento": [
+      "slow motion", "smooth camera movement", "dolly shot", "tracking shot",
+      "crane shot", "handheld documentary", "steady cam", "rack focus"
+    ],
+    "plantillas_por_industria": {
+      "abogado_autoridad": {
+        "prompt_imagen": "A powerful attorney in a tailored dark navy suit, standing in a grand courthouse interior, low angle shot looking up, Rembrandt lighting with deep shadows, law books blurred in background, anamorphic bokeh, cinematic color grade teal and orange, hyperrealistic, 8K",
+        "prompt_video": "A confident defense attorney in dark blue suit walks confidently down marble courthouse hallway toward camera, slow dolly in, dramatic side lighting casting strong shadows, shallow depth of field, cinematic 4K, slow motion footsteps, teal and orange color grade"
+      },
+      "abogado_empático": {
+        "prompt_imagen": "A compassionate lawyer leaning forward listening to client across desk, warm window light from left side, shallow depth of field bokeh background with office decor, 85mm lens look, warm color temperature, authentic documentary style, photorealistic",
+        "prompt_video": "Attorney and worried client sitting at wooden desk in warm office light, attorney nods reassuringly, natural window light from left, handheld slightly, rack focus from client's hands to attorney's confident face, warm cinematic color grade"
+      },
+      "medico_confianza": {
+        "prompt_imagen": "A warm and professional doctor in white coat, direct eye contact with viewer, soft butterfly lighting, clean modern clinic background slightly blurred, 85mm portrait look, neutral warm color grade, genuine smile, photorealistic medical photography",
+        "prompt_video": "A caring doctor in white coat walks through bright modern clinic hallway, turns to camera with reassuring smile, smooth tracking shot, soft diffused lighting, clean background bokeh, hopeful cinematic color grade, slow motion hair movement"
+      },
+      "medico_especialista": {
+        "prompt_imagen": "Specialist physician examining cutting-edge medical equipment in modern facility, focused and precise expression, cool clinical lighting with warm accent light on face, shallow depth of field with medical instruments in bokeh, authoritative composition, cinematic",
+        "prompt_video": "Expert surgeon's steady hands performing precise procedure, extreme close up with macro lens, focused clinical lighting, slow motion, shallow depth of field showing instruments blurred in foreground, professional medical documentary style"
+      },
+      "carro_lujo_exterior": {
+        "prompt_imagen": "Luxury sedan gleaming under golden hour sunlight on empty coastal road, low angle hero shot, anamorphic lens flare across hood, teal sky reflection on car body, ultra sharp car with completely blurred background, cinematic automotive photography, hyperrealistic",
+        "prompt_video": "Luxury black SUV driving on empty mountain road at golden hour, smooth tracking shot from low angle, anamorphic lens flares, speed blur on background while car stays sharp, cinematic automotive film style, dramatic orchestral mood"
+      },
+      "carro_energetico": {
+        "prompt_imagen": "Modern sports car on city street at night, motion blur on background lights creating speed streaks, car perfectly sharp, neon reflections on wet asphalt, low angle Dutch tilt composition, vibrant contrast, cinematic night photography",
+        "prompt_video": "Red sports car accelerating on night highway, long exposure light trails behind, camera starts low and cranes up dramatically, engine sound implied through visual, high contrast cinematic color grade, slow motion tire smoke"
+      },
+      "carro_familia_emocion": {
+        "prompt_imagen": "Joyful family receiving car keys at dealership, genuine emotion and laughter, warm golden interior lighting, shallow depth of field on family faces, car visible in background, authentic documentary photojournalism style, warm cinematic grade",
+        "prompt_video": "Happy family loading into their new minivan for first road trip, kids excited looking out windows, parents smiling, handheld camera following them, warm afternoon light, crane shot rising to show open road ahead, hopeful musical mood"
+      },
+      "hook_problema_abogado": {
+        "prompt_imagen": "Worried person alone at desk surrounded by legal documents and bills, dramatic hard light casting shadows, desaturated cold color grade, slightly dutch angle composition suggesting trouble, cinematic noir style, photorealistic",
+        "prompt_video": "Anxious person staring at legal documents spread on table, close up on stressed hands and face, dramatic cold window light, slow push in dolly shot, desaturated teal color grade suggesting problem and urgency, handheld subtle movement"
+      },
+      "hook_problema_medico": {
+        "prompt_imagen": "Person sitting in dark waiting room looking worried, harsh overhead fluorescent light, cold blue desaturated color grade, isolated composition with heavy negative space, photorealistic documentary style",
+        "prompt_video": "Worried patient sitting alone in empty waiting room, slow zoom in on face, cold fluorescent overhead light, desaturated blue-gray color grade, oppressive silence implied, shallow depth of field on worried expression"
+      },
+      "transformacion_antes_despues": {
+        "prompt_video": "Split screen video: left side dark desaturated scene of person looking defeated, right side vibrant warm cinematic scene of same person confident and happy, smooth color transition from cold to warm, dramatic music implied through visuals"
+      },
+      "contraluz_epico": {
+        "prompt_imagen": "Silhouette of powerful attorney standing in front of large courthouse window, strong backlight creating halo effect, dramatic lens flare, slightly underexposed foreground, epic cinematic composition, anamorphic format",
+        "prompt_video": "Lawyer silhouette stands at large office window overlooking city at sunset, camera slowly orbits around them, dramatic backlight halo, foreground in deep shadow, epic orchestral mood, slow crane movement"
+      }
+    },
+    "modificadores_esteticos": {
+      "noir": "film noir, hard shadows, black and white or desaturated, moody, 1940s cinematic",
+      "golden_hour": "golden hour lighting, warm lens flare, long shadows, rich warm tones",
+      "moderno_premium": "clean lines, minimal, luxury editorial, sharp contrast, premium brand feel",
+      "documental": "documentary style, natural light, authentic, slight grain, photojournalism",
+      "aspiracional": "aspirational lifestyle, warm golden tones, success aesthetic, magazine quality",
+      "tension": "high contrast, cold color grade, dramatic shadows, thriller movie aesthetic"
+    },
+    "errores_comunes_a_evitar": [
+      "No especificar el movimiento de cámara — Kling necesita instrucciones precisas",
+      "Prompts demasiado cortos — más detalle = mejor resultado",
+      "No incluir palabras de calidad como 'cinematic 4K' o 'photorealistic'",
+      "Mezclar estilos contradictorios en un solo prompt",
+      "No especificar la iluminación — es lo que más afecta el resultado"
+    ]
+  },
+
+  "estructura_comercial": {
+    "comercial_15_segundos": {
+      "estructura": ["0-2s: Hook visual o frase impactante", "2-10s: Problema o beneficio clave", "10-13s: Prueba social rápida o logo", "13-15s: CTA directo"],
+      "uso_ideal": "Instagram Reels, TikTok, YouTube pre-roll"
+    },
+    "comercial_30_segundos": {
+      "estructura": ["0-3s: Hook — escena o pregunta que atrapa", "3-10s: Problema del cliente (que sienten)", "10-20s: Solución — tu servicio/producto", "20-27s: Prueba social o resultado", "27-30s: CTA claro con urgencia"],
+      "uso_ideal": "Facebook Ads, YouTube, TV local"
+    },
+    "comercial_60_segundos": {
+      "estructura": ["0-5s: Hook cinematográfico", "5-15s: Historia del cliente o problema real", "15-35s: Desarrollo — cómo lo resolviste", "35-50s: Transformación o resultado", "50-58s: Testimonio rápido o social proof", "58-60s: CTA con oferta o urgencia"],
+      "uso_ideal": "YouTube completo, landing pages, redes sin límite de tiempo"
+    }
+  },
+
+  "generadores_con_api": {
+    "imagen": {
+      "dalle_3": {"api": true, "via": "OpenAI API directa", "mejor_para": "Texto dentro de imágenes, conceptos complejos"},
+      "flux": {"api": true, "via": "Replicate o fal.ai", "mejor_para": "Realismo fotográfico, muy rápido"},
+      "ideogram": {"api": true, "via": "API directa de Ideogram", "mejor_para": "Tipografía en imágenes"},
+      "leonardo_ai": {"api": true, "via": "API directa", "mejor_para": "Consistencia de personajes"},
+      "midjourney": {"api": false, "nota": "Solo via Discord — sin API oficial"}
+    },
+    "video": {
+      "runway_gen3": {"api": true, "via": "API oficial de Runway", "mejor_para": "Movimientos de cámara, video a video"},
+      "luma_dream_machine": {"api": true, "via": "API disponible", "mejor_para": "Movimientos de cámara fluidos, naturalismo"},
+      "kling": {"api": "limitada", "via": "fal.ai como intermediario", "mejor_para": "Video realista de alta calidad"},
+      "heygen": {"api": true, "via": "API oficial", "mejor_para": "Avatares parlantes — el profesional sin actor"}
+    },
+    "voz": {
+      "elevenlabs": {"api": true, "mejor_para": "Voz en off de alta calidad, clonación de voz"}
+    },
+    "stack_recomendado": "DALL-E 3 o Flux para imágenes + Runway o Luma para video + HeyGen para avatares + ElevenLabs para voz"
+  },
+
+  "por_industria": {
+    "abogados": {
+      "tono_visual": "Serio, confiable, poderoso",
+      "paleta": "Azul marino, gris oscuro, dorado o blanco",
+      "lente_ideal": "85mm a 135mm — compresión y elegancia",
+      "iluminacion": "Rembrandt o Split — drama y autoridad",
+      "locaciones": "Oficina elegante, sala de tribunal, biblioteca legal, exterior edificio imponente",
+      "composicion": "Ángulo bajo, espacio negativo amplio, líneas verticales de poder",
+      "musica": "Orquestal suave, piano, dramática pero no agresiva"
+    },
+    "medicos": {
+      "tono_visual": "Limpio, humano, esperanzador",
+      "paleta": "Blanco, azul claro, verde menta, beige cálido",
+      "lente_ideal": "50mm a 85mm — natural y cercano",
+      "iluminacion": "Loop o ventana lateral — accesible y cálido",
+      "locaciones": "Clínica moderna, consultorio iluminado, sala de espera acogedora",
+      "composicion": "Nivel de ojos, encuadre íntimo, espacio negativo moderado",
+      "musica": "Suave, optimista, piano o acústica ligera"
+    },
+    "car_dealers": {
+      "tono_visual": "Enérgico, emocionante, aspiracional",
+      "paleta": "Rojo, naranja, negro, plateado — según el inventario",
+      "lente_ideal": "14mm para grandiosidad, 135mm+ para hero shot del carro",
+      "iluminacion": "Golden hour para exteriores, Butterfly para glamour, alto contraste",
+      "locaciones": "Lote de carros, carretera abierta, ciudad de noche, familia en el carro nuevo",
+      "composicion": "Ángulo bajo de héroe, diagonal dinámica, reflecciones en la carrocería",
+      "musica": "Enérgica, hip hop suave, electrónica aspiracional"
+    }
+  }
+}

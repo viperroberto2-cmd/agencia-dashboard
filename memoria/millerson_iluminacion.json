@@ -1,0 +1,405 @@
+{
+  "identidad": {
+    "nombre": "Cinematographer Lighting — Gerald Millerson",
+    "fuente": "Lighting for Television and Film (3a edición) — Gerald Millerson",
+    "principio": "La iluminación mala no es solo técnicamente incorrecta — es emocionalmente incorrecta. Revela lo que no debe verse y oculta lo que debe brillar.",
+    "activacion": "Úsala SIEMPRE que el usuario pregunte sobre: cómo iluminar una escena, qué lámparas usar, cómo controlar el contraste, por qué algo 'se ve plano' o 'se ve duro', cómo iluminar personas/grupos/exteriores/interiores, iluminación en locación, efectos atmosféricos, filtros, temperatura de color, control de exposición, o cualquier decisión técnica o estética relacionada con la luz.",
+    "palabras_clave": ["key light", "fill light", "back light", "ratio de contraste", "falloff", "chiaroscuro", "iluminación de retrato", "iluminación de acción", "lighting plot", "frugal lighting", "atmospheric lighting", "depth of field"],
+    "voz": "Habla como cinematógrafo profesional: con criterio estético Y conocimiento técnico simultáneamente."
+  },
+
+  "metodo_respuesta": {
+    "paso_1_diagnostico": "¿Cuál es el problema real? (técnico, estético o ambos). ¿Qué está causando el problema?",
+    "paso_2_principio": "¿Qué principio de iluminación resuelve esto? Explica el 'por qué' antes del 'cómo'.",
+    "paso_3_solucion_tecnica": "Instrucciones específicas: posición, tipo de fuente, modificadores, ratio.",
+    "paso_4_efecto_estetico": "¿Qué sensación producirá la solución propuesta?",
+    "paso_5_alternativas": "Si hay limitaciones (presupuesto, locación, tiempo): opciones de frugal lighting."
+  },
+
+  "naturaleza_de_la_luz": {
+    "intensidad_y_superficie": {
+      "light_intensity": "Cantidad de luz que emite una fuente (medida en lux o footcandles)",
+      "surface_brightness": "Cuánta luz refleja una superficie hacia la cámara",
+      "superficie_blanca": "Refleja ~90% de la luz recibida",
+      "superficie_negra": "Refleja ~3-4% de la luz recibida"
+    },
+    "contraste_tonal": {
+      "tonal_contrast": "Diferencia de brillo entre zonas claras y oscuras del encuadre",
+      "tonal_gradation": "Suavidad o brusquedad de la transición entre tonos",
+      "contrast_range": "Diferencia total entre el punto más brillante y el más oscuro del sujeto",
+      "rango_dinamico": {
+        "video_tradicional": "~5-7 stops",
+        "cine_moderno": "hasta 14-16 stops",
+        "problema": "Si el contrast range del sujeto excede el de la cámara → áreas quemadas o perdidas en las sombras"
+      }
+    },
+    "valores_tonales": {
+      "high_key": "Imagen dominantemente clara → ligereza, optimismo, apertura",
+      "low_key": "Imagen dominantemente oscura → peso, drama, misterio",
+      "ambos_extremos": "Máximo contraste, tensión",
+      "tonal_range_alto": "Muchos grises → riqueza visual, detalle, realismo",
+      "tonal_range_bajo": "Pocos grises → impacto, dramatismo, abstracción"
+    }
+  },
+
+  "calidad_y_direccion_de_luz": {
+    "hard_vs_soft": {
+      "hard_light": {
+        "descripcion": "Fuente pequeña o lejana respecto al sujeto",
+        "sombras": "Bordes nítidos y definidos",
+        "contraste": "Alto",
+        "efecto": "Revela textura, dureza, crudeza",
+        "fuentes": "Sol directo, fresnel sin difusor, PAR sin difusor",
+        "uso": "Drama, thriller, exteriors, villain lighting, dureza narrativa"
+      },
+      "soft_light": {
+        "descripcion": "Fuente grande o difusa respecto al sujeto",
+        "sombras": "Bordes graduales o inexistentes",
+        "contraste": "Bajo",
+        "efecto": "Suaviza piel, crea comodidad, calidez",
+        "fuentes": "Softbox, bounce, overcast sky, fluorescentes difusos",
+        "uso": "Belleza, comedia, lifestyle, entrevistas"
+      },
+      "textura": "La luz rasante (casi paralela a la superficie) revela máxima textura. La frontal la elimina."
+    },
+    "direcciones": {
+      "frontal_0": "Elimina sombras, aplana el rostro. Función informacional.",
+      "tres_cuartos_30_45": "Modelado suave y natural. Estándar televisivo.",
+      "tres_cuartos_45_60": "Rembrandt, dramático.",
+      "lateral_90": "Split lighting, máximo drama, mitad luz/mitad sombra.",
+      "tres_cuartos_trasero_135": "Separación del fondo.",
+      "contraluz_180": "Silueta.",
+      "cenital": "Villain light, endurece rasgos, círculos oscuros bajo ojos.",
+      "desde_abajo": "Antinatural, inquietante, horror."
+    },
+    "back_light": {
+      "funcion": "Separar al sujeto del fondo, crear 'halo' de luz, dar profundidad.",
+      "sin_back_light": "El sujeto 'se pega' al fondo visualmente."
+    }
+  },
+
+  "principios_iluminacion": {
+    "key_light": {
+      "descripcion": "La fuente de luz dominante. Define las sombras principales.",
+      "posicion_estandar": "30-45° horizontal, 30-45° vertical sobre el sujeto.",
+      "regla": "Una escena solo tiene UN key light (aunque múltiples fuentes físicas)."
+    },
+    "fill_light": {
+      "descripcion": "Suaviza las sombras creadas por el key light.",
+      "regla": "No elimina las sombras — las controla.",
+      "efecto_del_fill_alto": "Cara plana, sin carácter.",
+      "fill_ideal": "Un reflector blanco a 1-1.5m del sujeto es el fill más natural posible."
+    },
+    "lighting_ratio": {
+      "descripcion": "La diferencia de intensidad entre key light y fill light. Define el contraste dramático.",
+      "ratios": {
+        "1_1": "Flat lighting, sin sombras. TV de noticias.",
+        "2_1": "Natural, documental, cómodo.",
+        "4_1": "Dramático. Narrativa televisiva estándar.",
+        "8_1": "Cinematográfico, alto contraste.",
+        "16_1": "Expresionista, claro-oscuro extremo."
+      }
+    },
+    "three_point_lighting": {
+      "descripcion": "El sistema estándar: Key + Fill + Back light.",
+      "key": "Modela y define",
+      "fill": "Controla las sombras",
+      "back": "Separa del fondo",
+      "nota": "El back light se mide independientemente del ratio key:fill."
+    },
+    "sombras": {
+      "descripcion": "Las sombras no son ausencia de luz — son información visual.",
+      "sombra_dura": "Fuente dura = drama",
+      "sombra_suave": "Fuente suave = comodidad",
+      "sin_sombras": "Sin modelado = plano",
+      "sombras_multiples": "Múltiples fuentes = amateur o expresionista intencional",
+      "shadow_density": "Qué tan oscura es la sombra. Controlada por el fill light."
+    },
+    "tres_preguntas": [
+      "¿De dónde viene la luz narrativamente? (luz motivada)",
+      "¿Qué efecto emocional necesito?",
+      "¿Qué ratio y dirección logran ambos?"
+    ],
+    "continuidad_visual": "La dirección de la luz debe ser consistente entre planos de la misma escena."
+  },
+
+  "iluminacion_de_personas": {
+    "errores_frecuentes": {
+      "ojo_de_mapache": "Key light demasiado alta o cenital",
+      "sombra_nariz_larga": "Key light demasiado lateral",
+      "sombras_multiples_fondo": "Múltiples keys sin control",
+      "cara_plana": "Fill light demasiado potente, ratio 1:1",
+      "cuello_oscurecido": "Key light demasiado alta sin fill bajo",
+      "brillos_calva_o_gafas": "Key light demasiado frontal o alta"
+    },
+    "estilos_de_retrato": {
+      "glamour_beauty": "Soft key frontal-lateral, high fill, backlight fuerte",
+      "character": "Hard key lateral, low fill, sombras pronunciadas",
+      "corporativo_entrevista": "Key 45°, fill 2:1, back light suave",
+      "dramatic": "Rembrandt o split, ratio 8:1+, sin back light o back muy fuerte"
+    },
+    "portrait_ideal_millerson": {
+      "key_light": "40-45° horizontal, 30-45° vertical",
+      "fill_ratio": "3:1 a 4:1 (key:fill)",
+      "back_light": "~60-70% de la intensidad del key",
+      "regla": "Fill the shadows, don't kill them"
+    },
+    "metodologia_en_set": "Apaga todas → enciende solo el key → evalúa → agrega fill → evalúa → agrega back → evalúa.",
+    "lighting_zones": "Divide el espacio en zonas donde el sujeto puede moverse. Cada zona debe tener iluminación coherente.",
+    "iluminacion_de_grupos": {
+      "dos_personas": {
+        "opcion_a": "Un key compartido entre ambos (más natural, más difícil de controlar)",
+        "opcion_b": "Un key individual por persona (más control, más equipo)",
+        "desafio": "Que ambas estén bien iluminadas sin sombras cruzadas"
+      },
+      "tres_personas": "La del centro puede recibir luz de ambos keys laterales → riesgo de sobre-exposición del centro.",
+      "panel_debate": "Iluminación por zonas con lámparas individuales o en grupos de 2. El moderador necesita iluminación prioritaria.",
+      "grupos_grandes": "Iluminación por zonas con wash lights. Back light como wash desde arriba."
+    },
+    "iluminacion_de_accion": {
+      "problema": "Cuando el sujeto se mueve, la iluminación debe seguirle o anticiparle.",
+      "soluciones": {
+        "lighting_zones": "El espacio está uniformemente iluminado en todas las posiciones del sujeto",
+        "follow_spot": "Una lámpara dedicada que sigue el movimiento",
+        "motivated_movement": "El sujeto solo se mueve dentro de zonas pre-iluminadas",
+        "backlight_wash": "Un backlight amplio que cubre toda la zona de acción"
+      }
+    }
+  },
+
+  "proceso_produccion": {
+    "preguntas_previas": [
+      "¿Cuántos sujetos y cómo se mueven?",
+      "¿Cuál es el estado emocional de la escena?",
+      "¿Qué fuentes de luz son narrativamente motivadas?",
+      "¿Qué equipo está disponible?"
+    ],
+    "enfoques": {
+      "systematic_lighting": "Cada zona del set recibe iluminación planificada. Más setup, más eficiencia en rodaje.",
+      "look_and_light": "Iluminar según lo que se necesita en cada momento. Para documentales, ENG, noticias.",
+      "plot_and_light": "Lighting plot completo antes de instalar. Para studio drama, multicámara."
+    },
+    "lighting_plot": {
+      "descripcion": "El mapa de todas las lámparas del set",
+      "incluye": ["Tipo y nombre de cada fuente", "Posición exacta (planta y alzado)", "Ángulo y dirección", "Intensidad relativa", "Modificadores utilizados"]
+    },
+    "proceso_en_set": {
+      "orden": "Key → fill → back → set",
+      "rigging": "Instalar las lámparas según el plot",
+      "setting": "Ajustar posición, ángulo, intensidad y modificadores",
+      "metodos_ajuste": "Dimmers, scrims, diffusion, barndoors, flags",
+      "verificacion": "Evaluar el resultado total en cámara",
+      "medicion": "Medir con fotómetro para verificar ratios y exposición"
+    }
+  },
+
+  "iluminacion_locacion": {
+    "luz_natural": {
+      "sol_directo": "Fuente dura, sombras nítidas, alto contraste",
+      "dia_nublado": "Fuente difusa natural, sin sombras, bajo contraste → ideal para retratos",
+      "hora_dorada": "Luz cálida y baja. 1 hora después del amanecer y antes del atardecer.",
+      "mediodia": "Luz cenital dura → raccoon eyes. El peor momento para retratos."
+    },
+    "exteriores_noche": {
+      "opcion_1": "Usar fuentes existentes (farolas, letreros) como motivación",
+      "opcion_2": "Agregar luz artificial que 'parezca' natural del entorno",
+      "opcion_3": "Iluminación de área completa para simular noche con exposición controlada"
+    },
+    "interiores_locacion": {
+      "ventana_lateral": "Key natural perfecta",
+      "ventana_trasera": "Backlight natural",
+      "reflector_frente_ventana": "Fill natural gratuito"
+    },
+    "frugal_lighting": {
+      "sin_lámparas": {
+        "descripcion": "Usar solo luz disponible",
+        "requiere": ["Cámara sensible (high ISO)", "Lente luminoso (f/1.4-f/2.0)", "Elección cuidadosa de posición del sujeto respecto a la luz"]
+      },
+      "camera_light": {
+        "ventaja": "Siempre ilumina lo que la cámara ve",
+        "desventaja": "Luz frontal plana, sin modelado, sombras detrás del sujeto"
+      },
+      "una_sola_lampara": {
+        "maximizacion": [
+          "Posicionarla a 45° del sujeto → modelado inmediato",
+          "Agregar un reflector opuesto → fill gratuito",
+          "Usar difusión → suavizar para retratos"
+        ]
+      },
+      "dos_lamparas": {
+        "opcion_a": "Key + fill: mínimo para control profesional de contraste",
+        "opcion_b": "Key + back: mínimo para separación del fondo"
+      },
+      "tres_lamparas": "Key + fill + back: el sistema completo. Con tres lámparas bien posicionadas se puede lograr cualquier look profesional."
+    }
+  },
+
+  "iluminacion_atmosferica": {
+    "estilos": {
+      "pictorial": "La iluminación crea una imagen bella y visualmente rica. Inspirada en la pintura. Uso: publicidad premium, drama de época, videoclips de arte.",
+      "natural": "Que parezca que la luz viene de fuentes naturales (sol, ventana, luna). Incluso si se usan muchas lámparas, el resultado debe parecer 'no iluminado'.",
+      "influential": "La luz diseñada para generar una respuesta emocional específica en el espectador. No documenta — persuade."
+    },
+    "distribucion_tonal": {
+      "high_key": "Predominan los tonos claros → optimismo, energía",
+      "low_key": "Predominan los tonos oscuros → peso, drama, misterio",
+      "balanced": "Distribución equilibrada"
+    },
+    "oscuridad": {
+      "principio": "La oscuridad en cine no es ausencia de luz — es una elección.",
+      "zonas_oscuras": "Misterio, amenaza, lo desconocido.",
+      "sombras_narrativas": "Una sombra puede contar una historia sin mostrar al personaje. Las sombras proyectadas en paredes son uno de los recursos más poderosos del noir."
+    },
+    "efectos_de_luz": {
+      "moonlight": "Color azul frío (6000-8000K), dirección alta y lateral. Técnica: fresnel azul desde arriba + fill azul muy suave.",
+      "dawn_sunset": "Color naranja-dorado (2800-3200K), muy baja y lateral. Técnica: gel naranja/dorado en fresnel a baja altura.",
+      "sunlight_simulado": "Color blanco-neutro (5500K). Técnica: fresnel potente sin difusión desde ángulo alto.",
+      "fuego_chimenea": "Dimmers, LEDs con control, piezas de cartón que interrumpen la luz.",
+      "animated_lighting": "Luz en movimiento: reflectores sobre agua, flags movidos manualmente, strobes controlados."
+    }
+  },
+
+  "equipo_y_fuentes": {
+    "tipos_de_fuente": {
+      "tungsteno": {
+        "temperatura": "2800-3200K (cálido)",
+        "ventajas": "CRI perfecto, luz continua, control por dimmer suave",
+        "desventajas": "Calor excesivo, consumo alto, vida útil corta",
+        "uso": "Interiores cálidos, retrato clásico"
+      },
+      "halogeno": {
+        "temperatura": "3200K",
+        "ventajas": "Más eficiente que tungsteno, tamaño compacto, luz estable",
+        "desventajas": "Calor, requiere manejo con guantes"
+      },
+      "fluorescente": {
+        "temperatura": "Variable 2700K-6500K",
+        "ventajas": "Luz suave natural, poco calor, eficiente",
+        "desventajas": "Puede parpadear con ciertas cámaras"
+      },
+      "led": {
+        "temperatura": "Variable y ajustable (bi-color 2800K-6500K)",
+        "ventajas": "Eficiencia máxima, poco calor, durable, control preciso",
+        "desventajas": "Algunos tienen CRI bajo"
+      },
+      "hmi": {
+        "temperatura": "5600K (luz de día)",
+        "ventajas": "Altísima eficiencia, ideal para exteriores y mezcla con luz natural",
+        "desventajas": "Caro, requiere balastro, no dimeable fácilmente"
+      }
+    },
+    "tipos_de_fixture": {
+      "soft_sources": ["Lensless spotlight", "Internal reflector fixtures", "Open-fronted soft-light / softbox"],
+      "hard_sources": ["Fresnel spotlight", "PAR", "Beam lights"],
+      "reflectores": {
+        "blanco": "Luz suave, natural",
+        "plateado": "Más intenso",
+        "dorado": "Más cálido"
+      }
+    },
+    "control": {
+      "dimmers": "Controlan la intensidad. En tungsteno bajan la temperatura de color al atenuar.",
+      "barndoors": "Hojas metálicas que controlan el derrame de la luz en los bordes.",
+      "flags_cutters": "Bloquean la luz de zonas específicas.",
+      "cookies_cucaloris": "Crean patrones de sombra (follaje, celosías, persianas).",
+      "scrims": "Mallas metálicas que reducen intensidad sin cambiar la calidad.",
+      "diffusion": ["CTD", "Opal", "1/4 white", "1/2 white", "Full white", "Rosco fabrics"]
+    }
+  },
+
+  "temperatura_de_color_y_filtros": {
+    "temperatura_de_color": {
+      "descripcion": "Describe el color de una fuente de luz en grados Kelvin.",
+      "mas_bajo_K": "Más cálido (naranja/rojo)",
+      "mas_alto_K": "Más frío (azul)",
+      "estandares": {
+        "luz_de_dia": "5600K",
+        "tungsteno": "3200K"
+      },
+      "mixta": "Mezclar temperaturas sin intención → colores incorrectos en cámara. A veces intencional para conflicto dramático."
+    },
+    "filtros_esenciales": {
+      "cto_full": "Convierte daylight (5600K) a tungsteno (3200K). Color naranja.",
+      "ctb_full": "Convierte tungsteno (3200K) a daylight (5600K). Color azul.",
+      "nd": "Neutral Density — reduce intensidad sin cambiar color. Esencial en exteriores.",
+      "gels_de_color": "Para efectos dramáticos o corrección",
+      "difusion": "Modifica la calidad de la luz"
+    }
+  },
+
+  "control_de_exposicion": {
+    "apertura_del_lente": {
+      "descripcion": "Controla la exposición y la profundidad de campo.",
+      "apertura_grande": "f/1.4 → más luz, menos profundidad de campo",
+      "apertura_pequeña": "f/16 → menos luz, más profundidad de campo"
+    },
+    "profundidad_de_campo": {
+      "descripcion": "Cuánto del espacio está en foco.",
+      "poca_profundidad": "Sujeto en foco, fondo desenfocado → aislamiento, atención al sujeto",
+      "mucha_profundidad": "Todo en foco → contexto, documental, información"
+    },
+    "exposicion": {
+      "variables": ["Apertura (f-stop)", "ISO/Sensibilidad", "Velocidad de obturación", "ND"],
+      "medicion": "Fotómetro de luz incidente vs. reflectada",
+      "unidades": "Lux (métrico) o footcandles (imperial)",
+      "auto_iris": "Útil en run-and-gun, problemático en control creativo",
+      "consistencia": "Mantener la misma exposición entre planos de la misma escena"
+    },
+    "monitoreo_video": {
+      "zebras": "Indica zonas sobre-expuestas",
+      "waveform": "Monitoreo preciso de niveles de luminancia",
+      "vectorscope": "Monitoreo de crominancia y saturación de color"
+    }
+  },
+
+  "diagnostico_rapido": {
+    "cara_plana_sin_modelado": {
+      "causa": "Flat lighting, ratio 1:1",
+      "solucion": "Reducir fill, aumentar key, mover key a 45°"
+    },
+    "ojo_de_mapache": {
+      "causa": "Key demasiado alta o cenital",
+      "solucion": "Bajar key light o alejarla del eje vertical"
+    },
+    "sombra_nariz_exagerada": {
+      "causa": "Key demasiado lateral",
+      "solucion": "Mover key más hacia el frente (30-35°)"
+    },
+    "sombras_multiples_fondo": {
+      "causa": "Múltiples sources sin control",
+      "solucion": "Una sola key dominante, controlar derrame de fill"
+    },
+    "sujeto_pegado_al_fondo": {
+      "causa": "Sin back light, sin separación",
+      "solucion": "Agregar back light 120-150° del key"
+    },
+    "imagen_caliente_amarilla": {
+      "causa": "Temperatura de color baja / tungsteno sin corrección",
+      "solucion": "CTB en las lámparas o balance de blancos manual"
+    },
+    "imagen_fria_azul": {
+      "causa": "Temperatura de color alta / mezcla con luz natural sin corregir",
+      "solucion": "CTO en las lámparas o ajustar balance de blancos"
+    },
+    "areas_quemadas": {
+      "causa": "Contrast range excede rango dinámico de la cámara",
+      "solucion": "Reducir key, agregar fill, usar ND"
+    },
+    "sombras_sin_detalle": {
+      "causa": "Contrast range excede rango dinámico de la cámara",
+      "solucion": "Aumentar fill, reducir ratio"
+    },
+    "luz_parpadeante": {
+      "causa": "Fluorescentes o LEDs incompatibles con la tasa de frames",
+      "solucion": "Cambiar shutter angle, cambiar a sources sin flicker"
+    },
+    "back_light_demasiado_intenso": {
+      "causa": "Over-rimlighting",
+      "solucion": "Atenuar con dimmer o agregar scrim"
+    },
+    "piel_brillante_shiny": {
+      "causa": "Reflexión especular",
+      "solucion": "Maquillar con polvo mate, difundir la key"
+    }
+  }
+}

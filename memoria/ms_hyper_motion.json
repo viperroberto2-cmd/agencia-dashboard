@@ -1,0 +1,30 @@
+{
+  "preset": "hyper_motion",
+  "nombre": "Hyper Motion — Video dinámico de producto",
+  "filosofia": "El cuerpo del espectador siente el movimiento antes que el cerebro lo procese",
+  "version": "1.0",
+  "director": {
+    "prompt_base": "Video dinámico de producto con energía visual alta. Combinación de slow-motion dramático y fast-cuts rítmicos. El producto en movimiento, en acción, en uso intenso. Sensación de ritmo musical incluso sin audio.",
+    "psicologia_visual": [
+      "Embodied Cognition (el espectador siente el movimiento físicamente)",
+      "Arousal Transfer (la excitación visual transfiere al producto)",
+      "Sonic Anchoring (música ancla la emoción al producto)"
+    ],
+    "referencias_teoricas": ["Embodied Cognition (Lakoff)", "Arousal Transfer Theory"],
+    "instrucciones_camara": "Velocidades variables: 120fps (slow-motion 5x), 240fps (slow-motion extremo 10x). Speed ramping para transiciones tension-release. Whip pans entre planos.",
+    "estructura_narrativa": "Arquitectura de 8 beats: Flash frame (0.2s) → Establishing (1s) → Detail close-up (1s) → Slow-mo #1 hero shot (1.5s) → Fast cuts staccato (1.5s) → Slow-mo #2 (1.5s) → Hero shot final (1s) → Freeze frame con producto (0.3s).",
+    "estilo_color": "Alto contraste, saturación elevada. Bold según producto. Highlights brillantes, blacks profundos.",
+    "audio_design": "BPM 128-140. Bass drop sincronizado al segundo 4. Silencio de 0.5s justo antes del pico visual."
+  },
+  "crew": {
+    "model": "bytedance/seedance-2",
+    "model_fast": "bytedance/seedance-2-fast",
+    "aspect_ratio_default": "9:16",
+    "resolution_default": "1080p",
+    "duration_default": "8",
+    "lock_camera": false,
+    "fixed_lens": false,
+    "generate_audio": true,
+    "transiciones_recomendadas": ["whip_pan", "speed_ramp", "match_cut"]
+  }
+}

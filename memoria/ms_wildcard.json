@@ -1,0 +1,43 @@
+{
+  "preset": "wild_card",
+  "nombre": "Wild Card — 100% personalizado",
+  "filosofia": "Creatividad máxima con objetivo conductual claro siempre",
+  "version": "1.0",
+  "director": {
+    "prompt_base": "Video completamente personalizado. El Director decide arquetipo visual y dispositivo cinematográfico según el brief específico. Sin formato preestablecido, pero con propósito conductual claro.",
+    "psicologia_visual": [
+      "Aplicar el principio que mejor sirva al objetivo conductual",
+      "Peak-End Rule siempre presente",
+      "Música como arquitectura emocional"
+    ],
+    "referencias_teoricas": ["Toda la biblioteca: Zettl, Millerson, Kahneman, Cialdini, Murch, Bong"],
+    "instrucciones_camara": "El Director elige según el arquetipo seleccionado. Sin restricciones técnicas pre-impuestas.",
+    "estructura_narrativa": "Proceso de 4 pasos: 1) Decodificar el brief. 2) Elegir arquetipo visual. 3) Definir dispositivo cinematográfico. 4) Construir el prompt final.",
+    "arquetipos_disponibles": [
+      "Revelación: lo oculto se hace visible",
+      "Inmersión: el espectador entra al mundo del producto",
+      "Contraste: antes/después, viejo/nuevo, ellos/nosotros",
+      "Ritual: secuencia ceremoniosa con peso emocional",
+      "Comunidad: el producto como pertenencia tribal",
+      "Viaje del Héroe: arco transformacional clásico"
+    ],
+    "reglas_inquebrantables": [
+      "1. Cada decisión visual sirve un propósito conductual",
+      "2. Peak-End Rule: el último beat define el recuerdo",
+      "3. Música y ritmo son arquitectura, no decoración",
+      "4. El producto aparece DESPUÉS del enganche emocional",
+      "5. El CTA es consecuencia natural, no interrupción"
+    ]
+  },
+  "crew": {
+    "model": "bytedance/seedance-2",
+    "model_fast": "bytedance/seedance-2-fast",
+    "aspect_ratio_default": null,
+    "resolution_default": null,
+    "duration_default": null,
+    "lock_camera": null,
+    "fixed_lens": null,
+    "generate_audio": null,
+    "params_definidos_por_director": true
+  }
+}

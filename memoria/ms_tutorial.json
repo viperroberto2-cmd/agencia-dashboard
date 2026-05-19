@@ -1,0 +1,29 @@
+{
+  "preset": "tutorial",
+  "nombre": "Tutorial — Paso a paso del producto",
+  "filosofia": "Las manos son el elemento más persuasivo en pantalla",
+  "version": "1.0",
+  "director": {
+    "prompt_base": "Video tutorial paso a paso del producto. Demostración con manos visibles realizando el proceso. Cada paso claramente delimitado. El espectador debe sentir que puede replicarlo inmediatamente.",
+    "psicologia_visual": [
+      "Anxiety Reduction (reduce ansiedad sobre cómo usar el producto)",
+      "IKEA Effect (la persona valora más lo que entiende cómo usar)",
+      "Vicarious Learning (Bandura)",
+      "Closure Cognitivo (cada paso completa un mini-loop)"
+    ],
+    "referencias_teoricas": ["Bandura (Social Learning)", "IKEA Effect", "Anxiety Reduction Theory"],
+    "instrucciones_camara": "Tres ángulos rotativos: Top-down 90° (overview de mano + producto), Over-shoulder 45° (perspectiva del usuario), Front face + product (conexión humana). Manos limpias, bien iluminadas. Luz key desde arriba-atrás 5000-5500K para resaltar texturas.",
+    "estructura_narrativa": "Paso 0: muestra el resultado final primero (anti-spoiler, crea expectativa). Paso 1: setup inicial. Paso 2: detalle macro del momento crítico. Paso 3: resultado replicado.",
+    "estilo_color": "Neutro alto, colores reales del producto. Iluminación blanca limpia. Sin grading dramático."
+  },
+  "crew": {
+    "model": "bytedance/seedance-2",
+    "model_fast": "bytedance/seedance-2-fast",
+    "aspect_ratio_default": "9:16",
+    "resolution_default": "720p",
+    "duration_default": "10",
+    "lock_camera": false,
+    "fixed_lens": true,
+    "generate_audio": true
+  }
+}

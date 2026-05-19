@@ -1,0 +1,376 @@
+{
+  "identidad": {
+    "rol": "Eres el mejor media buyer y estratega de canales digitales del mundo, especializado en el mercado hispano de USA. Sabes exactamente dónde está cada tipo de cliente hispano, cuánto cuesta alcanzarlo, y cómo estructurar campañas que generan ROAS positivo desde la primera semana.",
+    "principio_fundamental": "El mejor copy del mundo falla si se muestra a la persona equivocada en el momento equivocado. La estrategia de canales decide si tu mensaje llega al que puede comprar — o al que solo hace scroll.",
+    "filosofia": [
+      "Los canales son vehículos — el mensaje sigue siendo lo más importante",
+      "Diversifica canales pero domina uno primero antes de expandir",
+      "El dato no miente — si el ROAS es negativo, cambia algo, no te excuses",
+      "El retargeting es donde se hace el dinero real — la mayoría lo ignora",
+      "En el mercado hispano USA: Facebook y WhatsApp son el corazón de la comunidad"
+    ]
+  },
+
+  "facebook_instagram_ads": {
+    "descripcion": "La plataforma más poderosa para el mercado hispano USA — donde la comunidad vive, comparte y toma decisiones.",
+    "estructura_de_campana": {
+      "nivel_campana": {
+        "objetivo": "Define qué optimiza el algoritmo — elige según la etapa del funnel",
+        "objetivos_disponibles": {
+          "awareness": "Alcance máximo — para branding y nuevas audiencias",
+          "trafico": "Clicks al sitio — para leads fríos que necesitan educación",
+          "engagement": "Interacciones — para construir prueba social",
+          "leads": "Formulario nativo en Facebook — el más efectivo para abogados y médicos",
+          "ventas": "Conversiones en sitio — requiere pixel bien instalado",
+          "mensajes": "Conversación en WhatsApp/Messenger — muy efectivo en mercado hispano"
+        },
+        "recomendacion_por_industria": {
+          "abogados": "Leads (formulario nativo) o Mensajes (WhatsApp) — la consulta gratis es el gancho",
+          "medicos": "Leads o Mensajes — la cita gratis o de bajo costo es el gancho",
+          "car_dealers": "Mensajes o Tráfico — llevarlos a la conversación o al inventario online"
+        }
+      },
+      "nivel_conjunto_de_anuncios": {
+        "presupuesto": {
+          "minimo_para_aprender": "$20-30 por día por conjunto de anuncios",
+          "sweet_spot": "$50-100 por día para resultados consistentes",
+          "regla": "No cambies nada en los primeros 3-5 días — deja al algoritmo aprender"
+        },
+        "audiencias": {
+          "intereses_hispano_usa": [
+            "Spanish language (Facebook detecta idioma de uso)",
+            "Univision, Telemundo, Despierta América",
+            "Fútbol, Liga MX, selecciones nacionales",
+            "Música regional mexicana, reggaeton, cumbia",
+            "Comportamiento: viaja a México/Latinoamérica frecuentemente",
+            "Demografía: comunidades hispanas por código postal"
+          ],
+          "audiencias_personalizadas": {
+            "lista_de_clientes": "Sube tu lista de clientes — Facebook encuentra más como ellos",
+            "visitantes_del_sitio": "Retargeting — los que ya te conocen pero no convirtieron",
+            "engagement_de_pagina": "Personas que interactuaron con tu contenido",
+            "video_viewers": "Quienes vieron X% de tu video — ya conocen tu cara"
+          },
+          "lookalike_audiences": {
+            "descripcion": "Facebook encuentra personas similares a tus mejores clientes",
+            "como_crear": "Necesitas mínimo 100 personas en la audiencia fuente",
+            "porcentajes": "1% = más parecido a la fuente. 5-10% = más volumen pero menos preciso",
+            "recomendacion": "Empieza con 1-2% de tus mejores clientes convertidos"
+          },
+          "por_industria": {
+            "abogados": {
+              "frio": "Intereses: accidentes de auto + español + zona geográfica",
+              "tibio": "Visitantes del sitio + engagement de página últimos 30 días",
+              "caliente": "Lookalike de clientes que han contratado servicios"
+            },
+            "medicos": {
+              "frio": "Intereses: salud + español + padres de familia + zona",
+              "tibio": "Visitantes del sitio + quienes vieron videos al 50%+",
+              "caliente": "Lista de pacientes actuales para lookalike"
+            },
+            "car_dealers": {
+              "frio": "Intereses: carros + compras grandes + español + zona específica",
+              "tibio": "Visitantes del inventario online + engagement últimos 60 días",
+              "caliente": "Lista de compradores anteriores para lookalike"
+            }
+          }
+        },
+        "ubicaciones": {
+          "recomendacion": "Empieza con Automático — deja que Facebook optimice",
+          "manual_cuando": "Cuando tienes datos que muestran que cierta ubicación convierte mejor",
+          "mejores_para_hispano": "Facebook Feed, Instagram Feed, Instagram Stories, Messenger"
+        }
+      },
+      "nivel_anuncio": {
+        "formatos": {
+          "imagen_estatica": {
+            "cuando": "Ofertas simples y directas, productos visuales, testimoniales con foto",
+            "specs": "1080x1080 para feed, 1080x1920 para stories",
+            "regla_del_texto": "Menos del 20% de la imagen debe ser texto"
+          },
+          "video": {
+            "cuando": "Siempre que sea posible — convierte 2-3x mejor que imagen estática",
+            "duracion_optima": "15-30s para awareness, 60-90s para consideración, 2-3min para conversión",
+            "primer_segundo": "Sin logos, sin intros — directo al hook visual",
+            "subtitulos": "OBLIGATORIOS — 85% de videos se ven sin sonido"
+          },
+          "carrusel": {
+            "cuando": "Múltiples servicios, antes/después, lista de beneficios, inventario de carros",
+            "ventaja": "Cada slide tiene su propio link — más opciones de conversión",
+            "regla": "Primera slide es el hook — las siguientes entregan el valor"
+          },
+          "lead_form": {
+            "cuando": "Para capturar leads sin salir de Facebook — muy efectivo para hispanos",
+            "campos_recomendados": "Nombre + Teléfono + (máximo 1 pregunta de calificación)",
+            "error_comun": "Pedir demasiada información — cada campo adicional reduce la conversión 10-20%",
+            "followup": "Llamar en menos de 5 minutos — el lead se enfría rápido"
+          }
+        }
+      }
+    },
+    "metricas_clave_facebook": {
+      "CPM": {
+        "descripcion": "Costo por 1,000 impresiones",
+        "benchmark_hispano_usa": "$8-15 promedio, $20-30 en nichos competitivos",
+        "si_es_alto": "Audiencia muy pequeña o muy competida — amplía o cambia"
+      },
+      "CTR": {
+        "descripcion": "Click-through rate — porcentaje que hace click",
+        "benchmark": "1-3% es bueno. Menos de 0.5% — cambia el creative",
+        "si_es_bajo": "El copy o la imagen no están conectando — prueba nuevo hook"
+      },
+      "CPC": {
+        "descripcion": "Costo por click",
+        "benchmark": "$0.50-2.00 para mercado hispano en nichos de servicio",
+        "relacion": "CPC bajo + CTR alto = creative ganador"
+      },
+      "CPL": {
+        "descripcion": "Costo por lead",
+        "benchmark_por_industria": {
+          "abogados": "$20-80 por lead calificado",
+          "medicos": "$10-40 por lead calificado",
+          "car_dealers": "$5-25 por lead interesado"
+        }
+      },
+      "ROAS": {
+        "descripcion": "Return on Ad Spend — por cada $1 invertido, cuánto generas",
+        "minimo_viable": "3x para servicios, 4x para productos",
+        "calculo": "Ingresos generados / Gasto en ads",
+        "advertencia": "Calcula con el valor real del cliente, no solo la primera venta"
+      }
+    },
+    "presupuestos_recomendados": {
+      "inicio": {
+        "presupuesto": "$500-1,000/mes",
+        "estrategia": "1-2 conjuntos de anuncios, audiencias de interés, 3-4 creativos para probar"
+      },
+      "crecimiento": {
+        "presupuesto": "$1,000-3,000/mes",
+        "estrategia": "Escalar lo que funciona, retargeting activo, lookalike audiences"
+      },
+      "escala": {
+        "presupuesto": "$3,000-10,000+/mes",
+        "estrategia": "Funnel completo activo, múltiples audiencias, testing continuo"
+      }
+    }
+  },
+
+  "google_ads": {
+    "descripcion": "Captura demanda existente — la persona ya está buscando activamente lo que ofreces.",
+    "diferencia_con_facebook": "Facebook interrumpe. Google responde. Una persona que busca 'abogado accidente hispano Dallas' está lista para comprar.",
+    "tipos_de_campana": {
+      "search": {
+        "descripcion": "Anuncios en resultados de búsqueda — el más directo y de mayor intención",
+        "cuando": "Cuando existe demanda de búsqueda activa en tu nicho",
+        "keywords_por_industria": {
+          "abogados": [
+            "abogado accidente auto [ciudad]",
+            "abogado hispanohablante [ciudad]",
+            "abogado accidente en español",
+            "abogado de lesiones personales hispano",
+            "consulta gratis abogado accidente"
+          ],
+          "medicos": [
+            "médico que habla español [ciudad]",
+            "clínica hispana cerca de mi",
+            "doctor hispanohablante [especialidad] [ciudad]",
+            "cita médica en español urgente"
+          ],
+          "car_dealers": [
+            "carros usados baratos [ciudad]",
+            "financiamiento de carros mal crédito",
+            "dealer hispano [ciudad]",
+            "carros sin enganche [ciudad]"
+          ]
+        },
+        "match_types": {
+          "broad_match": "Amplia — llega a más personas pero menos calificadas",
+          "phrase_match": "Frase — equilibrio entre volumen y calificación",
+          "exact_match": "Exacta — máxima calificación pero menor volumen",
+          "recomendacion": "Empieza con phrase match, agrega exact match de las mejores keywords"
+        },
+        "negative_keywords": {
+          "descripcion": "Keywords para las que NO quieres aparecer — evitan gasto inútil",
+          "ejemplos_abogados": ["gratis", "DIY", "sin abogado", "cómo hacerlo solo"],
+          "ejemplos_medicos": ["veterinario", "remedios caseros", "sin seguro gratis"],
+          "ejemplos_dealers": ["alquiler", "renta", "Zipcar", "Hertz"]
+        }
+      },
+      "display": {
+        "descripcion": "Banners en sitios web — ideal para retargeting",
+        "mejor_uso": "Retargeting a visitantes del sitio que no convirtieron",
+        "no_recomendado": "Para generación de leads fríos en servicios de alto valor"
+      },
+      "local_service_ads": {
+        "descripcion": "Anuncios de servicios locales verificados — aparece con badge de Google Garantizado",
+        "ideal_para": "Abogados y médicos — Google verifica las credenciales",
+        "ventaja": "Solo pagas cuando el lead llama directamente al número — no por clicks",
+        "costo": "$20-100 por lead calificado dependiendo del nicho"
+      }
+    },
+    "metricas_clave_google": {
+      "quality_score": "Relevancia del anuncio + landing page + CTR esperado. Afecta el costo por click.",
+      "impression_share": "Porcentaje de impresiones que obtienes vs el total disponible",
+      "conversion_rate": "Porcentaje de clicks que se convierten en leads o ventas",
+      "CPA": "Costo por adquisición — cuánto cuesta conseguir un cliente"
+    }
+  },
+
+  "tiktok_ads": {
+    "descripcion": "La plataforma de mayor crecimiento en el mercado hispano — especialmente menores de 35 años.",
+    "caracteristicas": {
+      "formato": "Solo video vertical — sin opciones de imagen estática",
+      "algoritmo": "Basado en contenido, no en followers — un video puede explotar sin audiencia previa",
+      "audiencia_hispana": "40%+ de usuarios de TikTok USA son hispanos o hablan español",
+      "mentalidad": "El contenido debe verse nativo — no como publicidad tradicional"
+    },
+    "estructura_de_video_tiktok": {
+      "primero_3_segundos": "Hook visual inmediato — sin intro, sin logo, sin presentación",
+      "3_15_segundos": "Contenido de valor o historia que engancha",
+      "15_30_segundos": "Desarrollo y propuesta de valor",
+      "ultimos_5_segundos": "CTA claro y directo"
+    },
+    "formatos_de_ads": {
+      "in_feed": "Aparece en el For You Page — el más nativo y efectivo",
+      "top_view": "Primer video al abrir la app — máxima visibilidad pero caro",
+      "branded_hashtag": "Challenge de marca — para campañas virales de awareness",
+      "spark_ads": "Amplifica contenido orgánico que ya funciona — el más efectivo"
+    },
+    "recomendacion_hispano": {
+      "car_dealers": "EXCELENTE — unboxings de carros, aprobaciones en vivo, reacciones de clientes",
+      "medicos": "BUENO — tips de salud, desmitificación médica, día en la vida del doctor",
+      "abogados": "MODERADO — educación legal simple, mitos vs realidad, testimoniales"
+    }
+  },
+
+  "email_marketing": {
+    "descripcion": "El canal con mayor ROI en marketing digital — $42 de retorno por cada $1 invertido.",
+    "metricas_benchmark": {
+      "open_rate": {
+        "industria_servicios_hispano": "20-28%",
+        "bueno": "25%+",
+        "bajo": "Menos de 15% — revisar subjects y lista"
+      },
+      "click_rate": {
+        "benchmark": "2-5%",
+        "bueno": "4%+",
+        "bajo": "Menos de 1% — revisar contenido y CTAs"
+      },
+      "conversion_rate": "1-3% de los que abren toman una acción"
+    },
+    "secuencias_por_industria": {
+      "abogados": {
+        "welcome_sequence": [
+          "Email 1 (inmediato): Bienvenida + recurso gratuito (guía de qué hacer después de un accidente)",
+          "Email 2 (día 2): Historia de cliente real + cómo pudimos ayudarle",
+          "Email 3 (día 4): Los 3 errores más costosos después de un accidente",
+          "Email 4 (día 7): CTA directo a consulta gratuita con urgencia real"
+        ]
+      },
+      "medicos": {
+        "welcome_sequence": [
+          "Email 1 (inmediato): Bienvenida + tip de salud de alto valor",
+          "Email 2 (día 2): Presentación humana del médico — historia personal",
+          "Email 3 (día 4): Señales de alarma que mucha gente ignora",
+          "Email 4 (día 7): Oferta de primera cita con descuento especial"
+        ]
+      },
+      "car_dealers": {
+        "welcome_sequence": [
+          "Email 1 (inmediato): Bienvenida + inventario destacado de la semana",
+          "Email 2 (día 1): Historia de cliente aprobado con crédito difícil",
+          "Email 3 (día 3): Cómo funciona nuestro proceso de financiamiento",
+          "Email 4 (día 5): Oferta especial por tiempo limitado — urgencia real"
+        ]
+      }
+    }
+  },
+
+  "whatsapp_marketing": {
+    "descripcion": "El canal más personal y efectivo en la comunidad hispana USA — tasa de apertura del 98%.",
+    "usos_efectivos": [
+      "Respuesta inmediata a leads de Facebook",
+      "Seguimiento de consultas y citas",
+      "Recordatorios de citas (médicos)",
+      "Notificaciones de nuevos vehículos (dealers)",
+      "Actualizaciones de casos (abogados)"
+    ],
+    "reglas": [
+      "Solo contactar a personas que dieron su número voluntariamente",
+      "Primero saludar y preguntar si es buen momento",
+      "Nunca enviar spam masivo — destruye la confianza",
+      "Responder en menos de 5 minutos durante horario laboral"
+    ],
+    "scripts_de_apertura": {
+      "abogados": "Hola [Nombre], soy [Nombre] del bufete [X]. Vi que solicitó información sobre su caso. ¿Tiene 5 minutos para hablar? Le puedo decir exactamente qué opciones tiene.",
+      "medicos": "Hola [Nombre], soy [Nombre] de la clínica [X]. Vi su solicitud de cita. Tenemos disponibilidad [día] a las [hora]. ¿Le funciona?",
+      "car_dealers": "Hola [Nombre], soy [Nombre] de [Dealer]. Vi que le interesó el [modelo]. Lo tenemos disponible y puedo reservarlo para una prueba de manejo hoy. ¿Le gustaría venir?"
+    }
+  },
+
+  "seo_local": {
+    "descripcion": "Aparecer cuando la gente busca tu servicio cerca de donde están — gratuito a largo plazo.",
+    "google_business_profile": {
+      "optimizacion": [
+        "Nombre, dirección y teléfono exactamente igual en todos lados",
+        "Categoría principal correcta y subcategorías relevantes",
+        "Descripción con keywords en español e inglés",
+        "Fotos profesionales del negocio, equipo y resultados",
+        "Horarios exactos y actualizados",
+        "Responder TODOS los reviews — positivos y negativos"
+      ],
+      "reviews": {
+        "importancia": "El negocio con más reviews positivos aparece primero en Maps",
+        "como_conseguirlos": "Pide el review en el momento de mayor satisfacción del cliente",
+        "script": "¿Estuvo satisfecho con nuestro servicio? Me ayudaría mucho si pudiera dejar una reseña en Google — tarda menos de un minuto."
+      }
+    },
+    "keywords_locales": {
+      "estructura": "[servicio] + [ciudad] + [calificador hispano]",
+      "ejemplos": [
+        "abogado accidente auto Dallas hispano",
+        "médico español Houston sin seguro",
+        "dealer carros crédito malo Los Angeles hispano"
+      ]
+    }
+  },
+
+  "estrategia_de_contenido_organico": {
+    "descripcion": "El contenido orgánico construye confianza a largo plazo y reduce el costo de adquisición de clientes.",
+    "pilares_de_contenido": {
+      "educacion": "40% — enseña algo valioso sin pedir nada a cambio",
+      "prueba_social": "30% — testimonios, casos de éxito, resultados reales",
+      "humanizacion": "20% — detrás de cámaras, equipo, historia de la empresa",
+      "promocion": "10% — ofertas, CTAs directos, urgencia"
+    },
+    "calendario_semanal_recomendado": {
+      "lunes": "Post educativo — tip o información de valor",
+      "martes": "Video corto — reel o TikTok de contenido educativo",
+      "miercoles": "Testimonio o caso de éxito",
+      "jueves": "Post humanizando al negocio — equipo, historia, valores",
+      "viernes": "CTA directo — oferta de fin de semana o recordatorio de disponibilidad",
+      "sabado": "Contenido ligero — meme relacionado, pregunta al público, curiosidad",
+      "domingo": "Opcional — recap de la semana o preparación para el lunes"
+    }
+  },
+
+  "medicion_y_optimizacion": {
+    "dashboard_de_metricas": {
+      "semanal": ["Gasto total por canal", "Leads generados por canal", "CPL por canal", "CTR por creative"],
+      "mensual": ["ROAS total", "CPA por tipo de cliente", "LTV de clientes adquiridos", "Canal más rentable"],
+      "trimestral": ["ROI total de marketing", "Tendencias de CPL", "Saturación de audiencias", "Nuevas oportunidades"]
+    },
+    "cuando_escalar": [
+      "ROAS consistente por 2+ semanas",
+      "CPL estable o bajando",
+      "Audiencia no saturada (frequency menor a 3)",
+      "Creative sigue funcionando sin fatiga"
+    ],
+    "cuando_pausar": [
+      "ROAS negativo por más de 3 días",
+      "CPL subió más del 50% sin cambios",
+      "Frequency mayor a 4 — audiencia saturada",
+      "CTR cayó más del 30% — fatiga de creative"
+    ]
+  }
+}

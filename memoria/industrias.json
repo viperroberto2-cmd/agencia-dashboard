@@ -1,0 +1,98 @@
+{
+  "abogados": {
+    "pain_points": [
+      "No consiguen suficientes clientes calificados",
+      "Competencia feroz en Google y redes",
+      "Dificultad para comunicar su valor sin sonar aburridos",
+      "Clientes que no pueden pagar sus tarifas reales"
+    ],
+    "avatar_cliente": {
+      "perfil": "Persona en crisis legal que necesita ayuda urgente",
+      "emociones": ["miedo", "confusion", "urgencia", "desconfianza"],
+      "que_busca": "Un abogado que entienda su situacion y le de confianza de ganar"
+    },
+    "angulos_de_venta": [
+      "Resultados comprobados con casos similares",
+      "Consulta gratis sin compromiso",
+      "Defendemos tus derechos cuando nadie mas puede",
+      "X anos de experiencia en casos como el tuyo",
+      "Testimonios de clientes que ganaron"
+    ],
+    "tipos_de_contenido": {
+      "facebook": ["casos de exito anonimizados", "tips legales rapidos", "mitos legales desmentidos", "videos cortos explicando derechos"],
+      "youtube": ["explicaciones de leyes en lenguaje simple", "que hacer si te pasa X", "documentales de casos"],
+      "linkedin": ["articulos de autoridad legal", "cambios en la ley", "logros del bufete"]
+    },
+    "frases_gancho": [
+      "No dejes que el sistema te aplaste",
+      "Conoce tus derechos antes de que sea tarde",
+      "Un error legal puede costarte todo",
+      "Gratis no significa sin valor — consulta sin costo hoy"
+    ],
+    "nichos_especificos": ["accidentes de auto", "inmigracion", "divorcios", "criminal", "lesiones personales", "bienes raices"]
+  },
+  "medicos": {
+    "pain_points": [
+      "Pacientes que no regresan o no refieren",
+      "Competencia con clinicas grandes y hospitales",
+      "Dificultad para educar al paciente antes de la consulta",
+      "Agenda con huecos o sobre-saturada sin balance"
+    ],
+    "avatar_cliente": {
+      "perfil": "Persona preocupada por su salud o la de un familiar",
+      "emociones": ["preocupacion", "esperanza", "confusion medica", "busqueda de confianza"],
+      "que_busca": "Un doctor que los escuche, que sea experto y que este disponible"
+    },
+    "angulos_de_venta": [
+      "Tu salud es nuestra prioridad, no un numero",
+      "Tecnologia de punta con trato humano",
+      "Resultados que hablan por si solos",
+      "Especialista con X anos en [area especifica]",
+      "Primeras citas disponibles esta semana"
+    ],
+    "tipos_de_contenido": {
+      "facebook": ["tips de salud preventiva", "mitos medicos desmentidos", "antes y despues (con permiso)", "preguntas frecuentes de pacientes"],
+      "youtube": ["explicaciones de procedimientos", "dia en la vida del doctor", "guias de salud por temporada"],
+      "linkedin": ["investigacion y publicaciones", "logros clinicos", "casos de estudio (anonimos)"]
+    },
+    "frases_gancho": [
+      "Tu cuerpo te esta mandando senales — escuchalas",
+      "Prevencion es mas barata que tratamiento",
+      "No esperes a que duela mas",
+      "Mereces atencion medica de calidad sin esperar meses"
+    ],
+    "nichos_especificos": ["dentistas", "dermatologos", "cirujanos plasticos", "medicos generales", "pediatras", "ortopedistas"]
+  },
+  "car_dealers": {
+    "pain_points": [
+      "Clientes que llegan a ver precio y se van con la competencia",
+      "Dificultad para generar confianza en la compra grande",
+      "Leads que no califican financieramente",
+      "Inventario que no rota rapido"
+    ],
+    "avatar_cliente": {
+      "perfil": "Persona o familia que necesita vehiculo y tiene presupuesto limitado o credito complicado",
+      "emociones": ["emocion por el carro nuevo", "miedo a ser estafado", "presion economica", "orgullo de poder comprar"],
+      "que_busca": "Un dealer honesto que los apruebe aunque su credito no sea perfecto"
+    },
+    "angulos_de_venta": [
+      "Te aprobamos aunque tu credito no sea perfecto",
+      "Sale hoy manejando con $X de enganche",
+      "Mas de X carros en inventario — encuentra el tuyo hoy",
+      "Garantia incluida en todos nuestros vehiculos",
+      "Financiamiento en espanol, sin complicaciones"
+    ],
+    "tipos_de_contenido": {
+      "facebook": ["unboxing de carros nuevos en inventario", "testimonios de clientes aprobados", "deals de la semana", "tours virtuales del lote"],
+      "youtube": ["reviews de vehiculos en inventario", "como funciona el financiamiento", "tips para comprar tu primer carro"],
+      "linkedin": ["logros del dealership", "cultura del equipo de ventas", "records de ventas mensuales"]
+    },
+    "frases_gancho": [
+      "Tu credito no te detiene aqui",
+      "El carro de tus suenos te espera",
+      "No pagas hasta que manejes",
+      "Aprobaciones en minutos, no dias"
+    ],
+    "nichos_especificos": ["carros usados", "carros nuevos", "trucks", "SUVs familiares", "credito especial"]
+  }
+}

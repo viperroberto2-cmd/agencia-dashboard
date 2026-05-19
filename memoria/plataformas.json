@@ -1,0 +1,102 @@
+{
+  "facebook": {
+    "algoritmo_2024": [
+      "Contenido que genera conversacion genuina gana mas alcance",
+      "Videos de 3-5 minutos funcionan mejor que clips muy cortos en el feed",
+      "Reels de 15-30s son el formato de mayor alcance organico actualmente",
+      "Las primeras 3 horas despues de publicar determinan el alcance total",
+      "Comentarios y respuestas a comentarios boostean el algoritmo significativamente"
+    ],
+    "mejores_horarios": {
+      "general": "Martes a Jueves 9am-12pm o 6pm-9pm hora local",
+      "abogados": "Lunes y Martes 8am-10am (personas con problemas nuevos buscan lunes)",
+      "medicos": "Lunes y Miercoles 7am-9am (decisiones de salud al inicio de semana)",
+      "car_dealers": "Viernes-Domingo 10am-2pm (cuando tienen tiempo libre para pensar en la compra)"
+    },
+    "formatos_que_funcionan": [
+      "Reels cortos con hook en el primer segundo",
+      "Carruseles con tips utiles (cada slide es una razon para seguir)",
+      "Videos testimoniales de 60-90 segundos",
+      "Lives para preguntas y respuestas (aumenta mucho el reach)",
+      "Posts de texto largo con historia personal del dueno del negocio"
+    ],
+    "ads_estructura": {
+      "awareness": "Video corto 15s mostrando el problema que resuelves",
+      "consideracion": "Testimonio de cliente + oferta especifica",
+      "conversion": "Oferta directa con urgencia y CTA claro",
+      "retargeting": "Para quien visito el sitio pero no convirtio — oferta especial"
+    },
+    "hooks_que_funcionan": [
+      "Si eres [tipo de persona] en [ciudad], necesitas ver esto",
+      "El error mas costoso que cometen los [clientes] es...",
+      "Nunca te dijeron esto sobre [tema relevante]",
+      "Como [resultado deseado] sin [objecion comun]",
+      "La historia de como [cliente] paso de [problema] a [resultado]"
+    ]
+  },
+  "youtube": {
+    "algoritmo": [
+      "Click-through rate (CTR) del thumbnail es el factor #1",
+      "Watch time y porcentaje de retencion determinan la distribucion",
+      "Videos de 8-15 minutos tienen mejor monetizacion y alcance",
+      "Shorts (menos de 60s) tienen canal de distribucion separado y muy poderoso",
+      "Los primeros 30 segundos deben retener al 70%+ de los viewers"
+    ],
+    "estructura_video_ganador": {
+      "0_30s": "Hook — promesa clara de que van a aprender o ver. No intro larga.",
+      "30s_2min": "Contexto y credibilidad rapida",
+      "2min_7min": "Contenido de valor real — lo que prometiste",
+      "7min_9min": "Refuerzo y casos de ejemplo",
+      "9min_fin": "CTA claro — suscribir, llamar, visitar"
+    },
+    "thumbnails": {
+      "reglas": [
+        "Cara humana con expresion emocional fuerte funciona siempre",
+        "Texto de max 3-4 palabras en el thumbnail",
+        "Colores de alto contraste — amarillo, rojo, naranja sobre fondo oscuro",
+        "Antes/Despues en el thumbnail convierte muy bien",
+        "Flecha o elemento que apunte al texto o a la cara"
+      ]
+    },
+    "shorts": {
+      "estructura": ["0-1s: Hook visual inmediato", "1-30s: Contenido util o entretenido", "30-45s: CTA o cliffhanger"],
+      "mejores_para": "Trafico rapido, nuevas audiencias, contenido viral"
+    },
+    "seo_youtube": [
+      "Titulo con keyword principal al inicio",
+      "Descripcion con los primeros 2 parrafos muy ricos en keywords",
+      "Tags relevantes — usa TubeBuddy para encontrarlos",
+      "Capitulos en la descripcion aumentan el watch time",
+      "Pinea el mejor comentario para guiar la conversacion"
+    ]
+  },
+  "linkedin": {
+    "algoritmo": [
+      "Las primeras 2 lineas antes del 'ver mas' son criticas — deben hacer que hagan click",
+      "Contenido que genera debate genuino tiene mas alcance que contenido informativo neutral",
+      "Publicar 3-5 veces por semana es el sweet spot",
+      "Comentar en posts de otros antes y despues de publicar amplifica el alcance",
+      "Documentos PDF y carruseles nativos tienen muy alto engagement"
+    ],
+    "formatos_top": [
+      "Posts de texto largo con historia personal o leccion de negocio",
+      "Carruseles de tips — el formato de mayor guardado",
+      "Videos cortos de 1-3 minutos con subtitulos",
+      "Encuestas para generar engagement facil",
+      "Celebraciones de logros del cliente (con su permiso)"
+    ],
+    "tono_linkedin": {
+      "abogados": "Autoridad intelectual, casos de exito, cambios legales relevantes, posicionamiento de experto",
+      "medicos": "Educacion en salud, investigacion reciente, dia a dia del consultorio, humanizacion del doctor",
+      "car_dealers": "Cultura del equipo, records de ventas, comunidad local, empleados del mes"
+    },
+    "estructura_post_viral": [
+      "Linea 1: Afirmacion controversial o dato sorprendente",
+      "Linea 2: Contexto que genera curiosidad",
+      "Parrafo 1-3: Historia o desarrollo",
+      "Lista o puntos clave",
+      "Cierre con pregunta o reflexion",
+      "CTA suave al final"
+    ]
+  }
+}

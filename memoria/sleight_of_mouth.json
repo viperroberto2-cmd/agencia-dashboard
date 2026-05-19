@@ -1,0 +1,356 @@
+{
+  "activacion": {
+    "usar_siempre_cuando": [
+      "manejar una objecion de ventas",
+      "responder a es muy caro",
+      "responder a no tengo tiempo",
+      "responder a no confio",
+      "responder a no lo necesito",
+      "responder a dejame pensarlo",
+      "reencuadrar una objecion",
+      "cambiar la perspectiva del cliente",
+      "responder sin discutir",
+      "transformar el no en si",
+      "convencer sin presionar",
+      "manejar resistencia del cliente"
+    ],
+    "principio_central": "El proposito de Sleight of Mouth no es atacar la objecion ni al cliente. Es ampliar su mapa del mundo para que nuevas posibilidades sean visibles. La objecion no es un obstaculo — es una creencia. Y toda creencia tiene estructura.",
+    "cita": "El lenguaje no describe la realidad — la crea. — Robert Dilts"
+  },
+
+  "anatomia_de_la_objecion": {
+    "descripcion": "Toda objecion de ventas tiene uno de dos formatos. Identifica cual es antes de elegir el patron.",
+    "causa_efecto": {
+      "estructura": "Porque X entonces Y no es posible",
+      "ejemplos": [
+        "Es muy caro → no puedo comprarlo",
+        "No tengo tiempo → no puedo implementarlo"
+      ]
+    },
+    "equivalencia_compleja": {
+      "estructura": "X significa Y",
+      "ejemplos": [
+        "Que no haya resultados inmediatos = no funciona",
+        "Un proveedor nuevo = riesgo"
+      ]
+    }
+  },
+
+  "los_14_patrones": {
+    "1_intencion": {
+      "nombre": "INTENCION (Intention)",
+      "que_hace": "Redirige la atención hacia el proposito positivo detras de la objecion.",
+      "como": "Entiendo que lo que realmente buscas es [intencion positiva]...",
+      "ejemplos": [
+        {
+          "objecion": "Es muy caro.",
+          "respuesta": "Lo que me dice eso es que para ti es importante invertir con inteligencia, y eso me parece perfecto. Precisamente por eso vale la pena revisar el retorno real..."
+        },
+        {
+          "objecion": "No confio en proveedores nuevos.",
+          "respuesta": "Entiendo — lo que importa aqui es proteger tu operacion y tu inversion. Eso es exactamente lo que este proceso garantiza..."
+        }
+      ],
+      "plantilla": "Lo que me dice eso es que para ti es importante [intencion positiva]. Y precisamente por eso [tu propuesta conecta con esa intencion]..."
+    },
+
+    "2_redefinir": {
+      "nombre": "REDEFINIR (Redefining)",
+      "que_hace": "Sustituye una palabra clave de la objecion por otra con distinta implicacion.",
+      "como": "Reemplaza la palabra que crea el limite con una que abre posibilidad.",
+      "ejemplos": [
+        {
+          "objecion": "Es muy caro.",
+          "sustitucion": "caro → una inversion significativa",
+          "respuesta": "Si, es una inversion significativa — y por eso mismo merece analizarse con detalle."
+        },
+        {
+          "objecion": "Es muy dificil de implementar.",
+          "sustitucion": "dificil → requiere un proceso de transicion",
+          "respuesta": "Tiene un proceso de transicion — y nosotros lo acompanamos en cada paso."
+        },
+        {
+          "objecion": "Llevo mucho tiempo con este problema.",
+          "sustitucion": "mucho tiempo → has acumulado mucha claridad sobre lo que no funciona",
+          "respuesta": "Eso significa que ya sabes exactamente lo que NO quieres — lo que hace mas facil elegir lo correcto."
+        }
+      ],
+      "plantilla": "Identifica la palabra limitante → sustituyela → usala en una frase que la resignifique."
+    },
+
+    "3_consecuencia": {
+      "nombre": "CONSECUENCIA (Consequence)",
+      "que_hace": "Lleva la atencion al efecto positivo o negativo de mantener o cambiar la creencia.",
+      "como": "Y que pasa si seguimos asi? / Reconocer eso te permitira...",
+      "ejemplos": [
+        {
+          "objecion": "No es el momento.",
+          "respuesta": "Entiendo. Y si esperamos 6 meses mas, como se vera el problema en ese punto? Muchos clientes nos dicen que el costo de esperar fue mayor que el de decidir."
+        },
+        {
+          "objecion": "Es muy caro.",
+          "respuesta": "Anticipar que algo puede ser costoso a menudo hace que al final resulte mas facil de justificar, porque ya lo analizaste con calma."
+        }
+      ],
+      "plantilla_positivo": "Reconocer [la preocupacion] te permite [beneficio de avanzar]...",
+      "plantilla_negativo": "Si no se resuelve [problema], que pasa en [tiempo]?"
+    },
+
+    "4_chunk_down": {
+      "nombre": "CHUNK DOWN (Fragmentar)",
+      "que_hace": "Divide la objecion en partes mas pequenas para encontrar el punto especifico de resistencia.",
+      "como": "Pregunta que especificamente te preocupa?",
+      "ejemplos": [
+        {
+          "objecion": "No creo que funcione.",
+          "respuesta": "Que especificamente te hace dudar? Es el proceso, los resultados, el tiempo, o algo relacionado con tu situacion particular?"
+        },
+        {
+          "objecion": "No tengo tiempo.",
+          "respuesta": "Cuanto tiempo especificamente ves que requeriria esto? La implementacion, el aprendizaje, o el uso diario?"
+        },
+        {
+          "objecion": "Es complicado.",
+          "respuesta": "Que parte en particular se ve mas compleja? La integracion tecnica, el proceso de adopcion del equipo, o la curva de aprendizaje?"
+        }
+      ],
+      "plantilla": "Que especificamente de [objecion] es lo que mas te preocupa?"
+    },
+
+    "5_chunk_up": {
+      "nombre": "CHUNK UP (Generalizar)",
+      "que_hace": "Sube a un nivel mas grande de abstraccion donde la objecion pierde peso.",
+      "como": "Conecta la situacion con un objetivo mayor o valor mas profundo.",
+      "ejemplos": [
+        {
+          "objecion": "Es muy caro.",
+          "respuesta": "El pasado no siempre predice el futuro. Lo que conocemos sobre tu industria evoluciona rapidamente — y lo que inviertes hoy en adaptarte te pone adelante manana."
+        },
+        {
+          "objecion": "No lo necesito ahora.",
+          "respuesta": "Hablando del panorama general de tu negocio en los proximos 2 anos, que lugar ocupa este problema en tu lista de prioridades?"
+        }
+      ],
+      "plantilla": "Si miramos esto desde el punto de vista de [objetivo mayor del cliente], como encaja [tu solucion] en ese panorama?"
+    },
+
+    "6_analogia": {
+      "nombre": "ANALOGIA (Analogy)",
+      "que_hace": "Presenta una metafora o historia que reencuadra la creencia sin discutirla.",
+      "como": "Es como... / Imagina que...",
+      "ejemplos": [
+        {
+          "objecion": "Llevo mucho tiempo con esta practica, no puedo cambiarla.",
+          "respuesta": "Una creencia es como una ley. Incluso las leyes mas antiguas pueden cambiarse rapidamente cuando suficientes personas votan por algo nuevo."
+        },
+        {
+          "objecion": "No estoy seguro de que funcione.",
+          "respuesta": "Es como el GPS: no te da certeza absoluta de que el camino es perfecto, pero te da la mejor ruta disponible con la informacion que tiene. Y se corrige en tiempo real."
+        },
+        {
+          "objecion": "No es el momento.",
+          "respuesta": "Los dinosaurios probablemente tampoco creian que era el momento de que su mundo cambiara. El cambio no espera a que sea conveniente."
+        }
+      ],
+      "plantilla": "Es como [analogia que reencuadra el punto de resistencia]... Elige analogias del mundo del cliente para mayor resonancia."
+    },
+
+    "7_cambio_de_marco": {
+      "nombre": "CAMBIO DE TAMANO DEL MARCO (Change Frame Size)",
+      "que_hace": "Amplia o reduce el marco temporal o el numero de personas involucradas.",
+      "como": "Cambia la perspectiva de tiempo (corto vs largo plazo) o de escala (individual vs colectivo).",
+      "ejemplos": [
+        {
+          "objecion": "Nadie ha hecho esto en mi industria.",
+          "respuesta": "Probablemente no eres el primero ni el unico que tiene esta creencia. Y cuanto mas comun sea, mas facil sera para otros cambiarla despues de ti."
+        },
+        {
+          "objecion": "Es muy caro ahora.",
+          "respuesta": "En 3 anos, cuanto le va a costar a tu empresa NO haber resuelto esto?"
+        },
+        {
+          "objecion": "Es muy arriesgado.",
+          "respuesta": "Muchos de los que hoy son competidores que te preocupan, tomaron exactamente este tipo de decisiones hace 2 o 3 anos."
+        }
+      ],
+      "plantilla_tiempo": "En [X anos], como se vera esta decision?",
+      "plantilla_corto": "Solo en los proximos 30 dias, cuanto te cuesta el problema actual?",
+      "plantilla_escala": "Cuantas personas en tu equipo se beneficiarian si esto funcionara?"
+    },
+
+    "8_otro_resultado": {
+      "nombre": "OTRO RESULTADO (Another Outcome)",
+      "que_hace": "Cambia el objetivo implicito de la conversacion para hacer la objecion irrelevante.",
+      "como": "Redirige hacia un resultado distinto al que la objecion asume.",
+      "ejemplos": [
+        {
+          "objecion": "No necesito cambiar mis metodos.",
+          "respuesta": "No se trata tanto de cambiar metodos como de actualizar tu mapa para que sea mas congruente con quien eres ahora."
+        },
+        {
+          "objecion": "Ya lo intente antes y no funciono.",
+          "respuesta": "El punto no es repetir lo que no funciono. Es encontrar que parte si funciono y construir desde ahi."
+        },
+        {
+          "objecion": "No veo el ROI inmediato.",
+          "respuesta": "El objetivo real aqui no es ROI inmediato — es eliminar el costo oculto que ya estas pagando sin verlo en ningun reporte."
+        }
+      ],
+      "plantilla": "El punto real aqui no es [lo que asume la objecion], sino [resultado alternativo que conecta con su valor mas profundo]."
+    },
+
+    "9_modelo_del_mundo": {
+      "nombre": "MODELO DEL MUNDO (Model of the World)",
+      "que_hace": "Reencuadra la objecion desde la perspectiva de otro modelo del mundo igualmente valido.",
+      "como": "Hay quienes piensan exactamente lo contrario y... / Desde otro angulo...",
+      "ejemplos": [
+        {
+          "objecion": "Mi sector es diferente, esto no aplica aqui.",
+          "respuesta": "Hay personas en tu mismo sector que estan usando exactamente esto y estan viendo resultados que los ponen por delante. Que saben ellos que podriamos explorar?"
+        },
+        {
+          "objecion": "Los cambios grandes son arriesgados.",
+          "respuesta": "Muchos lideres de alto desempeno dirian que el verdadero riesgo es no cambiar cuando el entorno ya lo hizo."
+        },
+        {
+          "objecion": "No tengo tiempo para aprender algo nuevo.",
+          "respuesta": "Los que mas resultados logran no tienen mas tiempo — tienen mejor criterio sobre donde invertirlo."
+        }
+      ],
+      "plantilla": "Hay personas en situaciones similares que ven esto de manera opuesta: [perspectiva alternativa]. Que parte de eso podria ser relevante para ti?"
+    },
+
+    "10_estrategia_de_realidad": {
+      "nombre": "ESTRATEGIA DE REALIDAD (Reality Strategy)",
+      "que_hace": "Cuestiona como el cliente sabe que su creencia es verdadera.",
+      "como": "Como especificamente sabes que...? / Que evidencia tienes de que...?",
+      "ejemplos": [
+        {
+          "objecion": "Esto no va a funcionar.",
+          "respuesta": "Como especificamente sabes que no va a funcionar? Que te hace llegar a esa conclusion — una experiencia previa, algo que leiste, intuicion?"
+        },
+        {
+          "objecion": "Es muy complicado.",
+          "respuesta": "Que cualidades especificas de como lo imaginas hacen que te parezca complicado? Que verias o escucharias que te dijera que en realidad es simple?"
+        }
+      ],
+      "plantilla": "Como especificamente sabes que [creencia limitante]? Que experiencia, evidencia o razonamiento te lleva a esa conclusion?"
+    },
+
+    "11_contraejemplo": {
+      "nombre": "CONTRAEJEMPLO (Counter Example)",
+      "que_hace": "Presenta una excepcion a la regla de la objecion para abrir la posibilidad.",
+      "como": "Conoces algun caso donde...? / Una excepcion es suficiente para abrir la posibilidad.",
+      "ejemplos": [
+        {
+          "objecion": "Las creencias no se cambian facilmente.",
+          "respuesta": "He visto creencias cambiar instantaneamente con las condiciones correctas. La mayoria de los procesos mentales se vuelven menos intensos con el tiempo — que hace que las creencias sean distintas?"
+        },
+        {
+          "objecion": "Nunca funciona en mi industria.",
+          "respuesta": "Nunca? Puedes pensar en un solo caso — aunque sea uno — donde algo similar haya funcionado en un contexto parecido?"
+        },
+        {
+          "objecion": "Es demasiado arriesgado.",
+          "respuesta": "Hay algun riesgo que hayas tomado antes que resulto ser la mejor decision que tomaste? Que hizo que ese riesgo valiera la pena?"
+        }
+      ],
+      "plantilla": "Conoces algun ejemplo, aunque sea uno, donde [lo opuesto a la objecion] haya sido cierto?"
+    },
+
+    "12_jerarquia_de_criterios": {
+      "nombre": "JERARQUIA DE CRITERIOS (Hierarchy of Criteria)",
+      "que_hace": "Apela a un valor mas importante para el cliente que el que genera la objecion.",
+      "como": "Identifica que es mas importante para el cliente y conecta tu solucion con ese valor superior.",
+      "ejemplos": [
+        {
+          "objecion": "Es muy caro.",
+          "respuesta": "Si la tranquilidad de tu familia y la seguridad de tu operacion son prioritarios para ti, cuanto te cuesta cada mes no tener esto resuelto?"
+        },
+        {
+          "objecion": "No es el momento.",
+          "respuesta": "Si la claridad y el control de tu operacion son prioritarios para ti, puedes permitirte esperar mas tiempo sin ellos?"
+        },
+        {
+          "objecion": "Mi equipo no va a adoptar esto.",
+          "respuesta": "Si el liderazgo y el crecimiento de tu equipo son valores centrales para ti, que mensaje les envias cuando les das herramientas que los hacen mas capaces?"
+        }
+      ],
+      "plantilla": "Primero descubre el valor mas alto del cliente preguntando Que es mas importante para ti que...? Luego: Dado que [valor superior] es tu prioridad, como encaja [solucion] en eso?"
+    },
+
+    "13_aplicar_a_si_mismo": {
+      "nombre": "APLICAR A SI MISMO (Apply to Self)",
+      "que_hace": "Aplica la logica de la objecion a si misma, revelando su contradiccion interna.",
+      "como": "Usa la misma estructura de la creencia para cuestionarla.",
+      "ejemplos": [
+        {
+          "objecion": "Las creencias son dificiles de cambiar.",
+          "respuesta": "Cuanto tiempo llevas con la opinion de que las creencias son dificiles de cambiar? Y si esa misma creencia pudiera cambiar... que implicaria eso?"
+        },
+        {
+          "objecion": "Esto es demasiado complicado.",
+          "respuesta": "Que tan dificil crees que seria cambiar la creencia de que esto es complicado?"
+        },
+        {
+          "objecion": "No confio en los proveedores nuevos.",
+          "respuesta": "Como decidiste confiar en los proveedores con los que trabajas hoy? Todos fueron nuevos alguna vez."
+        }
+      ],
+      "plantilla": "Toma la estructura logica de la objecion y aplicala de vuelta: Y si [la objecion misma] pudiera analizarse con la misma logica que propones?"
+    },
+
+    "14_meta_marco": {
+      "nombre": "META MARCO (Meta Frame)",
+      "que_hace": "Evalua la creencia desde un marco superior — una creencia sobre la creencia.",
+      "como": "Cuestiona por que el cliente tiene esa objecion y que le sirve de tenerla.",
+      "ejemplos": [
+        {
+          "objecion": "No creo que pueda cambiar.",
+          "respuesta": "Quizas tienes esa creencia porque hasta ahora no has tenido las herramientas y la comprension necesarias para cambiarla con facilidad. Y eso tiene todo el sentido."
+        },
+        {
+          "objecion": "Es muy arriesgado.",
+          "respuesta": "Ha ocurrido que tu creencia de que esto es arriesgado sea en realidad una forma de mantenerte en la zona que ya conoces? Hay algo valioso en ese status quo?"
+        },
+        {
+          "objecion": "No es el momento.",
+          "respuesta": "Es posible que la sensacion de que no es el momento sea una forma de protegerte del cambio? Que parte de ti se beneficia de esperar?"
+        }
+      ],
+      "plantilla": "Que proposito cumple esa creencia para ti en este momento? Hay una parte de ti que la sostiene porque le da algo valioso?"
+    }
+  },
+
+  "sistema_de_seleccion": {
+    "descripcion": "Frente a una objecion, elige el patron segun la situacion",
+    "guia": {
+      "cliente_emocionalmente_resistente": "Intencion (1) + Redefinir (2)",
+      "objecion_de_precio": "Consecuencia (3) + Jerarquia de Criterios (12)",
+      "no_tengo_tiempo": "Chunk Down (4) + Cambio de Marco (7)",
+      "no_funciona_no_confio": "Contraejemplo (11) + Estrategia de Realidad (10)",
+      "no_es_para_mi_industria": "Modelo del Mundo (9) + Analogia (6)",
+      "ya_lo_intente_antes": "Otro Resultado (8) + Chunk Up (5)",
+      "objecion_muy_abstracta": "Chunk Down (4)",
+      "objecion_ciclica_repetitiva": "Aplicar a Si Mismo (13) + Meta Marco (14)",
+      "cliente_que_necesita_pensar": "Chunk Up (5) + Consecuencia (3)"
+    }
+  },
+
+  "secuencia_para_objeciones_fuertes": {
+    "paso_1_pace": "Valida sin ceder: Entiendo que eso es una preocupacion real para ti...",
+    "paso_2_identifica": "Identifica la estructura: Causa-Efecto o Equivalencia Compleja",
+    "paso_3_aplica_patron": "Aplica el patron principal segun la tabla de seleccion",
+    "paso_4_redirige": "Redirige con pregunta de apertura: Que necesitarias ver para que [solucion] tuviera sentido para ti?",
+    "paso_5_segundo_patron": "Si resiste, aplica UN SEGUNDO patron desde angulo distinto. Nunca uses el mismo patron dos veces seguidas."
+  },
+
+  "reglas_de_oro": [
+    "Nunca discutas la objecion — reencuadrala. Discutir refuerza la resistencia.",
+    "Primero valida, luego reencuadra. El cliente necesita sentirse escuchado antes de escuchar.",
+    "Un patron a la vez. Usar varios juntos satura y crea desconfianza.",
+    "La pregunta es mas poderosa que la afirmacion. Cuando el cliente responde, se convence a si mismo.",
+    "Tono curioso, nunca confrontacional. El reencuadre es una invitacion, no un ataque.",
+    "El silencio es parte del patron. Despues de aplicarlo, deja espacio para que procese."
+  ]
+}

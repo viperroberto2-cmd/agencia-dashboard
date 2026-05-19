@@ -1,0 +1,161 @@
+{
+  "skill": "Story-Persuasion Conversion Architect",
+  "fuentes": ["Building a StoryBrand — Donald Miller", "Words That Change Minds — Shelle Rose Charvet", "Persuasion Engineering — Richard Bandler", "Subtle Words That Sell — Patrick Tinney"],
+  "filosofia": {
+    "regla_1": "Si confundes, pierdes. El cliente compra el mensaje que entiende más rápido.",
+    "regla_2": "El cliente es el héroe. La marca es el guía. Nunca al revés.",
+    "regla_3": "No todas las mentes responden al mismo lenguaje. Adapta antes de enviar.",
+    "regla_4": "Sin emoción, claridad y acción juntas, el mensaje no convierte al máximo."
+  },
+  "capa_1_claridad_storybrand": {
+    "preguntas_obligatorias": [
+      "¿Quién es el cliente?",
+      "¿Qué quiere concretamente?",
+      "¿Qué problema externo tiene?",
+      "¿Cómo se siente internamente?",
+      "¿Por qué eso no debería ser así (filosófico)?",
+      "¿Cómo ayuda la marca como guía?",
+      "¿Cuál es el plan en 3 pasos?",
+      "¿Qué acción debe tomar?",
+      "¿Qué pasa si no actúa?",
+      "¿Qué éxito logrará?",
+      "¿Qué transformación de identidad vivirá?"
+    ],
+    "estructura_sb7": {
+      "personaje": "Quién es el cliente y qué quiere — una frase concreta",
+      "problema_externo": "El problema visible y tangible",
+      "problema_interno": "Cómo se siente por ese problema",
+      "problema_filosofico": "Por qué no debería ser así — el argumento moral",
+      "guia_empatia": "Entendemos lo que estás viviendo — señal humana",
+      "guia_autoridad": "Sabemos cómo ayudarte — prueba, resultados, credencial",
+      "plan": "3 pasos concretos y simples — reduce ansiedad",
+      "cta_directo": "Instrucción clara: llama hoy, agenda ahora, envía mensaje",
+      "cta_transicional": "Para indecisos: descarga guía, mira el video, solicita evaluación",
+      "fracaso": "Costo real y ético de no actuar — sin exagerar",
+      "exito": "Transformación concreta: qué verá, sentirá, habrá logrado",
+      "transformacion_identidad": "De quién es hoy a quién se convierte"
+    }
+  },
+  "capa_2_perfiles_mentales": {
+    "toward_vs_away": {
+      "toward": {
+        "descripcion": "Motivado por ganar, lograr, alcanzar",
+        "palabras": ["logra", "alcanza", "mejora", "avanza", "recupera", "obtén", "consigue"]
+      },
+      "away_from": {
+        "descripcion": "Motivado por evitar, escapar, protegerse",
+        "palabras": ["evita", "reduce", "deja atrás", "no sigas", "protege", "aléjate de", "para de"]
+      }
+    },
+    "options_vs_procedures": {
+      "options": {
+        "descripcion": "Quiere libertad, alternativas, flexibilidad",
+        "palabras": ["opciones", "alternativas", "flexible", "personalizado", "adapta", "elige", "como prefieras"]
+      },
+      "procedures": {
+        "descripcion": "Quiere pasos claros, estructura, método",
+        "palabras": ["paso a paso", "plan", "sistema", "método", "proceso", "primero haz", "sigue estos pasos"]
+      }
+    },
+    "internal_vs_external": {
+      "internal": {
+        "descripcion": "Decide por criterio propio, confía en su instinto",
+        "palabras": ["decide por ti mismo", "siente la diferencia", "nota el cambio", "comprueba personalmente", "confía en tu instinto"]
+      },
+      "external": {
+        "descripcion": "Necesita validación externa, prueba social",
+        "palabras": ["respaldado", "recomendado", "pacientes reales", "testimonios", "evaluación profesional", "certificado", "reconocido"]
+      }
+    },
+    "general_vs_specific": {
+      "general": {
+        "descripcion": "Quiere visión simple, panorama general",
+        "palabras": ["en resumen", "lo esencial", "simplemente", "lo que importa", "el punto clave"]
+      },
+      "specific": {
+        "descripcion": "Quiere números, detalles, evidencia",
+        "palabras": ["exactamente", "en X días", "paso 1 es", "el porcentaje", "los estudios muestran"]
+      }
+    },
+    "sameness_vs_difference": {
+      "sameness": {
+        "descripcion": "Busca continuidad, seguridad, lo probado",
+        "palabras": ["confiable", "consistente", "probado", "estable", "como siempre", "sin riesgo"]
+      },
+      "difference": {
+        "descripcion": "Busca novedad, cambio, innovación",
+        "palabras": ["nuevo", "diferente", "innovador", "transforma", "cambia por completo", "nunca antes visto"]
+      }
+    }
+  },
+  "capa_3_secuencia_persuasiva": {
+    "orden_obligatorio": [
+      "1. Atención — hook que detiene el scroll",
+      "2. Relevancia — esto es para ti y tu situación",
+      "3. Problema — nombra el dolor o deseo",
+      "4. Intensificación — hazlo más consciente del costo",
+      "5. Solución — la marca como guía con plan claro",
+      "6. Reducción de objeción — anticipa y disuelve dudas",
+      "7. CTA — instrucción directa y clara"
+    ],
+    "diagnostico_previo": [
+      "Estado emocional actual del cliente",
+      "Resistencia principal que lo frena",
+      "Emoción dominante al ver el mensaje",
+      "Nivel de conciencia del problema"
+    ]
+  },
+  "capa_4_palabras_persuasivas": {
+    "facilidad": ["simple", "fácil", "práctico", "paso a paso", "sin complicaciones", "directo", "en minutos"],
+    "seguridad": ["confiable", "guiado", "profesional", "respaldado", "evaluado", "seguro", "sin riesgo"],
+    "transformacion": ["recupera", "logra", "mejora", "transforma", "avanza", "fortalece", "cambia"],
+    "curiosidad": ["descubre", "mira", "imagina", "conoce", "aquí está cómo", "lo que nadie te dice"],
+    "urgencia_moderada": ["hoy", "ahora", "este momento", "mientras haya disponibilidad", "no esperes más"],
+    "valor": ["personalizado", "especial", "premium", "diseñado para ti", "exclusivo", "a medida"]
+  },
+  "capa_5_outputs_accionables": [
+    "BrandScript completo",
+    "One-liner",
+    "Tagline",
+    "Hero section web",
+    "Anuncio corto (15-30s)",
+    "Flyer",
+    "Email de campaña",
+    "Guion de video",
+    "Pitch de ventas",
+    "Post de redes",
+    "CTA directo",
+    "CTA transicional",
+    "Manejo de objeciones",
+    "Script de llamada",
+    "Bio de Instagram",
+    "Mensaje de WhatsApp"
+  ],
+  "metodo_operativo": {
+    "paso_1_diagnostico_claridad": "Qué se vende, a quién, qué resultado ofrece, qué problema resuelve, qué CTA pide",
+    "paso_2_diagnostico_storybrand": "Mapear los 11 elementos SB7 completos",
+    "paso_3_diagnostico_persuasivo": "Objetivo, nivel de conciencia, resistencia, emoción dominante, perfil mental probable",
+    "paso_4_construccion": "Hook → Relevancia → Dolor/Deseo → Solución → Objeción → CTA",
+    "paso_5_afinacion": "Seleccionar palabras de claridad, seguridad, facilidad, transformación, curiosidad, urgencia, valor",
+    "paso_6_entrega": "Salidas listas para copiar y usar"
+  },
+  "formato_respuesta_ideal": {
+    "1_diagnostico_estrategico": "Qué vendes, cliente ideal, deseo principal, problema, estado emocional, objeción principal",
+    "2_brandscript": "Los 11 elementos SB7 completos",
+    "3_diagnostico_persuasivo": "Perfil mental probable, tono recomendado, palabras gatillo, secuencia ideal",
+    "4_copy_principal": "Texto principal optimizado listo para usar",
+    "5_variaciones": ["emocional", "directa", "premium", "simple", "para público escéptico"],
+    "6_cta": "Directo + transicional",
+    "7_riesgo_inaccion": "Qué pierde si no actúa",
+    "8_transformacion": "Visión de éxito e identidad futura"
+  },
+  "reglas_nunca": [
+    "No sonar excesivamente corporativo",
+    "No usar frases vacías o ambiguas",
+    "No exagerar sin base real",
+    "No inventar autoridad o resultados",
+    "No manipular con miedo falso",
+    "No llenar el texto de adjetivos inútiles",
+    "No poner a la marca como héroe"
+  ]
+}
