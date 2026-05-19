@@ -1465,22 +1465,35 @@ async function _ejecutarHerramienta(name, input) {
     if (name === 'generar_y_publicar') {
       if (!HF_KEY)  return '❌ HIGGSFIELD_API_KEY no configurada en Railway (Dashboard service).';
       if (!BL_KEY)  return '❌ BLOTATO_API_KEY no configurada en Railway (Dashboard service).';
-      // Genera imagen via Crew bot (que ya tiene conexión funcional a Higgsfield)
-      const crewBase = 'https://worker-production-34f9.up.railway.app';
-      const genRes = await fetch(`${crewBase}/crew/task`, {
+      // Genera imagen via kie.ai Nano Banana 2
+      const KIE_KEY = process.env.KIE_API_KEY;
+      if (!KIE_KEY) return '❌ KIE_API_KEY no configurada en Railway (Dashboard service).';
+      const kieRes = await fetch('https://api.kie.ai/api/v1/jobs/createTask', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo: 'gen_imagen', instruccion: input.prompt_imagen, cliente: input.cliente }),
-        signal: AbortSignal.timeout(300000)
+        headers: { 'Authorization': `Bearer ${KIE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'nano-banana-2', input: { prompt: input.prompt_imagen, aspect_ratio: '16:9', resolution: '1K' } }),
+        signal: AbortSignal.timeout(30000)
       });
-      if (!genRes.ok) return `❌ Crew error ${genRes.status}: ${await genRes.text()}`;
-      const genData = await genRes.json();
-      let imageUrl = genData.url || genData.image_url || genData.output_url || genData.resultado || null;
-      if (!imageUrl && genData.respuesta) {
-        const match = genData.respuesta.match(/https?:\/\/\S+\.(jpg|jpeg|png|webp)/i);
-        if (match) imageUrl = match[0];
+      if (!kieRes.ok) return `❌ kie.ai error ${kieRes.status}: ${await kieRes.text()}`;
+      const kieData = await kieRes.json();
+      if (kieData.code !== 200) return `❌ kie.ai: ${kieData.msg || JSON.stringify(kieData)}`;
+      const taskId = kieData.data?.taskId;
+      if (!taskId) return `❌ kie.ai sin taskId: ${JSON.stringify(kieData)}`;
+      // Poll hasta completar
+      let imageUrl = null;
+      for (let i = 0; i < 30; i++) {
+        await new Promise(ok => setTimeout(ok, 5000));
+        const poll = await fetch(`https://api.kie.ai/api/v1/jobs/recordInfo?taskId=${taskId}`,
+          { headers: { 'Authorization': `Bearer ${KIE_KEY}` } });
+        const pd = await poll.json();
+        const state = pd.data?.state;
+        if (state === 'success') {
+          try { imageUrl = JSON.parse(pd.data.resultJson).resultUrls?.[0]; } catch(_) {}
+          break;
+        }
+        if (state === 'fail') return `❌ kie.ai falló: ${pd.data?.failMsg || 'error desconocido'}`;
       }
-      if (!imageUrl) return `❌ Crew no devolvió URL de imagen: ${JSON.stringify(genData).slice(0, 200)}`;
+      if (!imageUrl) return '❌ Timeout: kie.ai tardó más de 150 segundos.';
       const ck = (input.cliente || 'arranca').toLowerCase().trim();
       const pageId = _FB_PAGES[ck];
       if (!pageId) return `✅ Imagen generada: ${imageUrl}\n❌ Cliente sin página Facebook.`;
