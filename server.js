@@ -1422,6 +1422,14 @@ const _FB_PAGES = {
   'rg photo & video':     '268664976335314',
 };
 
+function _resolvePageId(cliente) {
+  const ck = (cliente || 'arranca').toLowerCase().trim();
+  if (_FB_PAGES[ck]) return _FB_PAGES[ck];
+  // partial match — "arranca financial inc" → "arranca financial"
+  const key = Object.keys(_FB_PAGES).find(k => ck.includes(k) || k.includes(ck));
+  return key ? _FB_PAGES[key] : null;
+}
+
 // ── Higgsfield via Managed Agents (usa infraestructura de Anthropic → sin 522) ──
 async function _generarImagenViaManagedAgent(prompt, agentId) {
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
@@ -1535,8 +1543,7 @@ async function _ejecutarHerramienta(name, input) {
     }
     if (name === 'publicar_blotato') {
       if (!BL_KEY) return '❌ BLOTATO_API_KEY no configurada en Railway (Dashboard service).';
-      const ck = (input.cliente || 'arranca').toLowerCase().trim();
-      const pageId = _FB_PAGES[ck];
+      const pageId = _resolvePageId(input.cliente);
       if (!pageId) return `❌ Cliente '${input.cliente}' sin página Facebook. Disponibles: ${Object.keys(_FB_PAGES).join(', ')}`;
       const postBody = { post: { accountId: '32320', target: { targetType: 'facebook', pageId },
         content: { text: input.texto, platform: 'facebook', mediaUrls: input.media_url ? [input.media_url] : [] } } };
@@ -1596,9 +1603,8 @@ async function _ejecutarHerramienta(name, input) {
         imageSource = 'kie.ai';
       }
 
-      const ck = (input.cliente || 'arranca').toLowerCase().trim();
-      const pageId = _FB_PAGES[ck];
-      if (!pageId) return `✅ Imagen generada (${imageSource}): ${imageUrl}\n❌ Cliente sin página Facebook.`;
+      const pageId = _resolvePageId(input.cliente);
+      if (!pageId) return `✅ Imagen generada (${imageSource}): ${imageUrl}\n❌ Cliente '${input.cliente}' sin página Facebook. Disponibles: ${Object.keys(_FB_PAGES).join(', ')}`;
       const pubRes = await fetch('https://backend.blotato.com/v2/posts',
         { method: 'POST', headers: { 'blotato-api-key': BL_KEY, 'Content-Type': 'application/json' },
           body: JSON.stringify({ post: { accountId: '32320', target: { targetType: 'facebook', pageId },
