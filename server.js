@@ -1527,8 +1527,8 @@ app.post('/api/setup/higgsfield-agent', async (req, res) => {
 });
 
 async function _ejecutarHerramienta(name, input) {
-  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL;
-  const SB_KEY = process.env.SUPABASE_SECRET_KEY;
+  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
   const BL_KEY = process.env.BLOTATO_API_KEY;
   const HF_KEY = process.env.HIGGSFIELD_API_KEY;
   try {
@@ -1649,8 +1649,8 @@ app.post('/api/stream/organizador', async (req, res) => {
   const msg     = mensaje || message || '';
   const clientId = cliente || client || 'arranca';
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
-  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL;
-  const SB_KEY = process.env.SUPABASE_SECRET_KEY;
+  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 
   res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'Connection': 'keep-alive' });
   const tok  = t => res.write(`data: ${JSON.stringify({ token: t })}\n\n`);
