@@ -1837,6 +1837,21 @@ Siempre incluir: "Latino man or woman, Mexican-American, Hispanic, 30s, authenti
 NUNCA generes personajes que parezcan asiáticos, del sur de Asia, europeos blancos, o de stock photo genérico.
 El público de Arranca es hispano — el personaje que ven en el video/imagen debe verse como ellos.
 
+CÓMO HACER UGC VIDEOS CON SEEDANCE:
+UGC = User Generated Content. No es un clip cinematic — es alguien hablando a cámara como en TikTok/Reels.
+Cuando Roberto pida "UGC video" o "video para redes", el prompt de Seedance DEBE incluir:
+- "talking head video, person looking directly at camera"
+- "selfie-style, smartphone camera, vertical frame 9:16"
+- "casual home or office background, natural lighting"
+- "UGC content, authentic testimonial style, TikTok style"
+- "Latino man [o woman], Mexican-American, 30s, casual clothes"
+- PLUS el mensaje que da: ej. "speaking about how he improved his credit score from 520 to 720"
+
+Ejemplo de prompt UGC correcto para Arranca:
+"Talking head UGC video, Latino man in his 30s, Mexican-American, looking directly at camera, casual living room background, natural window light, selfie-style smartphone camera, vertical 9:16, authentic testimonial, speaking about improving credit score and building wealth, TikTok style, relatable and energetic, casual clothes"
+
+NUNCA generes un prompt genérico que salga una escena cinematic o un hombre estático sonriendo.
+
 ${_CATALOGO_SKILLS}
 
 CICLO DE LA AGENCIA POR CLIENTE:
