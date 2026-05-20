@@ -1202,6 +1202,7 @@ const DEFAULT_PROFILES = {
     redes: { facebook_page: 'Arranca Financial', blotato_account: '32320' },
     agente_voz: 'María — bot de llamadas Twilio+ElevenLabs que cierra leads. Proyecto: C:/ArrancaVoiceAgent',
     estrategia_contenido: '1-2 posts/día educativos. Temas: crédito, Turo, inversión básica, testimonios. CTA siempre: llamar a María o agendar consulta.',
+    prompt_visual_base: 'SIEMPRE incluir en prompts de imagen/video: "Latino man or woman, Mexican-American, Hispanic, 30s, relatable, professional but approachable, real person not stock photo". NUNCA usar personajes que parezcan asiáticos, europeos o del sur de Asia.',
     historia_posts_recientes: 'Consultar historial de conversación para posts ya publicados esta sesión.',
     _fuente: 'perfil_base_servidor'
   }
@@ -1829,6 +1830,12 @@ Fase 6 PRODUCCIÓN: genera imágenes reales con generar_y_publicar → publica e
 
 Para posts simples: escríbelo tú directamente cargando psicologia_venta + sleight_of_mouth.
 NUNCA copies el mensaje del usuario como texto del post — escribe copy profesional.
+
+REGLA DE PERSONAJES (CRÍTICA — sin excepción):
+En TODOS los prompts de imagen o video para Arranca Financial: el personaje DEBE ser Latino/Hispanic/Mexican-American.
+Siempre incluir: "Latino man or woman, Mexican-American, Hispanic, 30s, authentic, relatable, professional"
+NUNCA generes personajes que parezcan asiáticos, del sur de Asia, europeos blancos, o de stock photo genérico.
+El público de Arranca es hispano — el personaje que ven en el video/imagen debe verse como ellos.
 
 ${_CATALOGO_SKILLS}
 
