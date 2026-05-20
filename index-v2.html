@@ -3848,26 +3848,51 @@ async function loadHomeStats() {
 loadHomeStats();
 loadClientSwitcher();
 
-// ── GDRIVE LIVE LOAD ──────────────────────────────────────────────
+// ── DRIVE: carga Google Drive + Media Library de Supabase ─────────────
 async function loadDriveFromAPI() {
   const content = document.getElementById('driveContent');
   if (content && !window._driveAPIItems) {
-    content.innerHTML = '<div style="padding:32px;color:var(--text-muted);font-size:14px;">Conectando con Google Drive…</div>';
+    content.innerHTML = '<div style="padding:32px;color:var(--text-muted);font-size:14px;">Cargando media generada…</div>';
   }
+  const iconMap = { video: '🎬', audio: '🎵', image: '🖼️' };
+  let allItems = [];
+
+  // 1. Media Library interna (Supabase) — siempre disponible
+  try {
+    const clienteActual = (currentClient || 'arranca').toLowerCase();
+    const mlRes = await fetch(`/api/media-library?cliente=${encodeURIComponent(clienteActual)}`);
+    const mlData = await mlRes.json();
+    if (mlData.ok && mlData.items && mlData.items.length) {
+      allItems = mlData.items.map(f => ({
+        type: f.type || 'video',
+        name: f.name || f.type,
+        size: '—',
+        source: 'Generado AI',
+        date: f.created ? new Date(f.created).toLocaleDateString('es-MX',{month:'short',day:'numeric'}) : '—',
+        icon: iconMap[f.type] || '📄',
+        link: f.url
+      }));
+    }
+  } catch(e) { console.warn('Media library:', e.message); }
+
+  // 2. Google Drive (si está configurado, agrega encima)
   try {
     const res = await fetch('/gdrive/listar?tipo=all');
     const data = await res.json();
-    if (!data.ok || !data.archivos || !data.archivos.length) { renderDrive(); return; }
-    const iconMap = { video: '🎬', audio: '🎵', image: '🖼️' };
-    window._driveAPIItems = data.archivos.map(f => {
-      const mime = f.mimeType || '';
-      const type = mime.includes('video') ? 'video' : mime.includes('audio') ? 'audio' : mime.includes('image') ? 'image' : 'file';
-      const sizeKB = f.size ? Math.round(f.size / 1024) : 0;
-      const sizeFmt = sizeKB > 1024 ? (sizeKB/1024).toFixed(1) + ' MB' : sizeKB + ' KB';
-      return { type, name: f.name, size: sizeFmt, source: 'Google Drive', date: new Date(f.modifiedTime).toLocaleDateString('es-MX',{month:'short',day:'numeric'}), icon: iconMap[type]||'📄', link: f.webViewLink };
-    });
-    renderDrive();
-  } catch(e) { console.warn('GDrive API no disponible, usando datos demo:', e.message); renderDrive(); }
+    if (data.ok && data.archivos && data.archivos.length) {
+      const gdItems = data.archivos.map(f => {
+        const mime = f.mimeType || '';
+        const type = mime.includes('video') ? 'video' : mime.includes('audio') ? 'audio' : mime.includes('image') ? 'image' : 'file';
+        const sizeKB = f.size ? Math.round(f.size / 1024) : 0;
+        const sizeFmt = sizeKB > 1024 ? (sizeKB/1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+        return { type, name: f.name, size: sizeFmt, source: 'Google Drive', date: new Date(f.modifiedTime).toLocaleDateString('es-MX',{month:'short',day:'numeric'}), icon: iconMap[type]||'📄', link: f.webViewLink };
+      });
+      allItems = [...gdItems, ...allItems];
+    }
+  } catch(e) { console.warn('GDrive no disponible:', e.message); }
+
+  window._driveAPIItems = allItems.length ? allItems : null;
+  renderDrive();
 }
 
 

@@ -1609,7 +1609,8 @@ async function _ejecutarHerramienta(name, input, onProgress = null) {
           let videoUrl = null;
           try { videoUrl = JSON.parse(pd.data.resultJson).resultUrls?.[0]; } catch(_) {}
           if (!videoUrl) return `❌ Video generado pero sin URL. Raw: ${JSON.stringify(pd.data).slice(0,300)}`;
-          return `✅ Video generado con Seedance.\nURL: ${videoUrl}\n\nPara publicar en Facebook usa publicar_blotato con esta URL como media_url.`;
+          await _saveToMediaLibrary(videoUrl, `Video ${new Date().toLocaleDateString('es-MX')} — ${(input.prompt||'').slice(0,40)}`, 'video', input.cliente || 'arranca');
+          return `✅ Video generado con Seedance.\nURL: ${videoUrl}\n\nGuardado en Drive. Para publicar en Facebook usa publicar_blotato con esta URL como media_url.`;
         }
         if (state === 'fail') return `❌ Seedance falló: ${pd.data?.failMsg || 'error desconocido'}`;
       }
@@ -1693,6 +1694,7 @@ async function _ejecutarHerramienta(name, input, onProgress = null) {
           await fetch(url, { method, headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(body) }).catch(() => {});
         }
       }
+      await _saveToMediaLibrary(imageUrl, `Imagen ${new Date().toLocaleDateString('es-MX')} — ${(input.prompt_imagen||'').slice(0,40)}`, 'image', input.cliente || 'arranca');
       return `✅ Imagen generada (${imageSource}) y publicada en Facebook (${input.cliente}).\nPost ID: ${pubData.postSubmissionId || pubData.id || '✓'}\nImagen: ${imageUrl}`;
     }
     if (name === 'leer_memoria_cliente') {
@@ -1988,6 +1990,47 @@ app.post('/api/chat/:agentId', (req, res) => {
   pr.on('timeout', () => { pr.destroy(); res.json({ response: 'El agente tardó demasiado en responder. Intenta de nuevo.' }); });
   pr.write(body);
   pr.end();
+});
+
+// ── Media Library (Supabase — sin tabla extra, usa memoria_clientes._media) ──
+async function _saveToMediaLibrary(url, name, type, cliente) {
+  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+  if (!SB_URL || !SB_KEY || !url) return;
+  try {
+    const sbHdr = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
+    const ck = (cliente || 'arranca').toLowerCase().trim();
+    const firstWord = ck.split(/\s+/)[0];
+    const existing = await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=ilike.*${encodeURIComponent(firstWord)}*&select=cliente,datos&limit=1`, { headers: sbHdr });
+    const rows = await existing.json();
+    const clienteKey = rows?.[0]?.cliente || ck;
+    const datosPrev = rows?.[0]?.datos || {};
+    const media = Array.isArray(datosPrev._media) ? datosPrev._media : [];
+    media.push({ url, name: name || type, type: type || 'video', created: new Date().toISOString() });
+    const datosNew = { ...datosPrev, _media: media };
+    if (rows?.[0]) {
+      await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=eq.${encodeURIComponent(clienteKey)}`,
+        { method: 'PATCH', headers: { ...sbHdr, Prefer: 'return=minimal' }, body: JSON.stringify({ datos: datosNew }) });
+    } else {
+      await fetch(`${SB_URL}/rest/v1/memoria_clientes`,
+        { method: 'POST', headers: { ...sbHdr, Prefer: 'return=minimal' }, body: JSON.stringify({ cliente: ck, datos: datosNew }) });
+    }
+  } catch(_) {}
+}
+
+app.get('/api/media-library', async (req, res) => {
+  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+  const ck = (req.query.cliente || 'arranca').toLowerCase().trim();
+  if (!SB_URL || !SB_KEY) return res.json({ ok: false, items: [] });
+  try {
+    const sbHdr = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` };
+    const firstWord = ck.split(/\s+/)[0];
+    const r = await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=ilike.*${encodeURIComponent(firstWord)}*&select=datos&limit=1`, { headers: sbHdr });
+    const data = await r.json();
+    const media = data?.[0]?.datos?._media || [];
+    res.json({ ok: true, items: [...media].reverse() });
+  } catch(e) { res.json({ ok: false, items: [], error: e.message }); }
 });
 
 // ── Google Drive ─────────────────────────────────────────────────────
