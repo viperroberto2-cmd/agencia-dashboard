@@ -1583,7 +1583,7 @@ async function _ejecutarHerramienta(name, input) {
     if (name === 'generar_video') {
       const KIE_KEY = process.env.KIE_API_KEY;
       if (!KIE_KEY) return '❌ KIE_API_KEY no configurada en Railway (Dashboard service).';
-      const body = { model: 'seedance-1-lite', input: { prompt: input.prompt, resolution: '480p', duration: 5 } };
+      const body = { model: 'bytedance/seedance-2', input: { prompt: input.prompt, resolution: '720p', duration: 5 } };
       if (input.imagen_url) body.input.image_url = input.imagen_url;
       const createRes = await fetch('https://api.kie.ai/api/v1/jobs/createTask', {
         method: 'POST',
