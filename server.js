@@ -1192,6 +1192,21 @@ function proxyGet(targetUrl, res) {
 
 const CREW_URL = 'https://worker-production-34f9.up.railway.app';
 
+// Perfiles base: fallback cuando Supabase no tiene datos del cliente todavía
+const DEFAULT_PROFILES = {
+  arranca: {
+    nombre: 'Arranca Financial',
+    servicio: 'Educación financiera para latinos en USA. Cursos de crédito, manejo de deuda, inversión, y generación de ingresos con Turo (renta de autos).',
+    publico_objetivo: 'Latinos/hispanos en USA, 25-45 años, trabajadores que buscan salir de deudas, mejorar su crédito y crear ingresos adicionales.',
+    tono: 'Motivacional, cercano, en español. Empoderador. Como un mentor de la comunidad.',
+    redes: { facebook_page: 'Arranca Financial', blotato_account: '32320' },
+    agente_voz: 'María — bot de llamadas Twilio+ElevenLabs que cierra leads. Proyecto: C:/ArrancaVoiceAgent',
+    estrategia_contenido: '1-2 posts/día educativos. Temas: crédito, Turo, inversión básica, testimonios. CTA siempre: llamar a María o agendar consulta.',
+    historia_posts_recientes: 'Consultar historial de conversación para posts ya publicados esta sesión.',
+    _fuente: 'perfil_base_servidor'
+  }
+};
+
 app.post('/api/crew/seedance', (req, res) => {
   proxyPost(`${CREW_URL}/crew/seedance`, req, res);
 });
@@ -1758,10 +1773,12 @@ app.post('/api/stream/organizador', async (req, res) => {
         const [memData, crmData, histData] = await Promise.all([memRes.json(), crmRes.json(), histRes.json()]);
         const memoria = memData?.[0]?.datos;
         const crm = crmData?.[0]?.data?.clientes?.[clientId] || crmData?.[0]?.data?.clientes?.[clientKey];
-        if (memoria || crm) {
+        const fallback = DEFAULT_PROFILES[clientFirstWord] || DEFAULT_PROFILES[clientKey];
+        if (memoria || crm || fallback) {
           perfilCliente = '\n\nPERFIL DEL CLIENTE ACTIVO:\n';
           if (crm) perfilCliente += JSON.stringify(crm, null, 2).slice(0, 1500);
           if (memoria) perfilCliente += '\n\nMEMORIA OPERATIVA:\n' + JSON.stringify(memoria, null, 2).slice(0, 1500);
+          if (!memoria && !crm && fallback) perfilCliente += JSON.stringify(fallback, null, 2);
         }
         // Historial persistido: solo usar si el frontend no mandó historial (sesión nueva)
         if (Array.isArray(histData) && histData.length > 0 && historial.length === 0) {
@@ -1816,7 +1833,7 @@ Tú produces el contenido → se publica → genera leads → los leads llaman a
 Cada cliente tiene su perfil, su voz de marca, sus objetivos y su agente de voz específico.
 
 CLIENTE ACTIVO: ${clientId}
-Para leer memoria usa exactamente: leer_memoria_cliente con cliente="${clientId}"${perfilCliente}`;
+${perfilCliente ? `El perfil ya está cargado arriba — NO pidas que Roberto lo repita. Úsalo directamente.\nSi aprendes algo nuevo sobre el cliente → llama guardar_memoria de inmediato.` : `Llama leer_memoria_cliente con cliente="${clientId}" al inicio. Si el DB regresa vacío, procede con lo que sabes del contexto — NUNCA pidas que Roberto repita el perfil del cliente.`}${perfilCliente}`;
 
     const tools = [
       { name: 'buscar_web', description: 'Busca en internet. Úsalo para competencia, tendencias, mercados.',
