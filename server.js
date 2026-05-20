@@ -1565,6 +1565,39 @@ async function _ejecutarHerramienta(name, input) {
       if (!r.ok) return `❌ Blotato error: ${JSON.stringify(d).slice(0, 200)}`;
       return `✅ Publicado en Facebook (${input.cliente}). ID: ${d.postSubmissionId || d.id || '✓'}${input.media_url ? '\nImagen: ' + input.media_url : ''}`;
     }
+    if (name === 'generar_video') {
+      const KIE_KEY = process.env.KIE_API_KEY;
+      if (!KIE_KEY) return '❌ KIE_API_KEY no configurada en Railway (Dashboard service).';
+      const body = { model: 'seedance-1-lite', input: { prompt: input.prompt, resolution: '480p', duration: 5 } };
+      if (input.imagen_url) body.input.image_url = input.imagen_url;
+      const createRes = await fetch('https://api.kie.ai/api/v1/jobs/createTask', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${KIE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(30000)
+      });
+      if (!createRes.ok) return `❌ kie.ai video error ${createRes.status}: ${await createRes.text()}`;
+      const createData = await createRes.json();
+      if (createData.code !== 200) return `❌ kie.ai: ${createData.msg || JSON.stringify(createData)}`;
+      const taskId = createData.data?.taskId;
+      if (!taskId) return `❌ kie.ai sin taskId: ${JSON.stringify(createData)}`;
+      // Poll hasta completar (video tarda más)
+      for (let i = 0; i < 36; i++) {
+        await new Promise(ok => setTimeout(ok, 5000));
+        const poll = await fetch(`https://api.kie.ai/api/v1/jobs/recordInfo?taskId=${taskId}`,
+          { headers: { 'Authorization': `Bearer ${KIE_KEY}` } });
+        const pd = await poll.json();
+        const state = pd.data?.state;
+        if (state === 'success') {
+          let videoUrl = null;
+          try { videoUrl = JSON.parse(pd.data.resultJson).resultUrls?.[0]; } catch(_) {}
+          if (!videoUrl) return `❌ Video generado pero sin URL. Raw: ${JSON.stringify(pd.data).slice(0,300)}`;
+          return `✅ Video generado con Seedance.\nURL: ${videoUrl}\n\nPara publicar en Facebook usa publicar_blotato con esta URL como media_url.`;
+        }
+        if (state === 'fail') return `❌ Seedance falló: ${pd.data?.failMsg || 'error desconocido'}`;
+      }
+      return '❌ Timeout: Seedance tardó más de 3 minutos.';
+    }
     if (name === 'generar_y_publicar') {
       if (!BL_KEY)  return '❌ BLOTATO_API_KEY no configurada en Railway (Dashboard service).';
       let imageUrl = null;
@@ -1795,7 +1828,13 @@ Para leer memoria usa exactamente: leer_memoria_cliente con cliente="${clientId}
           cliente: { type: 'string' }, texto: { type: 'string' },
           media_url: { type: 'string' }, programado_iso: { type: 'string' }
         }, required: ['cliente', 'texto'] } },
-      { name: 'generar_y_publicar', description: 'Genera imagen con Higgsfield y la publica en Facebook en un paso.',
+      { name: 'generar_video', description: 'Genera video con Seedance (kie.ai). Úsalo cuando pidan video, animación o UGC.',
+        input_schema: { type: 'object', properties: {
+          prompt: { type: 'string', description: 'Descripción del video en inglés' },
+          imagen_url: { type: 'string', description: 'URL de imagen base para animar (opcional)' },
+          cliente: { type: 'string' }
+        }, required: ['prompt'] } },
+      { name: 'generar_y_publicar', description: 'Genera imagen con kie.ai y la publica en Facebook en un paso.',
         input_schema: { type: 'object', properties: {
           cliente: { type: 'string' }, prompt_imagen: { type: 'string', description: 'Descripción visual (inglés recomendado)' },
           copy_post: { type: 'string', description: 'Texto del post de Facebook' }
