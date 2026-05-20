@@ -1541,7 +1541,7 @@ app.post('/api/setup/higgsfield-agent', async (req, res) => {
   return res.json(results);
 });
 
-async function _ejecutarHerramienta(name, input) {
+async function _ejecutarHerramienta(name, input, onProgress = null) {
   const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
   const BL_KEY = process.env.BLOTATO_API_KEY;
@@ -1583,7 +1583,7 @@ async function _ejecutarHerramienta(name, input) {
     if (name === 'generar_video') {
       const KIE_KEY = process.env.KIE_API_KEY;
       if (!KIE_KEY) return '❌ KIE_API_KEY no configurada en Railway (Dashboard service).';
-      const body = { model: 'bytedance/seedance-2', input: { prompt: input.prompt, resolution: '720p', duration: 5 } };
+      const body = { model: 'bytedance/seedance-2-fast', input: { prompt: input.prompt, resolution: '720p', duration: 5 } };
       if (input.imagen_url) body.input.image_url = input.imagen_url;
       const createRes = await fetch('https://api.kie.ai/api/v1/jobs/createTask', {
         method: 'POST',
@@ -1596,9 +1596,11 @@ async function _ejecutarHerramienta(name, input) {
       if (createData.code !== 200) return `❌ kie.ai: ${createData.msg || JSON.stringify(createData)}`;
       const taskId = createData.data?.taskId;
       if (!taskId) return `❌ kie.ai sin taskId: ${JSON.stringify(createData)}`;
-      // Poll hasta completar (video tarda más)
-      for (let i = 0; i < 36; i++) {
-        await new Promise(ok => setTimeout(ok, 5000));
+      // Poll hasta completar — seedance-2-fast ~4 min, max 9 min
+      if (onProgress) onProgress('\n⏳ Video en cola... (puede tardar 4-6 min)');
+      for (let i = 0; i < 54; i++) {
+        await new Promise(ok => setTimeout(ok, 10000));
+        if (onProgress && i % 3 === 0) onProgress(`\n⏳ Generando video... ${Math.round((i + 1) * 10 / 60)} min`);
         const poll = await fetch(`https://api.kie.ai/api/v1/jobs/recordInfo?taskId=${taskId}`,
           { headers: { 'Authorization': `Bearer ${KIE_KEY}` } });
         const pd = await poll.json();
@@ -1611,7 +1613,7 @@ async function _ejecutarHerramienta(name, input) {
         }
         if (state === 'fail') return `❌ Seedance falló: ${pd.data?.failMsg || 'error desconocido'}`;
       }
-      return '❌ Timeout: Seedance tardó más de 3 minutos.';
+      return '❌ Timeout: Seedance tardó más de 9 minutos. Intenta de nuevo o usa generar_y_publicar para imagen primero.';
     }
     if (name === 'generar_y_publicar') {
       if (!BL_KEY)  return '❌ BLOTATO_API_KEY no configurada en Railway (Dashboard service).';
@@ -1926,7 +1928,7 @@ ${perfilCliente ? `El perfil ya está cargado arriba — NO pidas que Roberto lo
         const toolResults = [];
         for (const tb of toolBlocks) {
           tok(`\n\n🔧 *${tb.name}*...`);
-          const result = await _ejecutarHerramienta(tb.name, tb.input);
+          const result = await _ejecutarHerramienta(tb.name, tb.input, tok);
           toolResults.push({ type: 'tool_result', tool_use_id: tb.id, content: result });
         }
         messages.push({ role: 'user', content: toolResults });
