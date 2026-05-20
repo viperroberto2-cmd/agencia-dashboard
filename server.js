@@ -1584,7 +1584,16 @@ async function _ejecutarHerramienta(name, input, onProgress = null) {
     if (name === 'generar_video') {
       const KIE_KEY = process.env.KIE_API_KEY;
       if (!KIE_KEY) return '❌ KIE_API_KEY no configurada en Railway (Dashboard service).';
-      const body = { model: 'bytedance/seedance-2-fast', input: { prompt: input.prompt, resolution: '720p', duration: 5 } };
+      // Forzar estilo UGC para Arranca si el prompt no lo especifica ya
+      let videoPrompt = input.prompt || '';
+      const isUGC = input.estilo === 'ugc' || videoPrompt.toLowerCase().includes('ugc') || videoPrompt.toLowerCase().includes('talking head');
+      const isArranca = (input.cliente || 'arranca').toLowerCase().includes('arranca');
+      if (!isUGC && isArranca) {
+        videoPrompt = `Talking head UGC video, Latino man in his 30s, Mexican-American, looking directly at camera, casual home background, natural window light, selfie-style smartphone vertical 9:16, authentic TikTok testimonial style, ${videoPrompt}, energetic and relatable, casual clothes`;
+      } else if (!isUGC && videoPrompt && !videoPrompt.toLowerCase().includes('latino') && !videoPrompt.toLowerCase().includes('hispanic')) {
+        videoPrompt = `Latino man in his 30s, Mexican-American, ${videoPrompt}`;
+      }
+      const body = { model: 'bytedance/seedance-2-fast', input: { prompt: videoPrompt, resolution: '720p', duration: 5 } };
       if (input.imagen_url) body.input.image_url = input.imagen_url;
       const createRes = await fetch('https://api.kie.ai/api/v1/jobs/createTask', {
         method: 'POST',
@@ -1621,6 +1630,11 @@ async function _ejecutarHerramienta(name, input, onProgress = null) {
       if (!BL_KEY)  return '❌ BLOTATO_API_KEY no configurada en Railway (Dashboard service).';
       let imageUrl = null;
       let imageSource = '';
+      // Forzar personaje latino si el prompt no lo especifica
+      const isArrancaImg = (input.cliente || 'arranca').toLowerCase().includes('arranca');
+      if (isArrancaImg && input.prompt_imagen && !input.prompt_imagen.toLowerCase().includes('latino') && !input.prompt_imagen.toLowerCase().includes('hispanic')) {
+        input.prompt_imagen = `Latino person, Mexican-American, 30s, authentic, relatable, professional — ${input.prompt_imagen}`;
+      }
 
       // Intento 1: Higgsfield directo via MCP (usa suscripción anual, sin 522)
       if (process.env.HIGGSFIELD_API_KEY) {
