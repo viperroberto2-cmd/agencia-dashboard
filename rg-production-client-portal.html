@@ -1877,6 +1877,13 @@ input, textarea, select { font-family: inherit; }
 </aside>
 
 <script>
+// Escape HTML — previene XSS en todo contenido dinámico inyectado via innerHTML
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 // ============ I18N ============
 const i18n = {
   es: {
@@ -2526,13 +2533,13 @@ function renderLeads() {
   }
   el.innerHTML = leadsData.map(l => `
     <button class="lead-row">
-      <div class="lead-avatar">${l.initials}</div>
+      <div class="lead-avatar">${escHtml(l.initials)}</div>
       <div class="lead-info">
-        <div class="lead-name">${l.name}</div>
-        <div class="lead-meta">${l.meta}</div>
+        <div class="lead-name">${escHtml(l.name)}</div>
+        <div class="lead-meta">${escHtml(l.meta)}</div>
       </div>
-      <span class="lead-stage ${l.stage}">${l.stageLabel[currentLang]}</span>
-      <span class="lead-time">${l.time}</span>
+      <span class="lead-stage ${escHtml(l.stage)}">${escHtml(l.stageLabel?.[currentLang])}</span>
+      <span class="lead-time">${escHtml(l.time)}</span>
     </button>
   `).join('');
 }
@@ -2628,8 +2635,8 @@ async function loadContentQueue() {
           <span style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted)">${item.platform}</span>
           <span style="margin-left:auto;font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:${statusColor[item.status]}22;color:${statusColor[item.status]}">${statusLabel[item.status] || item.status}</span>
         </div>
-        ${item.image_url ? `<img src="${item.image_url}" style="width:100%;border-radius:8px;margin-bottom:12px;max-height:220px;object-fit:cover" />` : ''}
-        <div style="font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:12px">${item.text}</div>
+        ${item.image_url ? `<img src="${escHtml(item.image_url)}" style="width:100%;border-radius:8px;margin-bottom:12px;max-height:220px;object-fit:cover" />` : ''}
+        <div style="font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:12px">${escHtml(item.text)}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-bottom:${item.status === 'pending' ? '14px' : '0'}">${new Date(item.created_at).toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' })}</div>
         ${item.status === 'pending' ? `
         <div style="display:flex;gap:8px">
@@ -2761,8 +2768,13 @@ async function loginWithPassword() {
       errEl.style.display = 'block';
       return;
     }
-    sessionStorage.setItem('rg_email', email);
-    sessionStorage.setItem('rg_pw', password);
+    // Crear token de sesión server-side — nunca almacenar la contraseña en el cliente
+    const _tr = await fetch('/api/auth/session/create', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: d.user_id })
+    });
+    const _td = await _tr.json();
+    if (_td.ok) sessionStorage.setItem('rg_token', _td.token);
     populatePortal(d);
     goScreen('portal');
   } catch(e) {
@@ -3123,19 +3135,18 @@ async function loadPortalRecordings() {
   } catch(e) {}
 }
 
-// ── Auth helper ──────────────────────────────────────────────────────────────
-async function _authWithCredentials(email, password) {
+// ── Auth helper — verifica token de sesión server-side (sin password en cliente) ─
+async function _authWithCredentials(token) {
   document.getElementById('login-step-form').style.display = 'none';
   document.getElementById('login-step-verifying').style.display = '';
   try {
-    const r = await fetch('/api/auth/login', {
+    const r = await fetch('/api/auth/session/verify', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ token })
     });
     const d = await r.json();
     if (!d.ok) {
-      sessionStorage.removeItem('rg_email');
-      sessionStorage.removeItem('rg_pw');
+      sessionStorage.removeItem('rg_token');
       document.getElementById('login-step-verifying').style.display = 'none';
       document.getElementById('login-step-form').style.display = '';
       return;
@@ -3143,8 +3154,7 @@ async function _authWithCredentials(email, password) {
     populatePortal(d);
     goScreen('portal');
   } catch(e) {
-    sessionStorage.removeItem('rg_email');
-    sessionStorage.removeItem('rg_pw');
+    sessionStorage.removeItem('rg_token');
     document.getElementById('login-step-verifying').style.display = 'none';
     document.getElementById('login-step-form').style.display = '';
   }
@@ -3258,9 +3268,8 @@ function populateSocialStatus(d) {
     return;
   }
 
-  const savedEmail = sessionStorage.getItem('rg_email');
-  const savedPw    = sessionStorage.getItem('rg_pw');
-  if (savedEmail && savedPw) _authWithCredentials(savedEmail, savedPw);
+  const savedToken = sessionStorage.getItem('rg_token');
+  if (savedToken) _authWithCredentials(savedToken);
 })();
 </script>
 
