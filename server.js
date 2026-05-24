@@ -911,6 +911,9 @@ app.post('/api/call/iniciar', async (req, res) => {
 });
 
 // ── CLIENTES ─────────────────────────────────────────────────────
+app.use('/api/clientes', require('./routes/clientes'));
+
+/* MOVIDO A routes/clientes.js
 app.get('/api/clientes', async (req, res) => {
   try {
     const r = await sbFetch('/clientes?select=*&order=nombre.asc');
@@ -1011,6 +1014,7 @@ app.delete('/api/clientes/:user_id', async (req, res) => {
     res.json({ ok: true });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
+END_CLIENTES */
 
 // ── PORTAL USERS ─────────────────────────────────────────────────
 app.get('/api/portal-users', async (req, res) => {
