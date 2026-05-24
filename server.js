@@ -1066,6 +1066,7 @@ app.use('/api', require('./routes/utility'));
 const { apiRouter: mediaApiRouter, gdriveRouter } = require('./routes/media');
 app.use('/api', mediaApiRouter);
 app.use('/gdrive', gdriveRouter);
+app.use('/mcp', require('./routes/mcp'));
 
 /* MOVIDO A routes/leads.js
 app.get('/api/leads', async (req, res) => {
