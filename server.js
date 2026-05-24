@@ -1069,6 +1069,9 @@ app.get('/api/recordings', async (req, res) => {
 });
 
 // ── LEADS (CRM) ─────────────────────────────────────────────────
+app.use('/api/leads', require('./routes/leads'));
+
+/* MOVIDO A routes/leads.js
 app.get('/api/leads', async (req, res) => {
   try {
     const cliente = req.query.cliente ? `&cliente=eq.${req.query.cliente}` : '';
@@ -1149,6 +1152,7 @@ app.delete('/api/leads/:id', async (req, res) => {
     res.json({ ok: true });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
+END_LEADS */
 
 // ── SCRAPER LOGS ─────────────────────────────────────────────────
 app.get('/api/scraper/logs', async (req, res) => {
