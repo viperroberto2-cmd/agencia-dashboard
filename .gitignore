@@ -6,11 +6,18 @@ npm-debug.log*
 .env
 .env.local
 .env.production
+.env.*.local
 
-# Claude Code
+# Claude Code — settings locales (paths de máquina local, no van al repo)
 .claude/settings.local.json
+.claude/*.local.json
 .claude/skills/
 skills-lock.json
+
+# Scripts de debug/análisis temporal — no son parte del proyecto
+audit.js
+check-script.js
+temp_check.js
 
 # Backups y drafts locales
 index_backup.html
