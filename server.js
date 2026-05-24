@@ -564,7 +564,13 @@ async function publishToFacebook(item, clientData) {
   } catch(e) { return { ok: false, error: e.message }; }
 }
 
+// ── Portal router ─────────────────────────────────────────────────────────
+const { portalRouter, portalUsersRouter } = require('./routes/portal');
+app.use('/api/portal', portalRouter);
+app.use('/api/portal-users', portalUsersRouter);
+
 // ── Portal cliente — datos reales filtrados por user_id ──────────────────────
+/* MOVIDO A routes/portal.js
 app.get('/api/portal/leads', async (req, res) => {
   const { user_id } = req.query;
   if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
@@ -747,6 +753,7 @@ app.get('/api/portal/stats', async (req, res) => {
     res.json({ ok: true, total_leads: total, cerrados: closed, revenue: closed * 197 });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
+END_PORTAL */
 
 // ── Merge data JSONB column into top-level keys for portal consumption ───────
 function _mergeDataCol(row) {
@@ -1016,7 +1023,8 @@ app.delete('/api/clientes/:user_id', async (req, res) => {
 });
 END_CLIENTES */
 
-// ── PORTAL USERS ─────────────────────────────────────────────────
+// ── PORTAL USERS (movido a routes/portal.js → portalUsersRouter) ──────────
+/* MOVIDO A routes/portal.js
 app.get('/api/portal-users', async (req, res) => {
   try {
     const r = await sbFetch('/portal_users?select=*&order=created_at.desc');
@@ -1057,6 +1065,7 @@ app.delete('/api/portal-users/:id', async (req, res) => {
     res.json({ ok: true });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
+END_PORTAL_USERS */
 
 // ── RECORDINGS ───────────────────────────────────────────────────
 app.get('/api/recordings', async (req, res) => {
