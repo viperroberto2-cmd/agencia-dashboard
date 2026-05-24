@@ -2,6 +2,11 @@
 node_modules/
 npm-debug.log*
 
+# Secrets — nunca subir al repo
+.env
+.env.local
+.env.production
+
 # Claude Code
 .claude/settings.local.json
 .claude/skills/
