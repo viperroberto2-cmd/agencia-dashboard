@@ -6,6 +6,10 @@ const app = express();
 
 const { hashPassword, _sessions, crypto } = require('./lib/auth-helpers');
 const { _FB_PAGES, _resolvePageId, publishToFacebook } = require('./lib/facebook');
+const { _cargarSkill, _CATALOGO_SKILLS } = require('./lib/skills');
+const { _saveToMediaLibrary, getGoogleAccessToken } = require('./lib/media');
+const { _ejecutarHerramienta, _generarImagenHiggsfieldMCP, _parseMcpResponse } = require('./lib/tools');
+const chatRouter = require('./routes/chat');
 
 const BOTS = {
   b1:  'https://worker-production-0c858.up.railway.app/bot1/health',
@@ -1056,6 +1060,7 @@ app.get('/api/recordings', async (req, res) => {
 
 // ── LEADS (CRM) ─────────────────────────────────────────────────
 app.use('/api/leads', require('./routes/leads'));
+app.use('/api', chatRouter);
 
 /* MOVIDO A routes/leads.js
 app.get('/api/leads', async (req, res) => {
@@ -1412,132 +1417,18 @@ app.get('/api/mensajes/organizador', (req, res) => {
 
 // ── Claude Directo — herramientas reales en el dashboard ─────────────────────
 
-// Cargador de skills desde memoria/ (igual que _cargar_skills en cerebro.py)
+/* MOVIDO A lib/skills.js — _MEMORIA_DIR, _cargarSkill, _CATALOGO_SKILLS importados al tope
 const _MEMORIA_DIR = path.join(__dirname, 'memoria');
-function _cargarSkill(nombre) {
-  try {
-    const ruta = path.join(_MEMORIA_DIR, `${nombre}.json`);
-    if (!fs.existsSync(ruta)) return `[Skill '${nombre}' no encontrada]`;
-    const data = JSON.parse(fs.readFileSync(ruta, 'utf8'));
-    const contenido = typeof data === 'object'
-      ? (data.contenido || data.content || data.conocimiento || JSON.stringify(data, null, 2))
-      : String(data);
-    return `[${nombre.toUpperCase().replace(/_/g,' ')}]\n${contenido}`;
-  } catch(e) { return `[Error cargando skill '${nombre}': ${e.message}]`; }
-}
-
-// Catálogo de skills disponibles (lo que Claude ve en el system prompt)
-const _CATALOGO_SKILLS = `EQUIPO DE ESPECIALISTAS DISPONIBLE (usa cargar_skill para activar cada uno):
-
-ESTRATEGA — psicología humana, ventas, storytelling, persuasión:
-  • psicologia_venta — diagnóstico del comprador, manejo de objeciones, cierre
-  • sleight_of_mouth — 14 patrones de reencuadre para transformar objeciones
-  • storytelling_master — estructura narrativa profesional, arcos emocionales
-  • story_persuasion — persuasión a través de historia, conexión emocional
-  • video_hypnotic_selling — venta hipnótica en video, lenguaje del inconsciente
-  • storytelling_series — storytelling en serie, episodios, continuidad
-
-DIRECTOR — dirección de cine, actores, escenas:
-  • director_cine — dirección de actores, mise en scène, lenguaje cinematográfico
-  • director_maestro — dirección avanzada, visión artística, toma de decisiones
-  • emotional_film_director — dirección emocional, performance, autenticidad
-  • storyboard_bong — storyboard estilo Bong Joon-ho, planificación visual
-
-CINEMATÓGRAFO — imagen, luz, composición:
-  • cinematografia — reglas de composición, movimientos de cámara, planos
-  • master_shots — planos maestros, cobertura de escena, continuidad
-  • zettl_estetica — estética visual de Zettl, color, forma, espacio
-  • millerson_iluminacion — iluminación profesional de estudio y locación
-  • visual_storytelling_arun — narrativa visual, metáforas visuales
-
-COMPOSITOR — música, audio, psicoacústica:
-  • film_scoring — composición musical para cine, emoción y ritmo
-  • cinematic_audio_composer — audio cinematográfico, leitmotifs, mezcla
-  • music_video_director — dirección de videos musicales, sincronización
-
-ESTRATEGIA DE MARCA Y MARKETING:
-  • branding_estrategia — identidad de marca, posicionamiento, diferenciación
-  • canales_publicidad — selección de canales, mix de medios, presupuesto
-  • diseno_publicitario — diseño de ads, jerarquía visual, CTA
-  • analytics_roas — métricas, ROAS, optimización de campañas
-  • web_design_conversion — landing pages, CRO, UX de conversión
-
-VENTAS AVANZADAS:
-  • sales_closer_elite — técnicas de cierre, manejo de presión, negociación
-
-FORMATOS DE VIDEO:
-  • ms_ugc — User Generated Content, autenticidad, testimoniales
-  • ms_tutorial — tutoriales, educación, paso a paso
-  • ms_tvspot — spots de TV/redes, 15-30-60 segundos
-  • ms_hyper_motion — hiper-motion, acción, energía
-  • ms_review — reviews de productos, credibilidad
-  • ms_wildcard — formato experimental, creatividad libre`;
+function _cargarSkill(nombre) { ... }
+const _CATALOGO_SKILLS = '...';
+END_SKILLS */
 
 // _FB_PAGES y _resolvePageId importados desde lib/facebook.js (línea 8)
 
-// ── Higgsfield directo via MCP protocol (Railway → mcp.higgsfield.ai, sin 522) ──
-async function _generarImagenHiggsfieldMCP(prompt) {
-  const HF_KEY = process.env.HIGGSFIELD_API_KEY;
-  if (!HF_KEY) throw new Error('HIGGSFIELD_API_KEY no configurada');
-  const MCP_URL = 'https://mcp.higgsfield.ai/mcp';
-  const hdrs = { 'Content-Type': 'application/json', 'Accept': 'application/json, text/event-stream', 'Authorization': `Bearer ${HF_KEY}` };
-
-  // 1. Initialize session
-  const initRes = await fetch(MCP_URL, {
-    method: 'POST', headers: hdrs,
-    body: JSON.stringify({ jsonrpc: '2.0', method: 'initialize',
-      params: { protocolVersion: '2024-11-05', capabilities: {}, clientInfo: { name: 'agencia-ai', version: '1.0' } }, id: 1 }),
-    signal: AbortSignal.timeout(15000)
-  });
-  const sessionId = initRes.headers.get('Mcp-Session-Id');
-  const initData = await _parseMcpResponse(initRes);
-  if (initData.error) throw new Error(`MCP init: ${initData.error.message}`);
-
-  const sh = sessionId ? { ...hdrs, 'Mcp-Session-Id': sessionId } : hdrs;
-
-  // 2. Notify initialized
-  await fetch(MCP_URL, { method: 'POST', headers: sh,
-    body: JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized', params: {} }),
-    signal: AbortSignal.timeout(5000) }).catch(() => {});
-
-  // 3. Call generate_image
-  const callRes = await fetch(MCP_URL, {
-    method: 'POST', headers: sh,
-    body: JSON.stringify({ jsonrpc: '2.0', method: 'tools/call',
-      params: { name: 'generate_image', arguments: { prompt, steps: 30, task: 'text-to-image' } }, id: 2 }),
-    signal: AbortSignal.timeout(180000)
-  });
-  const callData = await _parseMcpResponse(callRes);
-  if (callData.error) throw new Error(`MCP generate: ${callData.error.message}`);
-
-  // Extract URL from result
-  const content = callData.result?.content || [];
-  for (const item of content) {
-    if (item.type === 'text') {
-      const m = item.text.match(/https?:\/\/[^\s"'<>]+/);
-      if (m) return m[0];
-    }
-    if (item.type === 'image' && item.url) return item.url;
-  }
-  const raw = JSON.stringify(callData.result || callData);
-  const m = raw.match(/https?:\/\/[^\s"'\\]+/);
-  if (m) return m[0];
-  throw new Error(`Sin URL en MCP: ${raw.slice(0, 400)}`);
-}
-
-async function _parseMcpResponse(res) {
-  const ct = res.headers.get('Content-Type') || '';
-  const text = await res.text();
-  if (ct.includes('text/event-stream')) {
-    for (const line of text.split('\n')) {
-      if (line.startsWith('data: ')) {
-        try { const d = JSON.parse(line.slice(6)); if (d.result || d.error) return d; } catch(_) {}
-      }
-    }
-    return {};
-  }
-  try { return JSON.parse(text); } catch(_) { return { raw: text }; }
-}
+/* MOVIDO A lib/tools.js — _generarImagenHiggsfieldMCP, _parseMcpResponse importados al tope
+async function _generarImagenHiggsfieldMCP(prompt) { ... }
+async function _parseMcpResponse(res) { ... }
+END_MCP_HELPERS */
 
 // Test + setup: primero prueba conectividad directa al MCP, luego crea agente si aplica
 app.post('/api/setup/higgsfield-agent', async (req, res) => {
@@ -1571,6 +1462,7 @@ app.post('/api/setup/higgsfield-agent', async (req, res) => {
   return res.json(results);
 });
 
+/* MOVIDO A lib/tools.js — _ejecutarHerramienta importado al tope
 async function _ejecutarHerramienta(name, input, onProgress = null) {
   const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -1784,6 +1676,7 @@ async function _ejecutarHerramienta(name, input, onProgress = null) {
     return `Herramienta '${name}' no implementada.`;
   } catch (e) { return `❌ Error en ${name}: ${e.message}`; }
 }
+END_EJECUTAR_HERRAMIENTA */
 
 // Streaming directo — Claude con herramientas reales
 app.post('/api/stream/organizador', async (req, res) => {
@@ -2057,31 +1950,9 @@ app.post('/api/chat/:agentId', (req, res) => {
   pr.end();
 });
 
-// ── Media Library (Supabase — sin tabla extra, usa memoria_clientes._media) ──
-async function _saveToMediaLibrary(url, name, type, cliente) {
-  const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
-  if (!SB_URL || !SB_KEY || !url) return;
-  try {
-    const sbHdr = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
-    const ck = (cliente || 'arranca').toLowerCase().trim();
-    const firstWord = ck.split(/\s+/)[0];
-    const existing = await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=ilike.*${encodeURIComponent(firstWord)}*&select=cliente,datos&limit=1`, { headers: sbHdr });
-    const rows = await existing.json();
-    const clienteKey = rows?.[0]?.cliente || ck;
-    const datosPrev = rows?.[0]?.datos || {};
-    const media = Array.isArray(datosPrev._media) ? datosPrev._media : [];
-    media.push({ url, name: name || type, type: type || 'video', created: new Date().toISOString() });
-    const datosNew = { ...datosPrev, _media: media };
-    if (rows?.[0]) {
-      await fetch(`${SB_URL}/rest/v1/memoria_clientes?cliente=eq.${encodeURIComponent(clienteKey)}`,
-        { method: 'PATCH', headers: { ...sbHdr, Prefer: 'return=minimal' }, body: JSON.stringify({ datos: datosNew }) });
-    } else {
-      await fetch(`${SB_URL}/rest/v1/memoria_clientes`,
-        { method: 'POST', headers: { ...sbHdr, Prefer: 'return=minimal' }, body: JSON.stringify({ cliente: ck, datos: datosNew }) });
-    }
-  } catch(_) {}
-}
+/* MOVIDO A lib/media.js — _saveToMediaLibrary importado al tope
+async function _saveToMediaLibrary(url, name, type, cliente) { ... }
+END_SAVE_MEDIA */
 
 app.get('/api/media-library', async (req, res) => {
   const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -2098,31 +1969,9 @@ app.get('/api/media-library', async (req, res) => {
   } catch(e) { res.json({ ok: false, items: [], error: e.message }); }
 });
 
-// ── Google Drive ─────────────────────────────────────────────────────
-async function getGoogleAccessToken() {
-    const body = JSON.stringify({
-          client_id: process.env.GOOGLE_CLIENT_ID,
-          client_secret: process.env.GOOGLE_CLIENT_SECRET,
-          refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
-          grant_type: 'refresh_token'
-    });
-    return new Promise((resolve, reject) => {
-          const req = https.request({
-                  hostname: 'oauth2.googleapis.com',
-                  path: '/token',
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
-          }, res => {
-                  let d = '';
-                  res.on('data', c => d += c);
-                  res.on('end', () => {
-                            try { resolve(JSON.parse(d).access_token); } catch(e) { reject(e); }
-                  });
-          });
-          req.on('error', reject);
-          req.write(body); req.end();
-    });
-}
+/* MOVIDO A lib/media.js — getGoogleAccessToken importado al tope
+async function getGoogleAccessToken() { ... }
+END_GOOGLE_TOKEN */
 
 app.get('/gdrive/listar', async (req, res) => {
     try {
