@@ -305,6 +305,11 @@ function hashPassword(pw) {
   return crypto.createHmac('sha256', salt).update(pw).digest('hex');
 }
 
+// In-memory session store — evita guardar contraseñas en el cliente.
+// Tokens expiran en 8h. Se pierden al reiniciar el servidor (Railway), lo cual
+// es aceptable; el usuario simplemente vuelve a hacer login.
+const _sessions = new Map();
+
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ ok: false, error: 'Email y contraseña requeridos' });
@@ -318,7 +323,9 @@ app.post('/api/auth/login', async (req, res) => {
     if (!stored) return res.status(401).json({ ok: false, error: 'Esta cuenta no tiene contraseña. Usa el onboarding para configurarla.' });
     if (stored !== hashPassword(password))
       return res.status(401).json({ ok: false, error: 'Contraseña incorrecta.' });
-    res.json({ ok: true, ..._mergeDataCol(row) });
+    const _clientData = _mergeDataCol(row);
+    if (_clientData.data) delete _clientData.data.password_hash;
+    res.json({ ok: true, ..._clientData });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
@@ -405,6 +412,40 @@ app.post('/api/auth/reset-password', async (req, res) => {
     });
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// ── Session tokens — alternativa segura a guardar password en el cliente ──────
+app.post('/api/auth/session/create', (req, res) => {
+  const { user_id } = req.body || {};
+  if (!user_id) return res.status(400).json({ ok: false });
+  const token = crypto.randomBytes(32).toString('hex');
+  _sessions.set(token, { user_id, expires: Date.now() + 8 * 60 * 60 * 1000 });
+  res.json({ ok: true, token });
+});
+
+app.post('/api/auth/session/verify', async (req, res) => {
+  const { token } = req.body || {};
+  if (!token) return res.status(400).json({ ok: false });
+  const session = _sessions.get(token);
+  if (!session || session.expires < Date.now()) {
+    _sessions.delete(token);
+    return res.status(401).json({ ok: false, error: 'Sesión expirada' });
+  }
+  try {
+    const r = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(session.user_id)}&select=*`);
+    const rows = await r.json();
+    const row = Array.isArray(rows) ? rows[0] : null;
+    if (!row) return res.status(404).json({ ok: false });
+    const clientData = _mergeDataCol(row);
+    if (clientData.data) delete clientData.data.password_hash;
+    res.json({ ok: true, ...clientData });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+app.post('/api/auth/session/destroy', (req, res) => {
+  const { token } = req.body || {};
+  if (token) _sessions.delete(token);
+  res.json({ ok: true });
 });
 
 // ── CONTENT QUEUE ─────────────────────────────────────────────────────────────
@@ -775,8 +816,12 @@ app.post('/api/ms/jobs', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-// Endpoint diagnóstico — muestra qué vars de Supabase están seteadas en Railway
+// Endpoint diagnóstico — requiere header X-Admin-Secret si ADMIN_SECRET está seteado en env
 app.get('/api/env-check', (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (adminSecret && req.headers['x-admin-secret'] !== adminSecret) {
+    return res.status(401).json({ error: 'Unauthorized — set X-Admin-Secret header' });
+  }
   const vars = [
     'SUPABASE_URL','SUPABASE_PROJECT_URL','NEXT_PUBLIC_SUPABASE_URL',
     'SUPABASE_ANON_KEY','NEXT_PUBLIC_SUPABASE_ANON_KEY',
@@ -2312,7 +2357,7 @@ app.get('/api/devagent/runs', async (req, res) => {
   } catch(e) { res.json({ runs: [], error: e.message }); }
 });
 
-app.get('/devagent', (_req, res) => res.sendFile(path.join(__dirname, 'devagent.html')));
+app.get('/devagent', (_req, res) => res.redirect('/'));
 
 // ── Chat history — Supabase persistence ──────────────────────────────────────
 // GET /api/chat/history?agent_id=organizador&user_id=roberto&limit=40
