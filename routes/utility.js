@@ -86,6 +86,21 @@ router.get('/inbox', async (req, res) => {
   } catch(e) { res.json({ ok: false, items: [], error: e.message }); }
 });
 
+router.patch('/inbox/:id', async (req, res) => {
+  const { id } = req.params;
+  const allowed = ['ts_procesado', 'prioridad'];
+  const patch = {};
+  allowed.forEach(k => { if (req.body[k] !== undefined) patch[k] = req.body[k]; });
+  if (!Object.keys(patch).length) return res.status(400).json({ ok: false, error: 'Nada que actualizar' });
+  try {
+    await sbFetch(`/inbox_organizador?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    });
+    res.json({ ok: true });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 router.get('/recordings', async (req, res) => {
   try {
     const cliente = req.query.cliente ? `&cliente=eq.${req.query.cliente}` : '';
@@ -225,6 +240,29 @@ router.post('/document', async (req, res) => {
     const d = await r.json();
     res.json({ response: d.content?.[0]?.text || 'Sin respuesta' });
   } catch(e) { res.json({ response: 'Error procesando documento: ' + e.message }); }
+});
+
+router.post('/call/iniciar', async (req, res) => {
+  const { to } = req.body;
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken  = process.env.TWILIO_AUTH_TOKEN;
+  const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+  if (!accountSid || !authToken || !fromNumber)
+    return res.json({ ok: false, error: 'Twilio no configurado en Railway' });
+  try {
+    const body = new URLSearchParams({ To: to, From: fromNumber, Url: `https://${req.hostname}/voice` });
+    const resp = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + Buffer.from(accountSid + ':' + authToken).toString('base64'),
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: body.toString()
+    });
+    const data = await resp.json();
+    if (data.sid) res.json({ ok: true, sid: data.sid });
+    else res.json({ ok: false, error: data.message || 'Error Twilio' });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
 module.exports = router;

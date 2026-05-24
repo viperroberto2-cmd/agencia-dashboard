@@ -2701,12 +2701,40 @@ function renderInboxFilters() {
 
 function setInboxFilter(id) { inboxFilter = id; renderInboxFilters(); renderInbox(); }
 
+function openInboxItem(id) {
+  const item = inboxItems.find(i => String(i.id) === String(id));
+  if (!item) return;
+  if (item.unread) {
+    item.unread = false;
+    renderInboxFilters();
+    renderInbox();
+    const unread = inboxItems.filter(i => i.unread).length;
+    document.getElementById('tabInboxCount').textContent = unread || '';
+    document.getElementById('navInboxCount').textContent = unread || '';
+    const dc = document.getElementById('drawerInboxCount');
+    if (dc) dc.textContent = unread || '';
+    fetch(`/api/inbox/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ts_procesado: new Date().toISOString() })
+    }).catch(() => {});
+  }
+  document.getElementById('leadModalContent').innerHTML = `
+    <div style="font-size:17px;font-weight:700;margin-bottom:4px;">${item.icon} ${escapeHtml(item.from)}</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">${escapeHtml(item.time)} · ${escapeHtml(item.channel)} · <span style="color:var(--accent)">${escapeHtml(item.client)}</span></div>
+    <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:14px;line-height:1.6;white-space:pre-wrap;max-height:400px;overflow-y:auto;">${escapeHtml(item.fullContent || item.preview || '(sin contenido)')}</div>
+    <div style="display:flex;justify-content:flex-end;margin-top:20px;">
+      <button onclick="closeLeadModal()" style="background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:13px;cursor:pointer;">Cerrar</button>
+    </div>`;
+  document.getElementById('leadModalOverlay').style.display = 'flex';
+}
+
 function renderInbox() {
   let items = inboxItems;
   if (inboxFilter === 'unread') items = items.filter(i => i.unread);
   else if (inboxFilter !== 'all') items = items.filter(i => i.channel === inboxFilter);
   document.getElementById('inboxList').innerHTML = items.map(i => `
-    <button class="inbox-item ${i.unread ? 'unread' : ''}">
+    <button class="inbox-item ${i.unread ? 'unread' : ''}" onclick="openInboxItem('${i.id}')">
       <div class="inbox-channel-icon">${i.icon}</div>
       <div class="inbox-content">
         <div class="inbox-top">
@@ -4298,7 +4326,8 @@ async function loadMSJobs() {
 
 async function loadInboxFromSupabase() {
   try {
-    const r = await fetch(`/api/inbox?client=roberto_agencia&limit=30`);
+    const inboxClient = currentClient || 'roberto_agencia';
+    const r = await fetch(`/api/inbox?client=${encodeURIComponent(inboxClient)}&limit=30`);
     const d = await r.json();
     if (d.ok && d.items && d.items.length) {
       inboxItems = d.items.map((item, idx) => ({
@@ -4306,6 +4335,7 @@ async function loadInboxFromSupabase() {
         channel: item.canal || 'telegram', icon: item.canal === 'whatsapp' ? '💚' : item.canal === 'instagram' ? '📸' : '✈️',
         from: item.from_name || item.bot_destino || 'Agencia AI',
         preview: (item.contenido || '').slice(0, 80),
+        fullContent: item.contenido || '',
         time: item.ts_creado ? new Date(item.ts_creado).toLocaleString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—',
         unread: !item.ts_procesado,
         client: item.cliente || 'arranca', tipo: item.tipo, prioridad: item.prioridad
