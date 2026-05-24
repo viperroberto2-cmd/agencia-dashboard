@@ -5,6 +5,7 @@ const fs = require('fs');
 const app = express();
 
 const { hashPassword, _sessions, crypto } = require('./lib/auth-helpers');
+const { _FB_PAGES, _resolvePageId, publishToFacebook } = require('./lib/facebook');
 
 const BOTS = {
   b1:  'https://worker-production-0c858.up.railway.app/bot1/health',
@@ -455,7 +456,12 @@ app.post('/api/auth/session/destroy', (req, res) => {
 });
 END_OF_INLINE_AUTH */
 
-// ── CONTENT QUEUE ─────────────────────────────────────────────────────────────
+// ── Content + Scheduler routers ──────────────────────────────────────────────
+app.use('/api/content', require('./routes/content'));
+app.use('/api/scheduler', require('./routes/scheduler'));
+
+// ── CONTENT QUEUE (inline — movido a routes/content.js) ──────────────────────
+/* MOVIDO A routes/content.js
 const { randomUUID } = require('crypto');
 
 async function getClientData(user_id) {
@@ -471,7 +477,6 @@ async function patchClientData(user_id, newData) {
   });
 }
 
-// POST /api/content/queue — bot adds content item to client queue
 app.post('/api/content/queue', async (req, res) => {
   const { user_id, platform, text, image_url, page_id } = req.body || {};
   if (!user_id || !text) return res.status(400).json({ ok: false, error: 'user_id y text requeridos' });
@@ -532,37 +537,9 @@ app.post('/api/content/reject/:user_id/:item_id', async (req, res) => {
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
+END_CONTENT */
 
-async function publishToFacebook(item, clientData) {
-  const pages = clientData.facebook_pages || [];
-  let page = pages.find(p => p.id === item.page_id) || pages[0];
-  // Fall back to global FB_USER_TOKEN + stored fb_page_id (manual token setup)
-  if (!page?.token && clientData.fb_page_id && process.env.FB_USER_TOKEN) {
-    page = { id: clientData.fb_page_id, token: process.env.FB_USER_TOKEN };
-  }
-  if (!page?.token) return { ok: false, error: 'No hay página de Facebook conectada' };
-  try {
-    const endpoint = item.platform === 'instagram' && clientData.instagram_accounts?.length
-      ? `https://graph.facebook.com/v19.0/${clientData.instagram_accounts[0].id}/media`
-      : `https://graph.facebook.com/v19.0/${page.id}/feed`;
-    const body = item.platform === 'instagram'
-      ? { caption: item.text, ...(item.image_url ? { image_url: item.image_url, media_type: 'IMAGE' } : {}), access_token: page.token }
-      : { message: item.text, ...(item.image_url ? { link: item.image_url } : {}), access_token: page.token };
-    const r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    const data = await r.json();
-    if (data.error) return { ok: false, error: data.error.message };
-    // For Instagram, need a second call to publish
-    if (item.platform === 'instagram' && data.id) {
-      const pub = await fetch(`https://graph.facebook.com/v19.0/${clientData.instagram_accounts[0].id}/media_publish`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ creation_id: data.id, access_token: page.token })
-      });
-      const pubData = await pub.json();
-      return { ok: !pubData.error, post_id: pubData.id };
-    }
-    return { ok: true, post_id: data.id };
-  } catch(e) { return { ok: false, error: e.message }; }
-}
+// publishToFacebook movido a lib/facebook.js
 
 // ── Portal router ─────────────────────────────────────────────────────────
 const { portalRouter, portalUsersRouter } = require('./routes/portal');
@@ -1293,11 +1270,11 @@ app.get('/api/crew/imagen/:jobId', (req, res) => {
   proxyGet(`${CREW_URL}/api/crew/imagen/${req.params.jobId}`, res);
 });
 
+/* MOVIDO A routes/scheduler.js
 app.post('/api/scheduler/publicar', (req, res) => {
   proxyPost('https://worker-production-aa53.up.railway.app/scheduler/publicar', req, res);
 });
 
-// ── Lista posts de Supabase (todos o filtrados por estado) ────────────────────
 app.get('/api/scheduler/posts', async (req, res) => {
   try {
     const { estado } = req.query;
@@ -1309,7 +1286,6 @@ app.get('/api/scheduler/posts', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ── Borrar post por post_id ───────────────────────────────────────────────────
 app.delete('/api/scheduler/posts/:postId', async (req, res) => {
   try {
     const { postId } = req.params;
@@ -1318,7 +1294,6 @@ app.delete('/api/scheduler/posts/:postId', async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// ── Programar post manual (inyecta secret server-side) ───────────────────────
 app.post('/api/scheduler/post', async (req, res) => {
   try {
     const payload = {
@@ -1333,6 +1308,7 @@ app.post('/api/scheduler/post', async (req, res) => {
     res.status(r.status).json(d);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
+END_SCHEDULER */
 
 // ── Vision proxy — imagen base64 → bot organizador ───────────────────────────
 app.post('/api/vision', async (req, res) => {
@@ -1497,23 +1473,7 @@ FORMATOS DE VIDEO:
   • ms_review — reviews de productos, credibilidad
   • ms_wildcard — formato experimental, creatividad libre`;
 
-const _FB_PAGES = {
-  'arranca':              '1037617602773646',
-  'arranca financial':    '1037617602773646',
-  'red de salud hispana': '1069131969608041',
-  'salud hispana':        '1069131969608041',
-  'horizon wound care':   '441343592402827',
-  'rg photo':             '268664976335314',
-  'rg photo & video':     '268664976335314',
-};
-
-function _resolvePageId(cliente) {
-  const ck = (cliente || 'arranca').toLowerCase().trim();
-  if (_FB_PAGES[ck]) return _FB_PAGES[ck];
-  // partial match — "arranca financial inc" → "arranca financial"
-  const key = Object.keys(_FB_PAGES).find(k => ck.includes(k) || k.includes(ck));
-  return key ? _FB_PAGES[key] : null;
-}
+// _FB_PAGES y _resolvePageId importados desde lib/facebook.js (línea 8)
 
 // ── Higgsfield directo via MCP protocol (Railway → mcp.higgsfield.ai, sin 522) ──
 async function _generarImagenHiggsfieldMCP(prompt) {
