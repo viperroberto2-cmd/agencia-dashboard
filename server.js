@@ -1061,6 +1061,11 @@ app.get('/api/recordings', async (req, res) => {
 // ── LEADS (CRM) ─────────────────────────────────────────────────
 app.use('/api/leads', require('./routes/leads'));
 app.use('/api', chatRouter);
+app.use('/api', require('./routes/crew'));
+app.use('/api', require('./routes/utility'));
+const { apiRouter: mediaApiRouter, gdriveRouter } = require('./routes/media');
+app.use('/api', mediaApiRouter);
+app.use('/gdrive', gdriveRouter);
 
 /* MOVIDO A routes/leads.js
 app.get('/api/leads', async (req, res) => {
