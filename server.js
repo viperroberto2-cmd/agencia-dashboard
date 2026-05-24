@@ -10,6 +10,7 @@ const { _cargarSkill, _CATALOGO_SKILLS } = require('./lib/skills');
 const { _saveToMediaLibrary, getGoogleAccessToken } = require('./lib/media');
 const { _ejecutarHerramienta, _generarImagenHiggsfieldMCP, _parseMcpResponse } = require('./lib/tools');
 const chatRouter = require('./routes/chat');
+const pagesRouter = require('./routes/pages');
 
 const BOTS = {
   b1:  'https://worker-production-0c858.up.railway.app/bot1/health',
@@ -39,126 +40,8 @@ app.use(express.static(path.join(__dirname), { index: false }));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
-// ── PWA Icons ──────────────────────────────────────
-function buildIcon(size) {
-  const { createCanvas } = require('canvas');
-  const c = createCanvas(size, size);
-  const ctx = c.getContext('2d');
-  const g = ctx.createLinearGradient(0, 0, size, size);
-  g.addColorStop(0, '#7c3aed');
-  g.addColorStop(1, '#4f46e5');
-  ctx.fillStyle = g;
-  const r = size * 0.22;
-  ctx.beginPath();
-  ctx.moveTo(r,0); ctx.lineTo(size-r,0);
-  ctx.quadraticCurveTo(size,0,size,r);
-  ctx.lineTo(size,size-r);
-  ctx.quadraticCurveTo(size,size,size-r,size);
-  ctx.lineTo(r,size);
-  ctx.quadraticCurveTo(0,size,0,size-r);
-  ctx.lineTo(0,r);
-  ctx.quadraticCurveTo(0,0,r,0);
-  ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#fff';
-  ctx.font = `bold ${Math.floor(size*.38)}px Arial`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('AI', size/2, size/2 - size*.04);
-  ctx.fillStyle = '#c4b5fd';
-  ctx.font = `${Math.floor(size*.12)}px Arial`;
-  ctx.fillText('AGENCIA', size/2, size/2 + size*.28);
-  return c.toBuffer('image/png');
-}
-
-app.get('/privacy', (_,res) => res.sendFile(path.join(__dirname, 'privacy.html')));
-
-app.get('/icon-192.png', (_,res) => {
-  try { res.type('image/png').set('Cache-Control','public,max-age=86400').send(buildIcon(192)); }
-  catch(e) { res.status(500).end(); }
-});
-app.get('/icon-512.png', (_,res) => {
-  try { res.type('image/png').set('Cache-Control','public,max-age=86400').send(buildIcon(512)); }
-  catch(e) { res.status(500).end(); }
-});
-// ── End PWA Icons ───────────────────────────────────
-
-function serveIndex(res) {
-  const html = fs.readFileSync(path.join(__dirname, 'index-v2.html'), 'utf8')
-    .replace(/__SUPABASE_URL__/g, process.env.SUPABASE_URL || '')
-    .replace(/__SUPABASE_ANON_KEY__/g, process.env.SUPABASE_ANON_KEY || '');
-  console.log('Serving index with SUPABASE_URL:', html.includes('__SUPABASE_URL__') ? 'PLACEHOLDER NOT REPLACED!' : 'REPLACED OK');
-  res.setHeader('Content-Type', 'text/html');
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.send(html);
-}
-
-app.get('/', (req, res) => serveIndex(res));
-
-app.get('/onboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'onboard.html'));
-});
-
-app.get('/v2', (req, res) => {
-  const html = fs.readFileSync(path.join(__dirname, 'index-v2.html'), 'utf8')
-    .replace(/__SUPABASE_URL__/g, process.env.SUPABASE_URL || '')
-    .replace(/__SUPABASE_ANON_KEY__/g, process.env.SUPABASE_ANON_KEY || '');
-  res.setHeader('Content-Type', 'text/html');
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.send(html);
-});
-
-app.post('/api/onboard-cliente', async (req, res) => {
-  const data = req.body;
-  const SUPABASE_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  try {
-    const existing = await fetch(
-      `${SUPABASE_URL}/rest/v1/clientes?user_id=eq.roberto_agencia&select=data`,
-      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }}
-    ).then(r => r.json());
-    const crm = existing[0]?.data || { cliente_activo: null, clientes: {} };
-    crm.clientes[data.nombre] = {
-      owner: data.owner, email: data.email, telefono: data.telefono,
-      industria: data.industria, ciudad: data.ciudad,
-      objetivos: data.objetivos, presupuesto: data.presupuesto,
-      notas: data.notas, redes_sociales: data.redes,
-      onboarding_completo: true,
-      fecha_onboarding: new Date().toISOString(),
-      fuente: 'RG Production self-onboarding'
-    };
-    await fetch(`${SUPABASE_URL}/rest/v1/clientes`, {
-      method: 'POST',
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`,
-                 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' },
-      body: JSON.stringify({ user_id: 'roberto_agencia', data: crm })
-    });
-    const TG = process.env.TELEGRAM_BOT_TOKEN;
-    const CHAT = process.env.TELEGRAM_CHAT_ID;
-    if (TG && CHAT) {
-      await fetch(`https://api.telegram.org/bot${TG}/sendMessage`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: CHAT,
-          text: `🎉 New client via RG Production onboarding!\n\n🏢 ${data.nombre}\n👤 ${data.owner}\n📧 ${data.email}\n📱 ${data.telefono}\n🏥 ${data.industria}\n🎯 ${(data.objetivos||[]).join(', ')}` })
-      });
-    }
-    res.json({ ok: true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-app.get('/index.html', (req, res) => serveIndex(res));
-
-// (ruta /api/clientes movida abajo — sección CLIENTES)
-
-// ── Portal del cliente ─────────────────────────────────────────────────────
-function servePortal(res) {
-  const html = fs.readFileSync(path.join(__dirname, 'rg-production-client-portal.html'), 'utf8')
-    .replace(/__SUPABASE_URL__/g, process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '')
-    .replace(/__SUPABASE_ANON_KEY__/g, process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
-  res.setHeader('Content-Type', 'text/html');
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.send(html);
-}
-app.get('/portal', (req, res) => servePortal(res));
-app.get('/client-portal', (req, res) => servePortal(res));
+// ── Pages router (HTML, PWA icons, portal, onboarding) ───────────────────
+app.use('/', pagesRouter);
 
 // ── Auth router ───────────────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/auth'));
@@ -2240,42 +2123,6 @@ app.delete('/api/chat/history', async (req, res) => {
   } catch (e) { res.json({ ok: false, error: e.message }); }
 });
 
-// ── MCP Server endpoint — para Hermes Agent y Claude Code ─────────────
-const MCP_TOOLS = [
-  { name: 'generar_y_publicar', description: 'Genera imagen con IA y publica en Facebook para un cliente. Devuelve URL de imagen y Post ID.', inputSchema: { type: 'object', properties: { cliente: { type: 'string' }, prompt_imagen: { type: 'string', description: 'Descripción visual en inglés' }, copy_post: { type: 'string', description: 'Texto del post en español' } }, required: ['cliente', 'prompt_imagen', 'copy_post'] } },
-  { name: 'generar_video', description: 'Genera video UGC con Seedance (kie.ai). Modelo: bytedance/seedance-2-fast. Tarda 4-6 min.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, cliente: { type: 'string' }, imagen_url: { type: 'string' } }, required: ['prompt'] } },
-  { name: 'publicar_blotato', description: 'Publica texto y/o media en Facebook via Blotato.', inputSchema: { type: 'object', properties: { cliente: { type: 'string' }, texto: { type: 'string' }, media_url: { type: 'string' } }, required: ['cliente', 'texto'] } },
-  { name: 'leer_memoria_cliente', description: 'Lee perfil y memoria operativa del cliente desde Supabase.', inputSchema: { type: 'object', properties: { cliente: { type: 'string' } }, required: ['cliente'] } },
-  { name: 'guardar_memoria', description: 'Guarda o actualiza datos del cliente en Supabase.', inputSchema: { type: 'object', properties: { cliente: { type: 'string' }, datos: { type: 'object' } }, required: ['cliente', 'datos'] } },
-  { name: 'listar_media', description: 'Lista videos e imágenes generadas recientemente para un cliente.', inputSchema: { type: 'object', properties: { cliente: { type: 'string' } }, required: ['cliente'] } },
-];
-
-// MCP initialize / list tools
-app.post('/mcp', async (req, res) => {
-  const { method, id, params } = req.body || {};
-  res.setHeader('Content-Type', 'application/json');
-  if (method === 'initialize') {
-    return res.json({ jsonrpc: '2.0', id, result: { protocolVersion: '2024-11-05', capabilities: { tools: {} }, serverInfo: { name: 'agencia-dashboard', version: '1.0.0' } } });
-  }
-  if (method === 'tools/list') {
-    return res.json({ jsonrpc: '2.0', id, result: { tools: MCP_TOOLS } });
-  }
-  if (method === 'tools/call') {
-    const { name, arguments: args } = params || {};
-    try {
-      const result = await _ejecutarHerramienta(name, args || {});
-      return res.json({ jsonrpc: '2.0', id, result: { content: [{ type: 'text', text: result }] } });
-    } catch(e) {
-      return res.json({ jsonrpc: '2.0', id, error: { code: -32000, message: e.message } });
-    }
-  }
-  res.json({ jsonrpc: '2.0', id, error: { code: -32601, message: 'Method not found' } });
-});
-
-// MCP GET — capability discovery
-app.get('/mcp', (req, res) => {
-  res.json({ name: 'agencia-dashboard', version: '1.0.0', tools: MCP_TOOLS.map(t => t.name) });
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Dashboard running on port ${PORT}`));
