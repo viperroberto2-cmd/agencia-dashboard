@@ -169,6 +169,13 @@ router.post('/login', async (req, res) => {
 router.post('/set-password', async (req, res) => {
   const { user_id, password } = req.body || {};
   if (!user_id || !password) return res.status(400).json({ ok: false, error: 'user_id y contraseña requeridos' });
+  // Verificar que la sesión activa pertenece al mismo user_id
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
+  const session = token ? _sessions.get(token) : null;
+  if (!session || session.expires < Date.now() || session.user_id !== user_id) {
+    _sessions.delete(token);
+    return res.status(401).json({ ok: false, error: 'Sesión inválida o no autorizada' });
+  }
   try {
     const curR = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data`);
     const curRows = await curR.json();

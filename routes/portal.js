@@ -1,14 +1,29 @@
 // routes/portal.js — /api/portal/* and /api/portal-users/* routes
 const express = require('express');
 const { sbFetch, _mergeDataCol } = require('../lib/db');
-const { hashPassword } = require('../lib/auth-helpers');
+const { hashPassword, _sessions } = require('../lib/auth-helpers');
 
 // ── /api/portal/* ────────────────────────────────────────────────
 const portalRouter = express.Router();
 
-portalRouter.get('/leads', async (req, res) => {
+// Verifica que el token de sesión pertenezca al user_id solicitado (evita IDOR).
+function requireOwnership(req, res, next) {
   const { user_id } = req.query;
   if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
+  const session = token ? _sessions.get(token) : null;
+  if (!session || session.expires < Date.now()) {
+    if (token) _sessions.delete(token);
+    return res.status(401).json({ ok: false, error: 'Sesión inválida' });
+  }
+  if (session.user_id !== user_id) {
+    return res.status(403).json({ ok: false, error: 'No autorizado' });
+  }
+  next();
+}
+
+portalRouter.get('/leads', requireOwnership, async (req, res) => {
+  const { user_id } = req.query;
   try {
     const r = await sbFetch(`/voice_leads?cliente=eq.${user_id}&select=*&order=created_at.desc&limit=100`);
     const data = await r.json();
@@ -25,9 +40,8 @@ portalRouter.get('/leads', async (req, res) => {
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
-portalRouter.get('/recordings', async (req, res) => {
+portalRouter.get('/recordings', requireOwnership, async (req, res) => {
   const { user_id } = req.query;
-  if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
   try {
     const r = await sbFetch(`/voice_leads?cliente=eq.${user_id}&recording_url=not.is.null&select=call_sid,recording_url,agent,call_status,created_at&order=created_at.desc&limit=50`);
     const data = await r.json();
@@ -35,9 +49,8 @@ portalRouter.get('/recordings', async (req, res) => {
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
-portalRouter.get('/stats', async (req, res) => {
+portalRouter.get('/stats', requireOwnership, async (req, res) => {
   const { user_id } = req.query;
-  if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
   try {
     const r = await sbFetch(`/voice_leads?cliente=eq.${user_id}&select=status,created_at`);
     const raw = await r.json();

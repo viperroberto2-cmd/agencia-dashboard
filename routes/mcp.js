@@ -3,6 +3,15 @@ const express = require('express');
 const router  = express.Router();
 const { _ejecutarHerramienta } = require('../lib/tools');
 
+// Require X-MCP-Secret header if MCP_SECRET env var is set.
+// Set MCP_SECRET in Railway to lock down this endpoint.
+const MCP_SECRET = process.env.MCP_SECRET || '';
+router.use((req, res, next) => {
+  if (!MCP_SECRET) return next(); // not set → open (development)
+  if (req.headers['x-mcp-secret'] === MCP_SECRET) return next();
+  res.status(401).json({ error: 'Unauthorized' });
+});
+
 const MCP_TOOLS = [
   { name: 'generar_y_publicar', description: 'Genera imagen con IA y publica en Facebook para un cliente. Devuelve URL de imagen y Post ID.', inputSchema: { type: 'object', properties: { cliente: { type: 'string' }, prompt_imagen: { type: 'string', description: 'Descripción visual en inglés' }, copy_post: { type: 'string', description: 'Texto del post en español' } }, required: ['cliente', 'prompt_imagen', 'copy_post'] } },
   { name: 'generar_video', description: 'Genera video UGC con Seedance (kie.ai). Modelo: bytedance/seedance-2-fast. Tarda 4-6 min.', inputSchema: { type: 'object', properties: { prompt: { type: 'string' }, cliente: { type: 'string' }, imagen_url: { type: 'string' } }, required: ['prompt'] } },
