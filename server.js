@@ -4,6 +4,8 @@ const https = require('https');
 const fs = require('fs');
 const app = express();
 
+const { hashPassword, _sessions, crypto } = require('./lib/auth-helpers');
+
 const BOTS = {
   b1:  'https://worker-production-0c858.up.railway.app/bot1/health',
   b2:  'https://worker-production-34f9.up.railway.app/crew/health',
@@ -153,7 +155,11 @@ function servePortal(res) {
 app.get('/portal', (req, res) => servePortal(res));
 app.get('/client-portal', (req, res) => servePortal(res));
 
-// ── Facebook / Instagram OAuth ─────────────────────────────────────────────
+// ── Auth router ───────────────────────────────────────────────────────────
+app.use('/api/auth', require('./routes/auth'));
+
+// ── Facebook / Instagram OAuth (inline — mantenidas como referencia, desactivadas por el router) ──
+/* MOVIDO A routes/auth.js
 const FB_APP_ID     = process.env.FB_APP_ID     || '1981039516112644';
 const FB_APP_SECRET = process.env.FB_APP_SECRET || '';
 const SITE_URL      = process.env.SITE_URL      || 'https://web-production-3d2c.up.railway.app';
@@ -447,6 +453,7 @@ app.post('/api/auth/session/destroy', (req, res) => {
   if (token) _sessions.delete(token);
   res.json({ ok: true });
 });
+END_OF_INLINE_AUTH */
 
 // ── CONTENT QUEUE ─────────────────────────────────────────────────────────────
 const { randomUUID } = require('crypto');
