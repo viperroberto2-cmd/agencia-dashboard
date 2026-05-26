@@ -1674,7 +1674,7 @@ input, textarea { font-family: inherit; }
             <div class="card-header"><div class="card-title">Acciones rápidas</div></div>
             <div class="quick-actions">
               <button class="quick-action" onclick="goSection('inbox')"><span class="quick-action-icon">📥</span><div><div class="quick-action-title">Ver inbox</div><div class="quick-action-sub" id="qaInboxSub">—</div></div></button>
-              <button class="quick-action" onclick="goSection('chat')"><span class="quick-action-icon">💬</span><div><div class="quick-action-title">Hablar con CEO</div><div class="quick-action-sub">Organizador</div></div></button>
+              <button class="quick-action" onclick="goSection('chat')"><span class="quick-action-icon">💬</span><div><div class="quick-action-title">Hablar con Cerebro</div><div class="quick-action-sub">CEO de la agencia</div></div></button>
               <button class="quick-action" onclick="goSection('crm')"><span class="quick-action-icon">👥</span><div><div class="quick-action-title">Ver leads</div><div class="quick-action-sub" id="qaLeadsSub">—</div></div></button>
               <button class="quick-action" onclick="goSection('grabaciones')"><span class="quick-action-icon">🎙️</span><div><div class="quick-action-title">Grabaciones</div><div class="quick-action-sub">Ver todas</div></div></button>
             </div>
@@ -2293,7 +2293,7 @@ input, textarea { font-family: inherit; }
 <script>
 // ============ DATA ============
 const agents = [
-  { id: 'organizador', emoji: '🎯', name: 'Organizador', role: 'CEO · Delega y coordina', status: 'online', skills: ['Razona', 'Delega', 'Evalúa', 'Memoria'] },
+  { id: 'organizador', emoji: '🧠', name: 'Cerebro', role: 'CEO · Delega y coordina', status: 'online', skills: ['Razona', 'Delega', 'Evalúa', 'Memoria'] },
   { id: 'director', emoji: '🎬', name: 'Director', role: 'Creativo · Copy y guiones', status: 'online', skills: ['Copy', 'Guiones', 'Audio AI'] },
   { id: 'crew', emoji: '🎨', name: 'Crew', role: 'Producción · Video, imagen', status: 'checking', skills: ['Veo 3.1', 'Flux', 'Suno', 'Runway'] },
   { id: 'estrategia', emoji: '📊', name: 'Estrategia', role: 'Marketing · Campañas', status: 'online', skills: ['FB Ads', 'SEO', 'Funnels'] },
@@ -2501,7 +2501,7 @@ function openChat(agentId) {
 
 function getAgentGreeting(a) {
   const g = {
-    organizador: 'Hola Roberto. Soy el Organizador. ¿Qué arrancamos hoy?',
+    organizador: 'Hola Roberto. Soy Cerebro — controlo toda la agencia. ¿Qué ejecutamos hoy?',
     director: 'Listo para guiones, copy y dirección musical. ¿Qué necesitas escribir?',
     crew: 'Crew aquí. Estoy crasheando ahora mismo — chécame el último commit en Railway.',
     estrategia: 'Estrategia online. Campañas, SEO, funnels — ¿qué movemos hoy?',
@@ -3291,7 +3291,7 @@ function startBgPolling(clientId) {
         d.mensajes.forEach(msg => {
           if (!chatHistories['organizador']) chatHistories['organizador'] = [];
           chatHistories['organizador'].push({ role: 'assistant', content: msg });
-          msgs.innerHTML += `<div class="message-group"><div class="message-meta">Organizador · ahora</div><div class="message bot">${renderMd(msg)}</div></div>`;
+          msgs.innerHTML += `<div class="message-group"><div class="message-meta">Cerebro · ahora</div><div class="message bot">${renderMd(msg)}</div></div>`;
         });
         msgs.scrollTop = msgs.scrollHeight;
       }
@@ -4512,7 +4512,7 @@ function openLeadModal(colId, idx) {
       <div style="display:flex;gap:8px;flex-wrap:wrap;">${moveButtons}</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="openChat('organizador');closeLeadModal()" style="flex:1;min-width:120px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;">💬 Consultar Organizador</button>
+      <button onclick="openChat('organizador');closeLeadModal()" style="flex:1;min-width:120px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;">💬 Consultar Cerebro</button>
       <button onclick="openEditLeadModal('${colId}',${idx})" style="background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:13px;cursor:pointer;">✏️ Editar</button>
       <button onclick="deleteLead('${colId}',${idx})" style="background:#f8717120;color:var(--danger);border:1px solid #f8717140;border-radius:10px;padding:11px 14px;font-size:13px;cursor:pointer;">🗑 Borrar</button>
       <button onclick="closeLeadModal()" style="background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:13px;cursor:pointer;">Cerrar</button>

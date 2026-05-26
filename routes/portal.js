@@ -52,12 +52,18 @@ portalRouter.get('/recordings', requireOwnership, async (req, res) => {
 portalRouter.get('/stats', requireOwnership, async (req, res) => {
   const { user_id } = req.query;
   try {
-    const r = await sbFetch(`/voice_leads?cliente=eq.${user_id}&select=status,created_at`);
-    const raw = await r.json();
+    const [leadsR, clienteR] = await Promise.all([
+      sbFetch(`/voice_leads?cliente=eq.${user_id}&select=status,created_at`),
+      sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=precio_producto`),
+    ]);
+    const raw = await leadsR.json();
+    const clienteData = await clienteR.json();
     const data = Array.isArray(raw) ? raw : [];
     const total = data.length;
     const closed = data.filter(l => l.status === 'closed').length;
-    res.json({ ok: true, total_leads: total, cerrados: closed, revenue: closed * 197 });
+    const precioUnitario = (Array.isArray(clienteData) && clienteData[0]?.precio_producto)
+      ? Number(clienteData[0].precio_producto) : 197;
+    res.json({ ok: true, total_leads: total, cerrados: closed, revenue: closed * precioUnitario });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 

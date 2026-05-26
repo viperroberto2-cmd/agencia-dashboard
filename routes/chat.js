@@ -23,6 +23,16 @@ const CHAT_TARGETS = {
 const ORG_BASE = 'https://web-production-77871.up.railway.app';
 
 const DEFAULT_PROFILES = {
+  roberto_agencia: {
+    nombre: 'Agencia AI — RG Production',
+    servicio: 'Agencia de marketing digital con IA para negocios hispanos en USA. Producción audiovisual, automatización de leads y gestión de redes sociales.',
+    publico_objetivo: 'Dueños de negocios hispanos en USA: coaches, médicos, concesionarios, educadores financieros.',
+    tono: 'Directo, ejecutivo, orientado a resultados. Roberto toma decisiones rápidas.',
+    agente_principal: 'Cerebro — CEO y Productor General de la agencia',
+    clientes_activos: 'Arranca Financial (educación financiera, Turo). Nuevos clientes en onboarding.',
+    dashboard: 'https://web-production-3d2c.up.railway.app',
+    _fuente: 'perfil_base_servidor'
+  },
   arranca: {
     nombre: 'Arranca Financial',
     servicio: 'Educación financiera para latinos en USA. Cursos de crédito, manejo de deuda, inversión, y generación de ingresos con Turo (renta de autos).',
@@ -38,7 +48,7 @@ const DEFAULT_PROFILES = {
 };
 
 router.get('/mensajes/organizador', (req, res) => {
-  const clientId = req.query.client || 'arranca';
+  const clientId = req.query.client || 'roberto_agencia';
   const u = new URL(`${ORG_BASE}/organizador/mensajes/${encodeURIComponent(clientId)}`);
   const opts = { hostname: u.hostname, path: u.pathname, method: 'GET', timeout: 8000 };
   const pr = https.request(opts, (r) => {
@@ -54,7 +64,7 @@ router.get('/mensajes/organizador', (req, res) => {
 router.post('/stream/organizador', async (req, res) => {
   const { mensaje, message, cliente, client, historial = [] } = req.body;
   const msg      = mensaje || message || '';
-  const clientId = cliente || client || 'arranca';
+  const clientId = cliente || client || 'roberto_agencia';
   const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
   const SB_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const SB_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -98,7 +108,7 @@ router.post('/stream/organizador', async (req, res) => {
     }
 
     const hoy = new Date().toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-    const systemPrompt = `Eres el CEO y Productor General de Agencia AI — vives en el dashboard. Roberto te da dirección desde aquí.
+    const systemPrompt = `Eres Cerebro — el CEO y Productor General de Agencia AI. Vives en el dashboard. Roberto te da dirección desde aquí.
 Hoy es ${hoy}.
 Tienes herramientas REALES que ejecutan acciones reales. NUNCA finjas haber hecho algo sin usar la herramienta.
 Responde SIEMPRE en español.
