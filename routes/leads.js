@@ -77,6 +77,20 @@ router.patch('/:id/status', async (req, res) => {
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
+router.patch('/:id', async (req, res) => {
+  try {
+    const allowed = ['nombre', 'telefono', 'email', 'notas', 'fuente'];
+    const patch = {};
+    allowed.forEach(k => { if (req.body[k] !== undefined) patch[k] = req.body[k]; });
+    if (!Object.keys(patch).length) return res.status(400).json({ ok: false, error: 'Nada que actualizar' });
+    await sbFetch(`/voice_leads?id=eq.${req.params.id}`, {
+      method: 'PATCH', body: JSON.stringify(patch),
+      headers: { 'Prefer': 'return=minimal' }
+    });
+    res.json({ ok: true });
+  } catch(e) { res.json({ ok: false, error: e.message }); }
+});
+
 router.delete('/:id', async (req, res) => {
   try {
     await sbFetch(`/voice_leads?id=eq.${req.params.id}`, { method: 'DELETE' });

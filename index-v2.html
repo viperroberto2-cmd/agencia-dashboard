@@ -4362,7 +4362,7 @@ async function loadLeadsFromAPI() {
     const total = d.total || 0;
     // Actualizar subtitle con cliente real
     const sub = document.getElementById('crmSubtitle');
-    if (sub) sub.textContent = `${total} leads · ${currentClient || 'todos'} · este mes`;
+    if (sub) sub.textContent = `${total} leads · ${currentClient || 'todos'}`;
     // Actualizar nav count
     const navCount = document.querySelector('.nav-item[data-section="crm"] .nav-count');
     if (navCount) navCount.textContent = total;
@@ -4417,7 +4417,7 @@ async function exportLeadsCSV() {
 function exportLeadsPDF() {
   const statusMap = { new: 'Nuevo', contacted: 'Contactado', interested: 'Interesado', closed: 'Cerrado' };
   const rows = Object.entries(leads).flatMap(([colId, items]) =>
-    items.map(l => `<tr><td>${l.name}</td><td>${l.source}</td><td>${statusMap[colId]}</td><td>${l.meta}</td><td>${l.phone||'-'}</td><td>${l.email||'-'}</td></tr>`)
+    items.map(l => `<tr><td>${escapeHtml(l.name)}</td><td>${escapeHtml(l.source)}</td><td>${statusMap[colId]}</td><td>${escapeHtml(l.meta)}</td><td>${escapeHtml(l.phone||'-')}</td><td>${escapeHtml(l.email||'-')}</td></tr>`)
   ).join('');
   const win = window.open('', '_blank');
   win.document.write(`<!DOCTYPE html><html><head><title>Leads · ${currentClient}</title>
@@ -4457,30 +4457,31 @@ function openLeadModal(colId, idx) {
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
       <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${LEAD_CHANNEL_ICON[lead.source] || '👤'}</div>
       <div>
-        <div style="font-size:18px;font-weight:700;">${lead.name}</div>
-        <div style="font-size:13px;color:var(--text-muted);">${lead.source} · ${lead.meta}</div>
+        <div style="font-size:18px;font-weight:700;">${escapeHtml(lead.name)}</div>
+        <div style="font-size:13px;color:var(--text-muted);">${escapeHtml(lead.source)} · ${escapeHtml(lead.meta)}</div>
       </div>
       <span style="margin-left:auto;background:${statusColor[colId]}20;color:${statusColor[colId]};font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;">${LEAD_STATUS_LABEL[colId]}</span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
       <div style="background:var(--bg-elevated);border-radius:10px;padding:12px;">
         <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Canal origen</div>
-        <div style="font-size:14px;font-weight:500;">${LEAD_CHANNEL_ICON[lead.source] || ''} ${lead.source}</div>
+        <div style="font-size:14px;font-weight:500;">${LEAD_CHANNEL_ICON[lead.source] || ''} ${escapeHtml(lead.source)}</div>
       </div>
       <div style="background:var(--bg-elevated);border-radius:10px;padding:12px;">
         <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Actividad</div>
-        <div style="font-size:14px;font-weight:500;">${lead.meta}</div>
+        <div style="font-size:14px;font-weight:500;">${escapeHtml(lead.meta)}</div>
       </div>
-      ${lead.phone ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:12px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Teléfono</div><div style="font-size:14px;font-weight:500;"><a href="tel:${lead.phone}" style="color:var(--success);text-decoration:none;">${lead.phone}</a></div></div>` : ''}
-      ${lead.email ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:12px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Email</div><div style="font-size:14px;font-weight:500;"><a href="mailto:${lead.email}" style="color:var(--info);text-decoration:none;">${lead.email}</a></div></div>` : ''}
+      ${lead.phone ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:12px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Teléfono</div><div style="font-size:14px;font-weight:500;"><a href="tel:${encodeURIComponent(lead.phone)}" style="color:var(--success);text-decoration:none;">${escapeHtml(lead.phone)}</a></div></div>` : ''}
+      ${lead.email ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:12px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Email</div><div style="font-size:14px;font-weight:500;"><a href="mailto:${encodeURIComponent(lead.email)}" style="color:var(--info);text-decoration:none;">${escapeHtml(lead.email)}</a></div></div>` : ''}
     </div>
-    ${lead.notes ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:14px;margin-bottom:16px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Notas</div><div style="font-size:14px;line-height:1.6;">${lead.notes}</div></div>` : ''}
+    ${lead.notes ? `<div style="background:var(--bg-elevated);border-radius:10px;padding:14px;margin-bottom:16px;"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Notas</div><div style="font-size:14px;line-height:1.6;">${escapeHtml(lead.notes)}</div></div>` : ''}
     <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px;">
       <div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Mover a etapa</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">${moveButtons}</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button onclick="openChat('organizador');closeLeadModal()" style="flex:1;min-width:120px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:600;cursor:pointer;">💬 Consultar Organizador</button>
+      <button onclick="openEditLeadModal('${colId}',${idx})" style="background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:13px;cursor:pointer;">✏️ Editar</button>
       <button onclick="deleteLead('${colId}',${idx})" style="background:#f8717120;color:var(--danger);border:1px solid #f8717140;border-radius:10px;padding:11px 14px;font-size:13px;cursor:pointer;">🗑 Borrar</button>
       <button onclick="closeLeadModal()" style="background:var(--bg-elevated);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:13px;cursor:pointer;">Cerrar</button>
     </div>`;
@@ -4513,6 +4514,58 @@ function deleteLead(colId, idx) {
 
 function closeLeadModal() {
   document.getElementById('leadModalOverlay').style.display = 'none';
+}
+
+function openEditLeadModal(colId, idx) {
+  const lead = leads[colId][idx];
+  if (!lead) return;
+  document.getElementById('leadModalContent').innerHTML = `
+    <div style="font-size:17px;font-weight:700;margin-bottom:16px;">✏️ Editar lead</div>
+    <div class="field-group"><label class="field-label">Nombre *</label><input id="el-nombre" class="field-input" value="${escapeHtml(lead.name)}" /></div>
+    <div class="field-group"><label class="field-label">Teléfono</label><input id="el-telefono" class="field-input" value="${escapeHtml(lead.phone || '')}" /></div>
+    <div class="field-group"><label class="field-label">Email</label><input id="el-email" class="field-input" value="${escapeHtml(lead.email || '')}" /></div>
+    <div class="field-group"><label class="field-label">Notas</label><textarea id="el-notas" class="field-textarea" style="min-height:90px">${escapeHtml(lead.notes || '')}</textarea></div>
+    <div id="el-error" style="color:var(--danger);font-size:12px;margin-bottom:8px;display:none"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-ghost" style="flex:1" onclick="openLeadModal('${colId}',${idx})">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1" id="el-btn" onclick="saveLeadEdit('${lead.id || ''}','${colId}',${idx})">Guardar</button>
+    </div>`;
+  document.getElementById('leadModalOverlay').style.display = 'flex';
+}
+
+async function saveLeadEdit(id, colId, idx) {
+  const nombre = document.getElementById('el-nombre')?.value.trim();
+  const errEl  = document.getElementById('el-error');
+  if (!nombre) { errEl.textContent = 'El nombre es obligatorio'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  const btn = document.getElementById('el-btn');
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+  const payload = {
+    nombre,
+    telefono: document.getElementById('el-telefono')?.value.trim() || null,
+    email:    document.getElementById('el-email')?.value.trim()    || null,
+    notas:    document.getElementById('el-notas')?.value.trim()    || null,
+  };
+  try {
+    if (id) {
+      const r = await fetch(`/api/leads/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const d = await r.json();
+      if (!d.ok) { errEl.textContent = d.error || 'Error al guardar'; errEl.style.display = 'block'; btn.textContent = 'Guardar'; btn.disabled = false; return; }
+    }
+    const lead = leads[colId][idx];
+    lead.name  = nombre;
+    lead.phone = payload.telefono || '';
+    lead.email = payload.email   || '';
+    lead.notes = payload.notas   || '';
+    renderCRM();
+    openLeadModal(colId, idx);
+  } catch(e) {
+    errEl.textContent = 'Error de conexión'; errEl.style.display = 'block';
+    btn.textContent = 'Guardar'; btn.disabled = false;
+  }
 }
 
 function openAddLeadModal() {
