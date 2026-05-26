@@ -1697,7 +1697,7 @@ input, textarea { font-family: inherit; }
           <div class="section-subtitle" id="inboxSubtitle">Todos los canales · todos los clientes · 3 sin leer</div>
         </div>
         <div style="display: flex; gap: 8px;">
-          <button class="btn btn-ghost">✓ Marcar todo leído</button>
+          <button class="btn btn-ghost" onclick="markAllInboxRead()">✓ Marcar todo leído</button>
           <button class="btn btn-primary">＋ Mensaje</button>
         </div>
       </div>
@@ -2729,22 +2729,50 @@ function openInboxItem(id) {
   document.getElementById('leadModalOverlay').style.display = 'flex';
 }
 
+function markAllInboxRead() {
+  const unreadItems = inboxItems.filter(i => i.unread);
+  if (!unreadItems.length) return;
+  unreadItems.forEach(item => {
+    item.unread = false;
+    fetch(`/api/inbox/${encodeURIComponent(item.id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ts_procesado: new Date().toISOString() })
+    }).catch(() => {});
+  });
+  renderInboxFilters();
+  renderInbox();
+  const sub = document.getElementById('inboxSubtitle');
+  if (sub) sub.textContent = `${inboxItems.length} mensaje${inboxItems.length !== 1 ? 's' : ''} · 0 sin leer`;
+  document.getElementById('tabInboxCount').textContent = '';
+  document.getElementById('navInboxCount').textContent = '';
+  const dc = document.getElementById('drawerInboxCount');
+  if (dc) dc.textContent = '';
+}
+
 function renderInbox() {
   let items = inboxItems;
   if (inboxFilter === 'unread') items = items.filter(i => i.unread);
   else if (inboxFilter !== 'all') items = items.filter(i => i.channel === inboxFilter);
+  if (!items.length) {
+    document.getElementById('inboxList').innerHTML = `<div style="text-align:center;padding:48px 0;color:var(--text-dim)">
+      <div style="font-size:36px;margin-bottom:12px">📥</div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:6px">Sin mensajes</div>
+      <div style="font-size:12px">Los mensajes de los bots aparecerán aquí</div></div>`;
+    return;
+  }
   document.getElementById('inboxList').innerHTML = items.map(i => `
     <button class="inbox-item ${i.unread ? 'unread' : ''}" onclick="openInboxItem('${i.id}')">
       <div class="inbox-channel-icon">${i.icon}</div>
       <div class="inbox-content">
         <div class="inbox-top">
-          <div class="inbox-from">${i.from}</div>
-          <div class="inbox-time">${i.time}</div>
+          <div class="inbox-from">${escapeHtml(i.from)}</div>
+          <div class="inbox-time">${escapeHtml(i.time)}</div>
         </div>
-        <div class="inbox-preview">${i.preview}</div>
+        <div class="inbox-preview">${escapeHtml(i.preview)}</div>
         <div class="inbox-tags">
-          <span class="inbox-tag client">${i.client || '—'}</span>
-          <span class="inbox-tag">${i.channel}</span>
+          <span class="inbox-tag client">${escapeHtml(i.client || '—')}</span>
+          <span class="inbox-tag">${escapeHtml(i.channel)}</span>
         </div>
       </div>
       ${i.unread ? '<div class="inbox-unread-dot"></div>' : ''}
@@ -4344,8 +4372,10 @@ async function loadInboxFromSupabase() {
       // Si no hay datos reales, mostrar inbox vacío en vez de demo
       inboxItems = [];
     }
-    renderInbox();
     const unread = inboxItems.filter(i => i.unread).length;
+    const sub = document.getElementById('inboxSubtitle');
+    if (sub) sub.textContent = `${inboxItems.length} mensaje${inboxItems.length !== 1 ? 's' : ''} · ${unread} sin leer`;
+    renderInbox();
     document.getElementById('tabInboxCount').textContent = unread || '';
     document.getElementById('navInboxCount').textContent = unread || '';
     const drawerCount = document.getElementById('drawerInboxCount');
@@ -4833,11 +4863,12 @@ async function submitSchedulePost() {
   try {
     const r = await fetch('/api/scheduler/post', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contenido, plataforma, cliente, fecha_publicacion: `${fecha}T${hora}:00` })
+      body: JSON.stringify({ contenido, plataforma, cliente, fecha_publicacion: fecha, hora_publicacion: hora })
     });
     const d = await r.json();
     if (d.status === 'ok' || d.post_id) {
       closeScheduleModal();
+      loadSchedulerPosts();
       alert('✅ Post enviado al Scheduler. Recibirás aprobación vía Telegram antes de publicar.');
     } else {
       errEl.textContent = d.error || 'Error del servidor.'; errEl.style.display = 'block';
