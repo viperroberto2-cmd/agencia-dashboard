@@ -242,27 +242,4 @@ router.post('/document', async (req, res) => {
   } catch(e) { res.json({ response: 'Error procesando documento: ' + e.message }); }
 });
 
-router.post('/call/iniciar', async (req, res) => {
-  const { to } = req.body;
-  const accountSid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken  = process.env.TWILIO_AUTH_TOKEN;
-  const fromNumber = process.env.TWILIO_PHONE_NUMBER;
-  if (!accountSid || !authToken || !fromNumber)
-    return res.json({ ok: false, error: 'Twilio no configurado en Railway' });
-  try {
-    const body = new URLSearchParams({ To: to, From: fromNumber, Url: `https://${req.hostname}/voice` });
-    const resp = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Calls.json`, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Basic ' + Buffer.from(accountSid + ':' + authToken).toString('base64'),
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: body.toString()
-    });
-    const data = await resp.json();
-    if (data.sid) res.json({ ok: true, sid: data.sid });
-    else res.json({ ok: false, error: data.message || 'Error Twilio' });
-  } catch(e) { res.json({ ok: false, error: e.message }); }
-});
-
 module.exports = router;

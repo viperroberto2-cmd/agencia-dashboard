@@ -1666,7 +1666,7 @@ input, textarea { font-family: inherit; }
       </div>
       <div class="home-grid">
         <div class="card">
-          <div class="card-header"><div class="card-title">Actividad reciente</div><button class="card-link">Ver todo</button></div>
+          <div class="card-header"><div class="card-title">Actividad reciente</div><button class="card-link" onclick="goSection('inbox')">Ver todo</button></div>
           <div id="homeActividad"><div style="color:var(--text-dim);font-size:13px;padding:12px 0;">Cargando actividad...</div></div>
         </div>
         <div>
@@ -2505,7 +2505,7 @@ function getAgentGreeting(a) {
     director: 'Listo para guiones, copy y dirección musical. ¿Qué necesitas escribir?',
     crew: 'Crew aquí. Estoy crasheando ahora mismo — chécame el último commit en Railway.',
     estrategia: 'Estrategia online. Campañas, SEO, funnels — ¿qué movemos hoy?',
-    scheduler: 'Scheduler listo. 5 posts programados esta semana.',
+    scheduler: 'Scheduler listo. ¿Qué contenido programamos hoy?',
     analytics: 'Analytics aquí. ¿Reporte semanal de Arranca o Sofía?',
     compositor: 'CompositorBot — chequeando. Listo para scoring.',
     scraper: 'Scraper online. ¿Qué competidor analizamos?',
@@ -3915,8 +3915,8 @@ async function loadDriveFromAPI() {
 
   // 1. Media Library interna (Supabase) — siempre disponible
   try {
-    const clienteActual = (currentClient || 'arranca').toLowerCase();
-    const mlRes = await fetch(`/api/media-library?cliente=${encodeURIComponent(clienteActual)}`);
+    if (!currentClient) throw new Error('no client');
+    const mlRes = await fetch(`/api/media-library?cliente=${encodeURIComponent(currentClient.toLowerCase())}`);
     const mlData = await mlRes.json();
     if (mlData.ok && mlData.items && mlData.items.length) {
       allItems = mlData.items.map(f => ({
