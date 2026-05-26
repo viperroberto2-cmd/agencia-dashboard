@@ -12,9 +12,10 @@ router.post('/publicar', (req, res) => {
 
 router.get('/posts', async (req, res) => {
   try {
-    const { estado } = req.query;
+    const { estado, cliente } = req.query;
     let path = '/contenidos_programados?order=fecha_publicacion.asc,hora_publicacion.asc&limit=100';
-    if (estado) path += `&estado=eq.${encodeURIComponent(estado)}`;
+    if (estado)  path += `&estado=eq.${encodeURIComponent(estado)}`;
+    if (cliente) path += `&cliente=eq.${encodeURIComponent(cliente)}`;
     const r = await sbFetch(path);
     const d = await r.json();
     res.json(Array.isArray(d) ? d : []);

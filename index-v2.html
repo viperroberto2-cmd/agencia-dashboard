@@ -2574,7 +2574,8 @@ async function loadSchedulerPosts() {
   const panel = document.getElementById('postsPanel');
   if (panel) panel.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:14px;">Cargando posts…</div>';
   try {
-    const r = await fetch('/api/scheduler/posts');
+    const clienteParam = currentClient ? `?cliente=${encodeURIComponent(currentClient)}` : '';
+    const r = await fetch(`/api/scheduler/posts${clienteParam}`);
     schedulerPosts = await r.json();
     if (!Array.isArray(schedulerPosts)) schedulerPosts = [];
   } catch(e) { schedulerPosts = []; }
@@ -3850,7 +3851,8 @@ setInterval(loadHealth, 30000);
 // ── HOME STATS ────────────────────────────────────────────────────
 async function loadHomeStats() {
   try {
-    const res = await fetch('/api/home-stats');
+    const clienteParam = currentClient ? `?cliente=${encodeURIComponent(currentClient)}` : '';
+    const res = await fetch(`/api/home-stats${clienteParam}`);
     const d = await res.json();
     if (!d.ok) return;
 
@@ -3863,7 +3865,7 @@ async function loadHomeStats() {
 
     document.getElementById('kpiRevenue').textContent = '$' + d.revenue_est.toLocaleString();
     document.getElementById('kpiRevenueTrend').textContent =
-      d.cerrados + ' cerrado' + (d.cerrados !== 1 ? 's' : '') + ' × $197';
+      d.cerrados + ' cerrado' + (d.cerrados !== 1 ? 's' : '') + ' × $' + (d.precio_unitario || 197);
 
     // homeSub — mark as loaded so loadHealth() doesn't overwrite it
     const homeSb = document.getElementById('homeSub');

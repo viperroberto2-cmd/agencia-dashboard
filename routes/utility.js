@@ -40,11 +40,16 @@ router.get('/health', async (req, res) => {
   res.json(results);
 });
 
+const CERRADO_STATUSES = new Set(['closed', 'cerrado', 'sold', 'completed', 'cerrada']);
+
 router.get('/home-stats', async (req, res) => {
   try {
+    const clienteFilter = req.query.cliente || null;
+    const leadsPath = '/voice_leads?select=call_sid,call_status,status,ts_inicio&order=ts_inicio.desc&limit=200'
+      + (clienteFilter ? `&cliente=eq.${encodeURIComponent(clienteFilter)}` : '');
     const [leadsR, clientesR, actividadR] = await Promise.all([
-      sbFetch('/voice_leads?select=call_sid,call_status,ts_inicio&order=ts_inicio.desc&limit=200'),
-      sbFetch('/clientes?select=user_id,nombre&limit=100'),
+      sbFetch(leadsPath),
+      sbFetch('/clientes?select=user_id,nombre,precio_producto&limit=100'),
       sbFetch('/inbox_organizador?select=bot_destino,tipo,contenido,ts_creado&order=ts_creado.desc&limit=10'),
     ]);
     const leads     = await leadsR.json();
@@ -56,20 +61,26 @@ router.get('/home-stats', async (req, res) => {
       ? leads.filter(l => l.ts_inicio && new Date(l.ts_inicio * 1000) > hace7d)
       : [];
     const cerrados = Array.isArray(leads)
-      ? leads.filter(l => (l.call_status || '').toLowerCase().includes('cerr') ||
-                          (l.call_status || '').toLowerCase().includes('sold') ||
-                          (l.call_status || '').toLowerCase().includes('complet'))
+      ? leads.filter(l => CERRADO_STATUSES.has((l.status || '').toLowerCase().trim()) ||
+                          CERRADO_STATUSES.has((l.call_status || '').toLowerCase().trim()))
       : [];
+
+    let precioUnitario = 197;
+    if (clienteFilter && Array.isArray(clientes)) {
+      const cli = clientes.find(c => c.user_id === clienteFilter || c.nombre === clienteFilter);
+      if (cli && cli.precio_producto) precioUnitario = Number(cli.precio_producto);
+    }
 
     res.json({
       ok: true,
-      leads_7d:       leads7d.length,
-      leads_total:    Array.isArray(leads) ? leads.length : 0,
-      clientes:       Array.isArray(clientes) ? clientes.filter(c => c.user_id !== 'ms_jobs_dashboard').length : 0,
-      clientes_names: Array.isArray(clientes) ? clientes.filter(c => c.nombre).map(c => c.nombre).slice(0, 3) : [],
-      cerrados:       cerrados.length,
-      revenue_est:    cerrados.length * 197,
-      actividad:      Array.isArray(actividad) ? actividad : [],
+      leads_7d:        leads7d.length,
+      leads_total:     Array.isArray(leads) ? leads.length : 0,
+      clientes:        Array.isArray(clientes) ? clientes.filter(c => c.user_id !== 'ms_jobs_dashboard').length : 0,
+      clientes_names:  Array.isArray(clientes) ? clientes.filter(c => c.nombre).map(c => c.nombre).slice(0, 3) : [],
+      cerrados:        cerrados.length,
+      revenue_est:     cerrados.length * precioUnitario,
+      precio_unitario: precioUnitario,
+      actividad:       Array.isArray(actividad) ? actividad : [],
     });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
