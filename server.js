@@ -3,11 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 
-const { hashPassword, _sessions, crypto } = require('./lib/auth-helpers');
-const { _FB_PAGES, _resolvePageId, publishToFacebook } = require('./lib/facebook');
-const { _cargarSkill, _CATALOGO_SKILLS } = require('./lib/skills');
-const { _saveToMediaLibrary, getGoogleAccessToken } = require('./lib/media');
-const { _ejecutarHerramienta, _generarImagenHiggsfieldMCP, _parseMcpResponse } = require('./lib/tools');
 const chatRouter = require('./routes/chat');
 const pagesRouter = require('./routes/pages');
 
@@ -26,8 +21,6 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/content', require('./routes/content'));
 app.use('/api/scheduler', require('./routes/scheduler'));
 
-
-// publishToFacebook movido a lib/facebook.js
 
 // ── Portal router ─────────────────────────────────────────────────────────
 const { portalRouter, portalUsersRouter } = require('./routes/portal');
