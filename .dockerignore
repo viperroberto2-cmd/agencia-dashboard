@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.claude
+_legacy
+.env
+.env.example
+README.md
+ARCHITECTURE.md
+RUNBOOK.md
+Procfile
