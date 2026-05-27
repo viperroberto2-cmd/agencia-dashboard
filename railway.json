@@ -1,0 +1,11 @@
+{
+  "build": {
+    "builder": "dockerfile",
+    "dockerfile": "Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "cd /app/dashboard && npm start",
+    "restartPolicyMaxRetries": 5,
+    "restartPolicyWindowMs": 60000
+  }
+}
