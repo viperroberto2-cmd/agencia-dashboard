@@ -7,7 +7,7 @@ const { _ejecutarHerramienta } = require('../lib/tools');
 const { _CATALOGO_SKILLS } = require('../lib/skills');
 
 const CHAT_TARGETS = {
-  organizador: 'https://web-production-77871.up.railway.app/organizador/chat',
+  organizador: 'http://168.231.66.172:3000/api/hermes/chat',  // ← Hermes local (VPS)
   director:    'https://agencia-ai-production.up.railway.app/director/chat',
   crew:        'https://worker-production-34f9.up.railway.app/crew/chat',
   estrategia:  'https://worker-production-035f.up.railway.app/estratega/chat',
