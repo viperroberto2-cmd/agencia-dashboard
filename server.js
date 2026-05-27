@@ -10,6 +10,16 @@ app.use(express.static(path.join(__dirname), { index: false }));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
+// Debug endpoint to verify code version
+app.get('/api/debug/version', (req, res) => {
+  res.json({
+    timestamp: new Date().toISOString(),
+    commit: 'hermes-proxy enabled',
+    proxy_port: 8888,
+    message: 'This is the Hermes-unified dashboard code'
+  });
+});
+
 // ── Pages router (HTML, PWA icons, portal, onboarding) ───────────────────
 app.use('/', pagesRouter);
 
