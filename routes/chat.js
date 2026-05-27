@@ -6,8 +6,8 @@ router.post('/stream/organizador', async (req, res) => {
   const { mensaje, message } = req.body;
   const msg = mensaje || message || '';
 
-  // Get Hermes proxy URL from env or use default
-  const hermes_proxy_url = process.env.HERMES_PROXY_URL || 'http://localhost:8888/api/hermes/chat';
+  // Get Hermes proxy URL from env or use default (VPS proxy)
+  const hermes_proxy_url = process.env.HERMES_PROXY_URL || 'http://168.231.66.172:8890/api/hermes/chat';
   
   try {
     const response = await fetch(hermes_proxy_url, {
