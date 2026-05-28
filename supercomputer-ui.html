@@ -1,0 +1,551 @@
+<!-- SUPERCOMPUTER INTERFACE -->
+<!-- Integra en index-v2.html como nueva sección -->
+
+<div id="supercomputer-section" class="section hidden">
+  <div class="section-header">
+    <h2>🤖 SUPERCOMPUTER</h2>
+    <p>Central Brain de RG Production - Genera cualquier contenido automáticamente</p>
+  </div>
+
+  <div class="supercomputer-container">
+    <!-- INPUT FORM -->
+    <div class="sc-panel sc-input-panel">
+      <h3>¿Qué necesitas?</h3>
+      
+      <div class="form-group">
+        <label for="sc-client-select">Cliente:</label>
+        <select id="sc-client-select" class="form-control">
+          <option value="">Seleccionar cliente...</option>
+          <option value="arranca_financial_moxod0x7">Arranca Financial</option>
+          <option value="demo_client">Demo Client</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="sc-message">Tu solicitud:</label>
+        <textarea 
+          id="sc-message" 
+          class="form-control" 
+          placeholder="Ej: Necesito un video para TikTok sobre cómo ahorrar dinero..."
+          rows="4"></textarea>
+        <small>Describe qué quieres (video, imagen, copy, estrategia, análisis)</small>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="sc-budget">Presupuesto:</label>
+          <select id="sc-budget" class="form-control">
+            <option value="unlimited">Máxima calidad (unlimited)</option>
+            <option value="limited">Rápido y económico (limited)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="sc-business">Negocio/Empresa:</label>
+          <input 
+            type="text" 
+            id="sc-business" 
+            class="form-control"
+            placeholder="Ej: Arranca Financial"
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="sc-audience">Audiencia objetivo:</label>
+        <input 
+          type="text" 
+          id="sc-audience" 
+          class="form-control"
+          placeholder="Ej: Millennials argentinos"
+        >
+      </div>
+
+      <button id="sc-submit-btn" class="btn btn-primary btn-lg">
+        <span class="icon">⚡</span> Processar con Supercomputer
+      </button>
+    </div>
+
+    <!-- OUTPUT PANEL -->
+    <div class="sc-panel sc-output-panel">
+      <h3>Resultado</h3>
+      
+      <div id="sc-status" class="sc-status hidden">
+        <div class="status-spinner">
+          <div class="spinner"></div>
+        </div>
+        <div class="status-text">
+          <p id="sc-status-intent">Detectando intención...</p>
+          <p id="sc-status-model">Seleccionando modelo...</p>
+          <p id="sc-status-progress">Progreso: <span id="sc-progress-bar">0%</span></p>
+        </div>
+      </div>
+
+      <div id="sc-result" class="sc-result hidden">
+        <div class="result-success">
+          <h4>✅ ¡Listo!</h4>
+          
+          <div class="result-info">
+            <p><strong>Intención:</strong> <span id="result-intent"></span></p>
+            <p><strong>Modelo usado:</strong> <span id="result-model"></span></p>
+            <p><strong>Tiempo estimado:</strong> <span id="result-time"></span>s</p>
+          </div>
+
+          <div class="result-links">
+            <a id="result-url" href="#" target="_blank" class="btn btn-secondary">
+              📥 Descargar Resultado
+            </a>
+            <button id="result-share-btn" class="btn btn-secondary">
+              📤 Compartir
+            </button>
+            <button id="result-delivery-btn" class="btn btn-secondary">
+              📤 Subir a redes
+            </button>
+          </div>
+
+          <div class="result-memory">
+            <h5>Historial del cliente:</h5>
+            <div id="result-history" class="history-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="sc-error" class="sc-error hidden">
+        <p id="sc-error-msg"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS DASHBOARD -->
+  <div class="sc-analytics">
+    <h3>📊 Analytics</h3>
+    
+    <div class="analytics-grid">
+      <div class="stat-card">
+        <h4>Jobs procesados</h4>
+        <p class="stat-number" id="stat-total-jobs">0</p>
+      </div>
+      <div class="stat-card">
+        <h4>Intención más común</h4>
+        <p class="stat-text" id="stat-common-intent">-</p>
+      </div>
+      <div class="stat-card">
+        <h4>Modelo favorito</h4>
+        <p class="stat-text" id="stat-favorite-model">-</p>
+      </div>
+      <div class="stat-card">
+        <h4>Tiempo promedio</h4>
+        <p class="stat-text" id="stat-avg-time">-</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STYLES -->
+<style>
+.supercomputer-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.sc-panel {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.sc-panel h3 {
+  margin-top: 0;
+  color: #00ff00;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #bbb;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  background: #242424;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #00ff00;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.2);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.btn-lg {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+
+.btn-primary {
+  background: #00ff00;
+  color: #000;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: #00dd00;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 0, 0.3);
+}
+
+.btn-primary:disabled {
+  background: #666;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.sc-status {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: #0a2a0a;
+  border-radius: 8px;
+  border-left: 4px solid #00ff00;
+}
+
+.status-spinner {
+  flex-shrink: 0;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #333;
+  border-top-color: #00ff00;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.status-text {
+  flex: 1;
+}
+
+.status-text p {
+  margin: 0.5rem 0;
+  color: #bbb;
+  font-size: 0.9rem;
+}
+
+.sc-result {
+  padding: 1.5rem;
+  background: #0a2a0a;
+  border-radius: 8px;
+  border-left: 4px solid #00ff00;
+}
+
+.result-success h4 {
+  color: #00ff00;
+  margin-top: 0;
+}
+
+.result-info {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #1a1a1a;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.result-info p {
+  margin: 0.5rem 0;
+  color: #bbb;
+}
+
+.result-info strong {
+  color: #00ff00;
+}
+
+.result-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.btn-secondary {
+  padding: 0.75rem;
+  background: #00ff00;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: #00dd00;
+}
+
+.result-memory {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #333;
+}
+
+.history-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.history-item {
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  background: #1a1a1a;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #bbb;
+  border-left: 3px solid #00ff00;
+}
+
+.sc-analytics {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.stat-card {
+  background: #242424;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  text-align: center;
+}
+
+.stat-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: #bbb;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-number {
+  font-size: 2rem;
+  color: #00ff00;
+  font-weight: 700;
+  margin: 0;
+}
+
+.stat-text {
+  font-size: 1rem;
+  color: #00ff00;
+  margin: 0;
+  font-weight: 600;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .supercomputer-container {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .result-links {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<!-- JAVASCRIPT -->
+<script>
+const SupercomputerUI = {
+  init() {
+    document.getElementById('sc-submit-btn')?.addEventListener('click', () => this.submit());
+    document.getElementById('result-share-btn')?.addEventListener('click', () => this.share());
+    document.getElementById('result-delivery-btn')?.addEventListener('click', () => this.deliverToChannels());
+  },
+
+  async submit() {
+    const clientId = document.getElementById('sc-client-select').value;
+    const message = document.getElementById('sc-message').value;
+    const budget = document.getElementById('sc-budget').value;
+    const business = document.getElementById('sc-business').value;
+    const audience = document.getElementById('sc-audience').value;
+
+    if (!clientId || !message) {
+      alert('Por favor completa cliente y solicitud');
+      return;
+    }
+
+    document.getElementById('sc-status').classList.remove('hidden');
+    document.getElementById('sc-result').classList.add('hidden');
+    document.getElementById('sc-error').classList.add('hidden');
+    document.getElementById('sc-submit-btn').disabled = true;
+
+    try {
+      const response = await fetch('/api/connectors/web/form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: clientId,
+          message,
+          budget,
+          context: {
+            business_name: business,
+            target_audience: audience,
+          },
+        }),
+      });
+
+      const data = await response.json();
+      if (!data.ok) throw new Error(data.error);
+
+      document.getElementById('sc-status-intent').textContent = `Intención: ${data.intent.toUpperCase()}`;
+      document.getElementById('sc-status-model').textContent = `Modelo: ${data.model}`;
+
+      // Poll for result
+      this.pollResult(data.job_id, clientId);
+    } catch (error) {
+      document.getElementById('sc-error').classList.remove('hidden');
+      document.getElementById('sc-error-msg').textContent = error.message;
+      document.getElementById('sc-status').classList.add('hidden');
+      document.getElementById('sc-submit-btn').disabled = false;
+    }
+  },
+
+  async pollResult(jobId, clientId) {
+    let attempts = 0;
+    const maxAttempts = 60;
+
+    const poll = setInterval(async () => {
+      attempts++;
+
+      try {
+        const response = await fetch(`/api/supercomputer/status/${jobId}`);
+        const status = await response.json();
+
+        const progress = status.progress || (attempts * 2);
+        document.getElementById('sc-progress-bar').textContent = `${Math.min(progress, 99)}%`;
+
+        if (status.status === 'completed' && status.result_url) {
+          clearInterval(poll);
+          this.showResult(status, clientId);
+        } else if (attempts >= maxAttempts) {
+          clearInterval(poll);
+          throw new Error('Timeout esperando resultado');
+        }
+      } catch (error) {
+        if (attempts >= maxAttempts) {
+          clearInterval(poll);
+          document.getElementById('sc-error').classList.remove('hidden');
+          document.getElementById('sc-error-msg').textContent = error.message;
+          document.getElementById('sc-status').classList.add('hidden');
+          document.getElementById('sc-submit-btn').disabled = false;
+        }
+      }
+    }, 5000);
+  },
+
+  showResult(result, clientId) {
+    document.getElementById('sc-status').classList.add('hidden');
+    document.getElementById('sc-result').classList.remove('hidden');
+
+    document.getElementById('result-intent').textContent = result.intent;
+    document.getElementById('result-model').textContent = result.model;
+    document.getElementById('result-time').textContent = result.estimated_time || 120;
+    document.getElementById('result-url').href = result.result_url;
+
+    // Load client history
+    this.loadClientHistory(clientId);
+
+    document.getElementById('sc-submit-btn').disabled = false;
+  },
+
+  async loadClientHistory(clientId) {
+    try {
+      const response = await fetch(`/api/supercomputer/memory/${clientId}`);
+      const data = await response.json();
+
+      const historyDiv = document.getElementById('result-history');
+      historyDiv.innerHTML = '';
+
+      data.memory.slice(0, 5).forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `
+          <strong>${item.intent.toUpperCase()}</strong> 
+          con ${item.model_used} 
+          <small>(${new Date(item.timestamp).toLocaleDateString()})</small>
+        `;
+        historyDiv.appendChild(div);
+      });
+    } catch (error) {
+      console.error('Error loading history:', error);
+    }
+  },
+
+  share() {
+    const url = document.getElementById('result-url').href;
+    if (navigator.share) {
+      navigator.share({ title: 'RG Production Result', url });
+    } else {
+      prompt('Copiar enlace:', url);
+    }
+  },
+
+  deliverToChannels() {
+    // TODO: Implementar envío a redes
+    alert('Función disponible próximamente: envío a YouTube, Instagram, TikTok, Google Drive');
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => SupercomputerUI.init());
+</script>
