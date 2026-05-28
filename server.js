@@ -39,6 +39,12 @@ app.use('/api/portal-users', portalUsersRouter);
 
 
 
+// ── SUPERCOMPUTER (Central Brain of RG Production) ──────────────────
+app.use('/api/supercomputer', require('./routes/supercomputer'));
+
+// ── CONNECTORS (WhatsApp, Web Form, Email, Telegram) ─────────────────
+app.use('/api/connectors', require('./routes/connectors'));
+
 // ── CLIENTES ─────────────────────────────────────────────────────
 app.use('/api/clientes', require('./routes/clientes'));
 
