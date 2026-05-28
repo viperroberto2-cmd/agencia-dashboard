@@ -12,9 +12,9 @@
  * 5. DELIVERY: Sube a redes, Google Drive, Supabase
  */
 
-const express = require('express');
-const router = express.Router();
-const fetch = require('node-fetch');
+const hermesBlotatoIntegration = require('../lib/hermes-blotato-integration');
+
+// ... (resto del código)
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // STAGE 1: INTENT CLASSIFIER
@@ -212,12 +212,16 @@ async function saveToMemory(clientId, request, result, performance) {
 
 async function deliverResult(result, delivery = {}, clientContext = {}) {
   /**
-   * Entrega resultado a:
-   * - Blotato (Facebook/Instagram/TikTok automático)
-   * - Google Drive
-   * - YouTube
-   * - Supabase
+   * Entrega resultado via Hermes CLI + Blotato MCP
+   * 
+   * Blotato MCP tools disponibles via hermes:
+   * - blotato:create_post
+   * - blotato:schedule_post
+   * - blotato:upload_media
+   * - blotato:get_platforms
+   * - blotato:get_schedule_slots
    */
+  
   const delivered = {
     google_drive: false,
     youtube: false,
@@ -226,39 +230,26 @@ async function deliverResult(result, delivery = {}, clientContext = {}) {
     facebook: false,
   };
   
-  const BLOTATO_KEY = process.env.AGENCIA_BLOTATO_API_KEY;
-  if (!BLOTATO_KEY || !result.url) return delivered;
+  if (!result.url) return delivered;
   
   try {
-    // 1. Publicar a Blotato (que distribuye a Facebook/Instagram/TikTok)
-    const blotatoPayload = {
-      clientId: clientContext.client_id || delivery.client_id,
+    // Usar Hermes CLI + Blotato MCP para publicar
+    const publishResult = await hermesBlotatoIntegration.publishAsync({
+      clientId: clientContext.client_id,
       caption: buildBlotatoCaption(clientContext),
       mediaUrl: result.url,
-      platforms: delivery.platforms || ['facebook', 'instagram', 'tiktok'], // Blotato los distribuye
-    };
-    
-    const blotatoRes = await fetch('https://backend.blotato.com/v2/posts', {
-      method: 'POST',
-      headers: {
-        'blotato-api-key': BLOTATO_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(blotatoPayload),
+      platforms: delivery.platforms || ['facebook', 'instagram', 'tiktok'],
     });
     
-    if (blotatoRes.ok) {
-      const blotatoData = await blotatoRes.json();
-      console.log('[DELIVERY] Blotato success:', blotatoData);
+    if (publishResult.ok) {
       delivered.facebook = true;
       delivered.instagram = true;
       delivered.tiktok = true;
-    } else {
-      const err = await blotatoRes.text();
-      console.error('[DELIVERY] Blotato error:', err);
+      console.log('[DELIVERY] ✅ Blotato MCP integration successful');
     }
+    
   } catch (error) {
-    console.error('[DELIVERY] Blotato error:', error.message);
+    console.error('[DELIVERY] Error:', error.message);
   }
   
   return delivered;
