@@ -210,25 +210,73 @@ async function saveToMemory(clientId, request, result, performance) {
 // STAGE 5: DELIVERY ENGINE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-async function deliverResult(result, delivery = {}) {
+async function deliverResult(result, delivery = {}, clientContext = {}) {
   /**
    * Entrega resultado a:
+   * - Blotato (Facebook/Instagram/TikTok automático)
    * - Google Drive
    * - YouTube
-   * - Instagram/TikTok
    * - Supabase
-   * - Email al cliente
    */
   const delivered = {
     google_drive: false,
     youtube: false,
     instagram: false,
     tiktok: false,
+    facebook: false,
   };
   
-  // TODO: Implementar integración con APIs reales
+  const BLOTATO_KEY = process.env.AGENCIA_BLOTATO_API_KEY;
+  if (!BLOTATO_KEY || !result.url) return delivered;
+  
+  try {
+    // 1. Publicar a Blotato (que distribuye a Facebook/Instagram/TikTok)
+    const blotatoPayload = {
+      clientId: clientContext.client_id || delivery.client_id,
+      caption: buildBlotatoCaption(clientContext),
+      mediaUrl: result.url,
+      platforms: delivery.platforms || ['facebook', 'instagram', 'tiktok'], // Blotato los distribuye
+    };
+    
+    const blotatoRes = await fetch('https://backend.blotato.com/v2/posts', {
+      method: 'POST',
+      headers: {
+        'blotato-api-key': BLOTATO_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(blotatoPayload),
+    });
+    
+    if (blotatoRes.ok) {
+      const blotatoData = await blotatoRes.json();
+      console.log('[DELIVERY] Blotato success:', blotatoData);
+      delivered.facebook = true;
+      delivered.instagram = true;
+      delivered.tiktok = true;
+    } else {
+      const err = await blotatoRes.text();
+      console.error('[DELIVERY] Blotato error:', err);
+    }
+  } catch (error) {
+    console.error('[DELIVERY] Blotato error:', error.message);
+  }
   
   return delivered;
+}
+
+function buildBlotatoCaption(context) {
+  /**
+   * Construye caption profesional para publicación
+   */
+  const { business_name, target_audience, intent } = context;
+  
+  const captions = {
+    video: `🎬 Nuevo video creado para ${business_name || 'nuestro negocio'}.\n\nPerfecto para ${target_audience || 'tu audiencia'}. 📲\n\n#Marketing #Video #AgenciaAI`,
+    image: `📸 Diseño profesional para ${business_name || 'nuestro negocio'}.\n\nListo para convertir. 💯\n\n#Diseño #Marketing #Publicidad`,
+    copy: `✍️ Copy persuasivo creado por IA.\n\n${business_name || 'Comparte'} el poder de las palabras. 🚀\n\n#Copywriting #Marketing #Ventas`,
+  };
+  
+  return captions[intent] || captions.video;
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -299,7 +347,11 @@ router.post('/process', async (req, res) => {
     });
     
     // STAGE 6: Entregar
-    const delivery = await deliverResult(result, context.delivery);
+    const delivery = await deliverResult(result, context.delivery, {
+      client_id,
+      ...context,
+      intent,
+    });
     
     return res.json({
       ok: true,
