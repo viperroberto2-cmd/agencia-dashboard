@@ -12,6 +12,9 @@
  * 5. DELIVERY: Sube a redes, Google Drive, Supabase
  */
 
+const express = require('express');
+const router = express.Router();
+
 const hermesBlotatoIntegration = require('../lib/hermes-blotato-integration');
 
 // ... (resto del código)
