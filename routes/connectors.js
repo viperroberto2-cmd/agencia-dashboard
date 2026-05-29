@@ -7,7 +7,7 @@
 
 const express = require('express');
 const router = express.Router();
-const fetch = require('node-fetch');
+// Node 18+ provides a global fetch(); no external dependency needed.
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // WHATSAPP CONNECTOR
