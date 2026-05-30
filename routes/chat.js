@@ -1,161 +1,106 @@
+// routes/chat.js — Conectado al Hermes Proxy v0.1.0 en VPS
 const express = require('express');
 const router = express.Router();
-const { execSync } = require('child_process');
-const path = require('path');
 
-// Import the intelligent model router
-let selectModel;
-try {
-  selectModel = require('../lib/model-router.js').selectModel || (msg => ({ model: 'anthropic/claude-haiku-4-5-20251001', complexity: 'SIMPLE' }));
-} catch (err) {
-  console.warn('[CHAT] Model router not found, using default Haiku');
-  selectModel = (msg) => ({ model: 'anthropic/claude-haiku-4-5-20251001', complexity: 'SIMPLE' });
-}
+const HERMES_PROXY_URL = (process.env.HERMES_PROXY_URL || 'http://168.231.66.172:8000').replace(/\/$/, '');
+const HERMES_PROXY_KEY = process.env.HERMES_PROXY_KEY || '';
 
 /**
  * POST /api/stream/organizador
- * Main chat endpoint with intelligent model routing
+ * Chat del Cerebro — proxy a Hermes Agent vía hermes-proxy en VPS.
+ * Mantiene formato SSE para compatibilidad con el frontend actual.
  */
 router.post('/stream/organizador', async (req, res) => {
-  const { mensaje, message, cliente_id } = req.body;
-  const msg = mensaje || message || '';
+  const { mensaje, message, cliente_id, session_id } = req.body || {};
+  const msg = (mensaje || message || '').trim();
 
-  if (!msg || msg.trim().length === 0) {
-    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'Connection': 'keep-alive' });
-    res.write(`data: ${JSON.stringify({ error: 'Empty message' })}\n\n`);
-    res.write('data: [DONE]\n\n');
-    res.end();
-    return;
+  // SSE headers
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'X-Accel-Buffering': 'no',
+    'Connection': 'keep-alive',
+  });
+
+  const sseSend = (obj) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
+  const sseEnd = () => { res.write('data: [DONE]\n\n'); res.end(); };
+
+  if (!msg) {
+    sseSend({ error: 'Empty message' });
+    return sseEnd();
   }
 
-  // Use intelligent model selection
-  const modelSelection = selectModel(msg);
-  const { model: selectedModel, complexity } = modelSelection;
+  if (!HERMES_PROXY_KEY) {
+    console.error('[CHAT] HERMES_PROXY_KEY env var missing');
+    sseSend({ error: 'Hermes proxy key not configured. Set HERMES_PROXY_KEY in Railway env.' });
+    return sseEnd();
+  }
 
-  console.log(`[CHAT] Mensaje: "${msg.substring(0, 50)}..."`);
-  console.log(`[ROUTER] ${complexity} → ${selectedModel.split('/').pop()}`);
+  console.log(`[CHAT] msg="${msg.substring(0, 60)}..." sid=${session_id || 'NEW'} cliente=${cliente_id || '-'}`);
 
-  // Get Hermes proxy URL from env or use default (VPS proxy)
-  const hermes_proxy_url = process.env.HERMES_PROXY_URL || 'http://168.231.66.172:8890/api/hermes/chat';
-  
   try {
-    // Update Hermes config.yaml with selected model
-    try {
-      execSync(`sed -i 's/default:.*/default: ${selectedModel}/' /opt/data/config.yaml`, {
-        timeout: 2000,
-        stdio: 'pipe'
-      });
-    } catch (configErr) {
-      console.warn('[CHAT] Could not update config.yaml:', configErr.message);
-    }
-
-    // Call Hermes proxy with the selected model
-    const response = await fetch(hermes_proxy_url, {
+    const startedAt = Date.now();
+    const response = await fetch(`${HERMES_PROXY_URL}/v1/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': HERMES_PROXY_KEY,
+      },
+      body: JSON.stringify({
         message: msg,
-        model: selectedModel,
-        complexity: complexity,
-        cliente_id: cliente_id
-      })
+        session_id: session_id || undefined,
+        source: 'dashboard',
+      }),
     });
 
     if (!response.ok) {
-      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'Connection': 'keep-alive' });
-      res.write(`data: ${JSON.stringify({ 
-        error: 'Hermes proxy returned ' + response.status,
-        complexity: complexity,
-        model: selectedModel.split('/').pop()
-      })}\n\n`);
-      res.write('data: [DONE]\n\n');
-      res.end();
-      return;
+      const errText = await response.text().catch(() => 'unknown error');
+      console.error(`[CHAT] Proxy ${response.status}: ${errText.substring(0, 200)}`);
+      sseSend({ error: `Hermes proxy returned ${response.status}`, detail: errText.substring(0, 200) });
+      return sseEnd();
     }
 
-    // Set SSE headers and pipe response from Hermes
-    res.writeHead(200, { 
-      'Content-Type': 'text/event-stream', 
-      'Cache-Control': 'no-cache', 
-      'X-Accel-Buffering': 'no', 
-      'Connection': 'keep-alive'
-    });
-    
-    // Log the routing decision in the stream
-    res.write(`data: ${JSON.stringify({ 
-      _meta: {
-        routing_complexity: complexity,
-        routing_model: selectedModel.split('/').pop(),
-        router_active: true
-      }
-    })}\n\n`);
+    const data = await response.json();
+    const elapsed = Date.now() - startedAt;
+    console.log(`[CHAT] sid=${data.session_id} duration=${data.duration_ms}ms total=${elapsed}ms`);
 
-    // Pipe response from Hermes
-    response.body.pipe(res);
-  } catch(err) {
-    console.error('[CHAT] Error:', err.message);
-    res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no', 'Connection': 'keep-alive' });
-    res.write(`data: ${JSON.stringify({ 
-      error: 'Error connecting to Hermes: ' + err.message,
-      complexity: complexity,
-      model: selectedModel.split('/').pop()
-    })}\n\n`);
-    res.write('data: [DONE]\n\n');
-    res.end();
+    // Emit metadata first
+    sseSend({
+      _meta: {
+        session_id: data.session_id,
+        duration_ms: data.duration_ms,
+      },
+    });
+
+    // Emit response content (fake-stream: one chunk for now)
+    sseSend({ content: data.response });
+
+    sseEnd();
+  } catch (err) {
+    console.error('[CHAT] Fetch error:', err.message);
+    sseSend({ error: `Connection to Hermes proxy failed: ${err.message}` });
+    sseEnd();
   }
 });
 
 /**
  * GET /api/chat/health
- * Check health of model router
+ * Verifica que el proxy esté vivo.
  */
-router.get('/chat/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    router_active: true,
-    models_available: [
-      'anthropic/claude-haiku-4-5-20251001',
-      'anthropic/claude-sonnet-4-6-20250514'
-    ]
-  });
-});
-
-/**
- * POST /api/chat/router-test
- * Test the model router with a message
- */
-router.post('/chat/router-test', (req, res) => {
-  const { mensaje } = req.body;
-  
-  if (!mensaje) {
-    return res.json({ error: 'Missing mensaje parameter' });
+router.get('/chat/health', async (_req, res) => {
+  try {
+    const r = await fetch(`${HERMES_PROXY_URL}/healthz`, { signal: AbortSignal.timeout(5000) });
+    const d = await r.json();
+    res.json({ status: 'ok', proxy: d, key_configured: !!HERMES_PROXY_KEY });
+  } catch (e) {
+    res.json({ status: 'error', error: e.message, proxy_url: HERMES_PROXY_URL });
   }
-
-  const selection = selectModel(mensaje);
-  res.json({
-    mensaje: mensaje,
-    ...selection
-  });
 });
 
-// GET chat history (compatibility endpoint)
-router.get('/chat/history', (req, res) => {
-  res.json({ mensajes: [] });
-});
-
-// POST chat history (compatibility endpoint)
-router.post('/chat/history', (req, res) => {
-  res.json({ ok: true });
-});
-
-// DELETE chat history (compatibility endpoint)
-router.delete('/chat/history', (req, res) => {
-  res.json({ ok: true });
-});
-
-// GET history for client
-router.get('/mensajes/organizador', (req, res) => {
-  res.json({ mensajes: [] });
-});
+// Compatibility endpoints (Hermes maneja memoria internamente, no se necesita persistir history aquí)
+router.get('/chat/history', (_req, res) => res.json({ mensajes: [] }));
+router.post('/chat/history', (_req, res) => res.json({ ok: true }));
+router.delete('/chat/history', (_req, res) => res.json({ ok: true }));
+router.get('/mensajes/organizador', (_req, res) => res.json({ mensajes: [] }));
 
 module.exports = router;
