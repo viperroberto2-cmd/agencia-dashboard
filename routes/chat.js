@@ -73,7 +73,7 @@ router.post('/stream/organizador', async (req, res) => {
     });
 
     // Emit response content (fake-stream: one chunk for now)
-    sseSend({ content: data.response });
+    sseSend({ token: data.response });
 
     sseEnd();
   } catch (err) {
