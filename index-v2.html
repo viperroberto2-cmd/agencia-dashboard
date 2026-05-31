@@ -3455,6 +3455,12 @@ async function liveHandleAttach(input) {
   const file = input.files[0];
   if (!file) return;
   input.value = '';
+  return liveProcessFile(file);
+}
+
+// Procesa un File (de adjuntar o de pegar con Ctrl+V/Cmd+V)
+async function liveProcessFile(file) {
+  if (!file) return;
   const feed = document.getElementById('liveFeed');
   stopLivePolling();
   const isImage = file.type.startsWith('image/');
@@ -3478,6 +3484,32 @@ async function liveHandleAttach(input) {
   } catch (e) { botEl.innerHTML = '⚠ Error: ' + escapeHtml(e.message); }
   window.scrollTo(0, document.body.scrollHeight);
 }
+
+// --- Pegar imagen con Ctrl+V / Cmd+V en Mi Chat ---
+function liveSetupPaste() {
+  const inp = document.getElementById('liveInput');
+  if (!inp || inp.dataset.pasteReady) return;
+  inp.dataset.pasteReady = '1';
+  inp.addEventListener('paste', function(ev) {
+    const items = (ev.clipboardData || window.clipboardData)?.items;
+    if (!items) return;
+    for (const it of items) {
+      if (it.kind === 'file' && it.type.startsWith('image/')) {
+        const file = it.getAsFile();
+        if (file) {
+          ev.preventDefault();
+          // renombra para que se vea bonito en el chat
+          const named = new File([file], 'screenshot-' + Date.now() + '.png', { type: file.type });
+          liveProcessFile(named);
+          return;
+        }
+      }
+    }
+  });
+}
+// Registrar cuando el DOM esté listo
+if (document.readyState !== 'loading') liveSetupPaste();
+else document.addEventListener('DOMContentLoaded', liveSetupPaste);
 
 // --- Emoji picker ---
 function liveToggleEmoji(ev) {
