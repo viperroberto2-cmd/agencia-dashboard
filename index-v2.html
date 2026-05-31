@@ -2344,6 +2344,7 @@ let activeAgent = agents[0];
 let currentClient = null;
 // Chat history — persisted in Supabase (cross-device) + localStorage (instant fallback)
 const chatHistories = {};
+let agentSessions = {};
 
 function _saveChatHistories() {
   try { localStorage.setItem('agencia_chat_histories', JSON.stringify(chatHistories)); } catch(e) {}
@@ -3196,7 +3197,14 @@ function sendMessage() {
     fetch('/api/stream/organizador', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, mensaje: text, client: currentClient, cliente_id: currentClient, historial })
+      body: JSON.stringify({
+        message: text,
+        mensaje: text,
+        client: currentClient,
+        cliente_id: currentClient,
+        historial,
+        session_id: agentSessions[agentId] || null
+      })
     })
     .then(response => {
       if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -3235,6 +3243,9 @@ function sendMessage() {
                 msgs.scrollTop = msgs.scrollHeight;
               } else if (parsed.error) {
                 msgEl.innerHTML = '⚠ ' + escapeHtml(parsed.error);
+              } else if (parsed._meta && parsed._meta.session_id) {
+                agentSessions[agentId] = parsed._meta.session_id;
+                console.log('[CHAT] session_id capturado:', parsed._meta.session_id);
               }
             } catch(e) {}
           }
