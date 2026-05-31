@@ -3352,7 +3352,7 @@ async function loadLiveFeed(force) {
   const dot = document.getElementById('liveDot');
   if (!feed) return;
   try {
-    const r = await fetch('/api/live-feed?limit=80', { signal: AbortSignal.timeout(15000) });
+    const r = await fetch('/api/live-feed?limit=250', { signal: AbortSignal.timeout(15000) });
     const d = await r.json();
     if (d.error) { if (dot) dot.style.background = '#f59e0b'; if (sub) sub.textContent = 'Reconectando… (' + d.error + ')'; return; }
     if (dot) dot.style.background = '#22c55e';
