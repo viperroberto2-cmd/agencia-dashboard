@@ -3434,7 +3434,7 @@ async function sendLive() {
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
         const data = line.slice(6).trim();
-        if (data === '[DONE]') { botEl.innerHTML = renderMd(fullText); window.scrollTo(0, document.body.scrollHeight); _liveBusy = false; return; }
+        if (data === '[DONE]') { botEl.innerHTML = renderMd(fullText); window.scrollTo(0, document.body.scrollHeight); _liveBusy = false; setTimeout(startLivePolling, 1500); return; }
         try {
           const p = JSON.parse(data);
           if (p.token) { fullText += p.token; botEl.innerHTML = renderMd(fullText) + '<span class="cursor-blink">▍</span>'; window.scrollTo(0, document.body.scrollHeight); }
@@ -3448,6 +3448,7 @@ async function sendLive() {
     botEl.innerHTML = '⚠ Error: ' + escapeHtml(e.message);
   }
   _liveBusy = false;
+  setTimeout(startLivePolling, 1500);
 }
 
 // --- Adjuntar archivo/foto en Mi Chat (reusa /api/vision y /api/document) ---
@@ -3483,6 +3484,7 @@ async function liveProcessFile(file) {
     botEl.innerHTML = renderMd(d.response || d.respuesta || 'Sin respuesta');
   } catch (e) { botEl.innerHTML = '⚠ Error: ' + escapeHtml(e.message); }
   window.scrollTo(0, document.body.scrollHeight);
+  setTimeout(startLivePolling, 1500);
 }
 
 // --- Pegar imagen con Ctrl+V / Cmd+V en Mi Chat ---
