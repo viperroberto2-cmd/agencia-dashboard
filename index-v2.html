@@ -1633,6 +1633,7 @@ input, textarea { font-family: inherit; }
         <div class="nav-label">Principal</div>
         <button class="nav-item active" data-section="home" onclick="goSection('home')"><span class="nav-icon">🏠</span> Home</button>
         <button class="nav-item" data-section="inbox" onclick="goSection('inbox')"><span class="nav-icon">📥</span> Inbox<span class="nav-count alert" id="navInboxCount"></span></button>
+        <button class="nav-item" data-section="live" onclick="goSection('live')"><span class="nav-icon">💬</span> Mi Chat</button>
         <button class="nav-item" data-section="chat" onclick="goSection('chat')"><span class="nav-icon">🧠</span> Cerebro</button>
       </div>
       <div class="nav-section">
@@ -1709,6 +1710,21 @@ input, textarea { font-family: inherit; }
       </div>
       <div class="filter-bar" id="inboxFilters"></div>
       <div class="inbox-list" id="inboxList"></div>
+    </section>
+
+    <!-- MI CHAT — espejo en vivo de Telegram -->
+    <section class="section" id="section-live">
+      <div class="section-header">
+        <div>
+          <div class="section-title">💬 Mi Chat <span style="font-size:11px;color:var(--text-muted);font-weight:400">· en vivo desde Telegram</span></div>
+          <div class="section-subtitle" id="liveSubtitle">Conectando…</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="liveDot" style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;box-shadow:0 0 6px #22c55e"></span>
+          <button class="btn btn-ghost" onclick="loadLiveFeed(true)">↻ Refrescar</button>
+        </div>
+      </div>
+      <div id="liveFeed" style="display:flex;flex-direction:column;gap:14px;padding:8px 4px 80px;max-width:880px;margin:0 auto"></div>
     </section>
 
     <!-- CHAT -->
@@ -2421,6 +2437,7 @@ function goSection(name) {
   if (name === 'scraper')   { loadScraperStats(); loadScraperLogs(); }
   if (name === 'config')    { loadConfigClientes(); loadPortalUsers(); }
   if (name === 'onboarding') { renderStepper(); renderStepContent(); }
+  if (name === 'live')      startLivePolling(); else stopLivePolling();
   closeAllDropdowns();
   if (document.getElementById('drawer').classList.contains('open')) toggleDrawer();
 }
@@ -3312,6 +3329,57 @@ function sendMessage() {
 }
 
 function sendQuick(text) { chatInput.value = text; sendMessage(); }
+
+// ============ MI CHAT — espejo en vivo de Telegram ============
+let _liveTimer = null;
+let _liveSig = '';
+async function loadLiveFeed(force) {
+  const feed = document.getElementById('liveFeed');
+  const sub = document.getElementById('liveSubtitle');
+  const dot = document.getElementById('liveDot');
+  if (!feed) return;
+  try {
+    const r = await fetch('/api/live-feed?limit=80', { signal: AbortSignal.timeout(15000) });
+    const d = await r.json();
+    if (d.error) { if (dot) dot.style.background = '#f59e0b'; if (sub) sub.textContent = 'Reconectando… (' + d.error + ')'; return; }
+    if (dot) dot.style.background = '#22c55e';
+    const msgs = (d.messages || []).filter(m => m.role === 'user' || m.role === 'assistant');
+    const sig = String(msgs.length) + '|' + (msgs.length ? (msgs[msgs.length-1].content || '').slice(0,40) : '');
+    if (!force && sig === _liveSig) return;
+    _liveSig = sig;
+    if (sub) sub.textContent = (d.title || 'Conversación') + ' · ' + msgs.length + ' mensajes';
+    feed.innerHTML = msgs.map(m => {
+      const mine = m.role === 'user';
+      const who = mine ? 'Tú' : 'Hermes';
+      const align = mine ? 'flex-end' : 'flex-start';
+      const bg = mine ? 'var(--accent)' : 'var(--bg-card)';
+      const color = mine ? '#fff' : 'var(--text)';
+      let tools = '';
+      if (m.tools && m.tools.length) {
+        tools = '<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">' +
+          m.tools.map(t => `<span style="font-size:10px;background:rgba(0,0,0,.08);padding:2px 7px;border-radius:10px;color:var(--text-muted)">⚙ ${escapeHtml(t)}</span>`).join('') +
+          '</div>';
+      }
+      const body = renderMd(m.content || '');
+      return `<div style="display:flex;flex-direction:column;align-items:${align}">
+        <div style="font-size:10px;color:var(--text-muted);margin:0 6px 3px">${who}</div>
+        <div style="max-width:78%;background:${bg};color:${color};padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.5;word-break:break-word">${body}${tools}</div>
+      </div>`;
+    }).join('');
+    feed.scrollTop = feed.scrollHeight;
+    window.scrollTo(0, document.body.scrollHeight);
+  } catch (e) {
+    if (dot) dot.style.background = '#ef4444';
+    if (sub) sub.textContent = 'Sin conexión: ' + e.message;
+  }
+}
+function startLivePolling() {
+  loadLiveFeed(true);
+  if (_liveTimer) clearInterval(_liveTimer);
+  _liveTimer = setInterval(loadLiveFeed, 4000);
+}
+function stopLivePolling() { if (_liveTimer) { clearInterval(_liveTimer); _liveTimer = null; } }
+
 
 let _bgPollTimer = null;
 function startBgPolling(clientId) {

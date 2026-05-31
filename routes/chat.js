@@ -73,6 +73,22 @@ router.post('/stream/organizador', async (req, res) => {
   }
 });
 
+// Live-feed: espejo del chat de Telegram (lee state.db del VPS via proxy)
+router.get('/live-feed', async (req, res) => {
+  const limit = parseInt(req.query.limit || '60', 10);
+  if (!HERMES_PROXY_KEY) return res.json({ session_id: null, messages: [], error: 'proxy key missing' });
+  try {
+    const r = await fetch(`${HERMES_PROXY_URL}/agencia/live-feed?limit=${limit}`, {
+      headers: { 'X-API-Key': HERMES_PROXY_KEY },
+      signal: AbortSignal.timeout(15000),
+    });
+    const d = await r.json();
+    res.json(d);
+  } catch (e) {
+    res.json({ session_id: null, messages: [], error: e.message });
+  }
+});
+
 router.get('/chat/health', async (_req, res) => {
   try {
     const r = await fetch(`${HERMES_PROXY_URL}/healthz`, { signal: AbortSignal.timeout(5000) });
