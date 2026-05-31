@@ -196,14 +196,16 @@ router.get('/env-check', (req, res) => {
 router.post('/vision', async (req, res) => {
   const { imagen_b64, caption, media_type } = req.body;
   if (!imagen_b64) return res.json({ response: 'No se recibió imagen.' });
+  const base = process.env.HERMES_PROXY_URL || 'http://168.231.66.172:8000';
+  const key = process.env.HERMES_PROXY_KEY || '';
   try {
-    const r = await fetch('https://web-production-77871.up.railway.app/organizador/vision', {
+    const r = await fetch(`${base}/agencia/vision`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imagen_b64, caption: caption || 'Analiza esta imagen.', user_id: '8534665260', media_type: media_type || 'image/jpeg' })
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': key },
+      body: JSON.stringify({ imagen_b64, caption: caption || 'Analiza esta imagen.', media_type: media_type || 'image/png' })
     });
     const d = await r.json();
-    res.json({ response: d.respuesta || d.response || 'Sin respuesta' });
+    res.json({ response: d.response || d.respuesta || 'Sin respuesta' });
   } catch(e) { res.json({ response: 'Error: ' + e.message }); }
 });
 
