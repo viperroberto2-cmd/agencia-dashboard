@@ -456,6 +456,12 @@ input, textarea { font-family: inherit; }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 .cursor-blink { animation: cursor-pulse 0.7s steps(1) infinite; font-weight: 300; }
 @keyframes cursor-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.tool-events { margin: 0 0 10px 0; font-size: 0.85em; }
+.tool-event { padding: 4px 8px; border-radius: 6px; margin: 2px 0; display: inline-block; margin-right: 6px; }
+.tool-event.running { background: rgba(120, 120, 200, 0.15); color: #6c6cad; animation: pulse 1.4s ease-in-out infinite; }
+.tool-event.done { background: rgba(108, 142, 108, 0.12); color: #4a7a4a; }
+.tool-event .duration { opacity: 0.6; font-size: 0.9em; margin-left: 4px; }
+@keyframes pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 
 /* TEAM */
 .team-grid {
@@ -3191,6 +3197,18 @@ function sendMessage() {
     // Streaming SSE — token a token como Claude.ai
     let fullText = '';
     let buffer = '';
+    let toolEvents = [];
+
+    function renderToolEventsHTML() {
+      if (!toolEvents.length) return '';
+      const items = toolEvents.map(e => {
+        if (e.status === 'running') {
+          return `<span class="tool-event running">🔧 ${escapeHtml(e.tool)}…</span>`;
+        }
+        return `<span class="tool-event done">✓ ${escapeHtml(e.tool)} <span class="duration">(${escapeHtml(e.duration)})</span></span>`;
+      }).join('');
+      return `<div class="tool-events">${items}</div>`;
+    }
     msgEl.style.opacity = '1';
     msgEl.innerHTML = '<span class="cursor-blink">▍</span>';
 
@@ -3216,7 +3234,7 @@ function sendMessage() {
           if (done) {
             chatHistories[agentId].push({ role: 'assistant', content: fullText });
             _saveAgentHistory(agentId);
-            msgEl.innerHTML = renderMd(fullText);
+            msgEl.innerHTML = renderToolEventsHTML() + renderMd(fullText);
             msgs.scrollTop = msgs.scrollHeight;
             if (fullText.includes('aparecerá aquí')) startBgPolling(currentClient);
             return;
@@ -3230,16 +3248,25 @@ function sendMessage() {
             if (data === '[DONE]') {
               chatHistories[agentId].push({ role: 'assistant', content: fullText });
               _saveAgentHistory(agentId);
-              msgEl.innerHTML = renderMd(fullText);
+              msgEl.innerHTML = renderToolEventsHTML() + renderMd(fullText);
               msgs.scrollTop = msgs.scrollHeight;
               if (fullText.includes('aparecerá aquí')) startBgPolling(currentClient);
               return;
             }
             try {
               const parsed = JSON.parse(data);
-              if (parsed.token) {
+              if (parsed.tool_start) {
+                toolEvents.push({ tool: parsed.tool_start, status: 'running' });
+                msgEl.innerHTML = renderToolEventsHTML() + renderMd(fullText) + (fullText ? '<span class="cursor-blink">▍</span>' : '');
+                msgs.scrollTop = msgs.scrollHeight;
+              } else if (parsed.tool_end) {
+                const ev = [...toolEvents].reverse().find(e => e.tool === parsed.tool_end && e.status === 'running');
+                if (ev) { ev.status = 'done'; ev.duration = parsed.duration; }
+                msgEl.innerHTML = renderToolEventsHTML() + renderMd(fullText) + (fullText ? '<span class="cursor-blink">▍</span>' : '');
+                msgs.scrollTop = msgs.scrollHeight;
+              } else if (parsed.token) {
                 fullText += parsed.token;
-                msgEl.innerHTML = renderMd(fullText) + '<span class="cursor-blink">▍</span>';
+                msgEl.innerHTML = renderToolEventsHTML() + renderMd(fullText) + '<span class="cursor-blink">▍</span>';
                 msgs.scrollTop = msgs.scrollHeight;
               } else if (parsed.error) {
                 msgEl.innerHTML = '⚠ ' + escapeHtml(parsed.error);
