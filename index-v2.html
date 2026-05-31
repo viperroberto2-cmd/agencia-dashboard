@@ -1724,7 +1724,13 @@ input, textarea { font-family: inherit; }
           <button class="btn btn-ghost" onclick="loadLiveFeed(true)">↻ Refrescar</button>
         </div>
       </div>
-      <div id="liveFeed" style="display:flex;flex-direction:column;gap:14px;padding:8px 4px 80px;max-width:880px;margin:0 auto"></div>
+      <div id="liveFeed" style="display:flex;flex-direction:column;gap:14px;padding:8px 4px 90px;max-width:880px;margin:0 auto"></div>
+      <div style="position:sticky;bottom:0;background:var(--bg);padding:10px 0;max-width:880px;margin:0 auto;width:100%">
+        <div style="display:flex;gap:8px;align-items:flex-end;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:8px 10px">
+          <textarea id="liveInput" rows="1" placeholder="Escríbele a Hermes…" style="flex:1;border:none;background:transparent;resize:none;outline:none;font-size:14px;color:var(--text);max-height:120px;font-family:inherit" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendLive();}"></textarea>
+          <button class="send-btn" id="liveSendBtn" onclick="sendLive()" aria-label="Enviar" style="background:var(--accent);border:none;border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+        </div>
+      </div>
     </section>
 
     <!-- CHAT -->
@@ -3380,6 +3386,64 @@ function startLivePolling() {
   _liveTimer = setInterval(loadLiveFeed, 4000);
 }
 function stopLivePolling() { if (_liveTimer) { clearInterval(_liveTimer); _liveTimer = null; } }
+
+let _liveSession = null;
+let _liveBusy = false;
+function _liveBubble(who, html, align, bg, color) {
+  return `<div style="display:flex;flex-direction:column;align-items:${align}">
+    <div style="font-size:10px;color:var(--text-muted);margin:0 6px 3px">${who}</div>
+    <div class="live-bubble" style="max-width:78%;background:${bg};color:${color};padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.5;word-break:break-word">${html}</div>
+  </div>`;
+}
+async function sendLive() {
+  const inp = document.getElementById('liveInput');
+  const feed = document.getElementById('liveFeed');
+  if (!inp || !feed || _liveBusy) return;
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  _liveBusy = true;
+  stopLivePolling(); // dejamos de espejar para no pisar lo que escribes
+  feed.insertAdjacentHTML('beforeend', _liveBubble('Tú', escapeHtml(text), 'flex-end', 'var(--accent)', '#fff'));
+  feed.insertAdjacentHTML('beforeend', _liveBubble('Hermes', '<span class="cursor-blink">▍</span>', 'flex-start', 'var(--bg-card)', 'var(--text)'));
+  const bubbles = feed.querySelectorAll('.live-bubble');
+  const botEl = bubbles[bubbles.length - 1];
+  window.scrollTo(0, document.body.scrollHeight);
+  let fullText = '', buffer = '';
+  try {
+    const response = await fetch('/api/stream/organizador', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, mensaje: text, session_id: _liveSession })
+    });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') { botEl.innerHTML = renderMd(fullText); window.scrollTo(0, document.body.scrollHeight); _liveBusy = false; return; }
+        try {
+          const p = JSON.parse(data);
+          if (p.token) { fullText += p.token; botEl.innerHTML = renderMd(fullText) + '<span class="cursor-blink">▍</span>'; window.scrollTo(0, document.body.scrollHeight); }
+          else if (p.error) { botEl.innerHTML = '⚠ ' + escapeHtml(p.error); }
+          else if (p._meta && p._meta.session_id) { _liveSession = p._meta.session_id; }
+        } catch(e) {}
+      }
+    }
+    botEl.innerHTML = renderMd(fullText) || '⚠ Sin respuesta';
+  } catch (e) {
+    botEl.innerHTML = '⚠ Error: ' + escapeHtml(e.message);
+  }
+  _liveBusy = false;
+}
+
 
 
 let _bgPollTimer = null;
