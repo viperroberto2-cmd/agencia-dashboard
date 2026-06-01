@@ -2155,6 +2155,12 @@ input, textarea { font-family: inherit; }
 
   </main>
 
+  <!-- FAB jump-to-bottom (Mi Chat) -->
+  <button id="jumpBtn" onclick="jumpToBottom()" aria-label="Ir al final" title="Ir al final"
+    style="position:fixed;right:28px;bottom:96px;width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--bg-card);color:var(--text);box-shadow:0 4px 14px rgba(0,0,0,.18);cursor:pointer;display:none;align-items:center;justify-content:center;z-index:60;transition:opacity .18s,transform .18s;opacity:0">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="19 12 12 19 5 12"/><line x1="12" y1="5" x2="12" y2="19"/></svg>
+  </button>
+
   <nav class="bottombar">
     <button class="tab-btn active" data-section="home" onclick="goSection('home')"><span class="tab-icon">🏠</span>Home</button>
     <button class="tab-btn" data-section="inbox" onclick="goSection('inbox')"><span class="tab-icon">📥</span>Inbox<span class="tab-badge" id="tabInboxCount"></span></button>
@@ -2453,7 +2459,35 @@ function goSection(name) {
   if (name === 'live')      startLivePolling(); else stopLivePolling();
   closeAllDropdowns();
   if (document.getElementById('drawer').classList.contains('open')) toggleDrawer();
+  updateJumpBtn();
 }
+
+// --- FAB jump-to-bottom (solo Mi Chat) ---
+function jumpToBottom() {
+  const m = document.querySelector('.main');
+  if (m) m.scrollTo({ top: m.scrollHeight, behavior: 'smooth' });
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+function updateJumpBtn() {
+  const btn = document.getElementById('jumpBtn');
+  if (!btn) return;
+  const liveActive = document.getElementById('section-live')?.classList.contains('active');
+  const m = document.querySelector('.main');
+  if (!liveActive || !m) { btn.style.display = 'none'; btn.style.opacity = '0'; return; }
+  const dist = m.scrollHeight - m.scrollTop - m.clientHeight;
+  if (dist > 120) {
+    btn.style.display = 'flex';
+    requestAnimationFrame(() => { btn.style.opacity = '1'; btn.style.transform = 'translateY(0)'; });
+  } else {
+    btn.style.opacity = '0';
+    btn.style.transform = 'translateY(6px)';
+    setTimeout(() => { if (parseFloat(btn.style.opacity) === 0) btn.style.display = 'none'; }, 180);
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const m = document.querySelector('.main');
+  if (m) m.addEventListener('scroll', updateJumpBtn, { passive: true });
+});
 
 function toggleDropdown(id, event) {
   event.stopPropagation();
@@ -3381,6 +3415,7 @@ async function loadLiveFeed(force) {
     }).join('');
     feed.scrollTop = feed.scrollHeight;
     window.scrollTo(0, document.body.scrollHeight);
+    updateJumpBtn();
   } catch (e) {
     if (dot) dot.style.background = '#ef4444';
     if (sub) sub.textContent = 'Sin conexión: ' + e.message;
