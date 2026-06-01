@@ -3393,6 +3393,7 @@ async function loadLiveFeed(force) {
     const msgs = (d.messages || []).filter(m => m.role === 'user' || m.role === 'assistant');
     const sig = String(msgs.length) + '|' + (msgs.length ? (msgs[msgs.length-1].content || '').slice(0,40) : '');
     if (!force && sig === _liveSig) return;
+    const _wasNearBottom = (function(){ const m=document.querySelector('.main'); return m ? (m.scrollHeight - m.scrollTop - m.clientHeight) < 120 : true; })();
     _liveSig = sig;
     if (sub) sub.textContent = (d.title || 'Conversación') + ' · ' + msgs.length + ' mensajes';
     feed.innerHTML = msgs.map(m => {
@@ -3413,8 +3414,11 @@ async function loadLiveFeed(force) {
         <div style="max-width:78%;background:${bg};color:${color};padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.5;word-break:break-word">${body}${tools}</div>
       </div>`;
     }).join('');
-    feed.scrollTop = feed.scrollHeight;
-    window.scrollTo(0, document.body.scrollHeight);
+    if (force || _wasNearBottom) {
+      feed.scrollTop = feed.scrollHeight;
+      const _m = document.querySelector('.main');
+      if (_m) _m.scrollTop = _m.scrollHeight;
+    }
     updateJumpBtn();
   } catch (e) {
     if (dot) dot.style.background = '#ef4444';
