@@ -3,12 +3,67 @@ const express = require('express');
 const router = express.Router();
 const { sbFetch, _mergeDataCol } = require('../lib/db');
 
+function sanitizeCliente(cliente) {
+  if (!cliente || typeof cliente !== 'object') return cliente;
+
+  const clean = JSON.parse(JSON.stringify(cliente));
+
+  // Nunca exponer secretos directos
+  delete clean.password_hash;
+  delete clean.facebook_token;
+  delete clean.long_token;
+  delete clean.token;
+  delete clean.respond_io_key;
+  delete clean.youtube_refresh_token;
+  delete clean.tiktok_token;
+  delete clean.linkedin_token;
+  delete clean.pinterest_token;
+  delete clean.twitter_token;
+
+  if (clean.data && typeof clean.data === 'object') {
+    delete clean.data.password_hash;
+    delete clean.data.facebook_token;
+    delete clean.data.long_token;
+    delete clean.data.token;
+    delete clean.data.respond_io_key;
+    delete clean.data.youtube_refresh_token;
+    delete clean.data.tiktok_token;
+    delete clean.data.linkedin_token;
+    delete clean.data.pinterest_token;
+    delete clean.data.twitter_token;
+
+    if (Array.isArray(clean.data.facebook_pages)) {
+      clean.data.facebook_pages = clean.data.facebook_pages.map(page => ({
+        id: page?.id || null,
+        name: page?.name || null
+      }));
+    }
+
+    if (Array.isArray(clean.data.instagram_accounts)) {
+      clean.data.instagram_accounts = clean.data.instagram_accounts.map(account => ({
+        id: account?.id || null,
+        username: account?.username || account?.name || null
+      }));
+    }
+  }
+
+  if (Array.isArray(clean.facebook_pages)) {
+    clean.facebook_pages = clean.facebook_pages.map(page => ({
+      id: page?.id || null,
+      name: page?.name || null
+    }));
+  }
+
+  return clean;
+}
+
+
 router.get('/', async (req, res) => {
   try {
     const r = await sbFetch('/clientes?select=*&order=nombre.asc');
     const data = await r.json();
     const rows = Array.isArray(data) ? data.filter(c => c.user_id !== 'ms_jobs_dashboard' && c.user_id !== 'dashboard' && c.nombre) : [];
-    res.json({ ok: true, clientes: rows.map(_mergeDataCol) });
+    res.json({ ok: true, clientes: rows.map(c => sanitizeCliente(_mergeDataCol(c))) });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
@@ -63,7 +118,7 @@ router.get('/:user_id', async (req, res) => {
     const data = await r.json();
     const row = Array.isArray(data) ? data[0] : null;
     if (!row) return res.json({ ok: false, error: 'Cliente no encontrado' });
-    res.json({ ok: true, cliente: _mergeDataCol(row) });
+    res.json({ ok: true, cliente: sanitizeCliente(_mergeDataCol(row)) });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
