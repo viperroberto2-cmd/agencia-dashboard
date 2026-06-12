@@ -50,6 +50,7 @@ app.use('/api/clientes', require('./routes/clientes'));
 
 // ── LEADS (CRM) ─────────────────────────────────────────────────
 app.use('/api/leads', require('./routes/leads'));
+app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api', chatRouter);
 app.use('/api', require('./routes/crew'));
 app.use('/api', require('./routes/utility'));
