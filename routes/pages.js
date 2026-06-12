@@ -78,6 +78,9 @@ router.get('/client-portal', (_, res) => servePortal(res));
 router.get('/onboard', (_, res) => res.sendFile(path.join(ROOT, 'onboard.html')));
 router.get('/privacy', (_, res) => res.sendFile(path.join(ROOT, 'privacy.html')));
 
+// ── Client landings ─────────────────────────────────────────────────────────
+router.get('/landing/si-se-pierde', (_, res) => res.sendFile(path.join(ROOT, 'landing', 'si-se-pierde.html')));
+
 // ── Legacy self-onboarding (onboard.html form → saves to Supabase) ────────
 router.post('/api/onboard-cliente', async (req, res) => {
   const data = req.body;
