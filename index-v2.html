@@ -570,6 +570,65 @@ input, textarea { font-family: inherit; }
   font-weight: 500;
 }
 
+/* TASKS (dentro de CRM) */
+.tasks-wrap { padding: 0 32px 32px; }
+.tasks-head {
+  display: flex; align-items: baseline; gap: 12px;
+  margin-bottom: 12px;
+}
+.tasks-stats {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.task-stat {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+}
+.task-stat .num { font-weight: 700; font-size: 15px; }
+.task-stat .lbl { color: var(--text-muted); font-size: 12px; }
+.task-stat .dot { width: 8px; height: 8px; border-radius: 50%; }
+.task-stat.open .dot { background: var(--info); }
+.task-stat.delegated .dot { background: var(--warning); }
+.task-stat.completed .dot { background: var(--success); }
+.task-stat.total .dot { background: var(--accent); }
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.task-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 8px;
+  transition: all 0.12s;
+}
+.task-card:hover { border-color: var(--border-bright); }
+.task-card.done { opacity: 0.65; }
+.task-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.task-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.task-card.done .task-title { text-decoration: line-through; color: var(--text-muted); }
+.task-badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.task-badge {
+  font-size: 10px; padding: 2px 8px;
+  border-radius: 6px; font-weight: 600;
+  background: var(--bg-elevated); color: var(--text-muted);
+}
+.task-badge.status-open { background: rgba(59,130,246,0.12); color: var(--info); }
+.task-badge.status-delegated { background: rgba(245,158,11,0.14); color: var(--warning); }
+.task-badge.status-completed { background: rgba(16,185,129,0.14); color: var(--success); }
+.task-badge.prio-high { background: rgba(239,68,68,0.12); color: var(--danger); }
+.task-badge.prio-normal { background: var(--bg-elevated); color: var(--text-muted); }
+.task-badge.prio-low { background: var(--bg-elevated); color: var(--text-muted); }
+.task-meta { font-size: 11px; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; }
+.task-meta .icon { opacity: 0.8; }
+.task-actions { margin-top: 2px; }
+
 /* SCHEDULER */
 .scheduler-grid {
   display: grid; grid-template-columns: 360px 1fr;
@@ -1815,6 +1874,15 @@ input, textarea { font-family: inherit; }
         </div>
       </div>
       <div class="crm-board" id="crmBoard"></div>
+
+      <!-- TASKS PANEL (dentro de CRM) -->
+      <div class="tasks-wrap">
+        <div class="tasks-head">
+          <div class="section-title" style="font-size:16px;">📋 Tareas</div>
+          <div class="section-subtitle" id="tasksSubtitle">Cargando tareas…</div>
+        </div>
+        <div id="tasksPanel"></div>
+      </div>
     </section>
 
     <!-- SCHEDULER -->
@@ -2378,6 +2446,7 @@ const globalIntegrations = [
 const clientIntegrations = {};
 
 let schedulerPosts = [];
+let crmTasks = [];
 let calendarMonth = new Date(); calendarMonth.setDate(1);
 let calendarDayFilter = null;
 
@@ -2450,7 +2519,7 @@ function goSection(name) {
   if (name === 'drive')     loadDriveFromAPI();
   if (name === 'marketing') { loadMSJobs(); renderRefSlots('ms'); }
   if (name === 'inbox')     loadInboxFromSupabase();
-  if (name === 'crm')       loadLeadsFromAPI();
+  if (name === 'crm')       { loadLeadsFromAPI(); loadTasksFromAPI(); }
   if (name === 'scheduler') loadSchedulerPosts();
   if (name === 'grabaciones') loadRecordingsFromAPI();
   if (name === 'scraper')   { loadScraperStats(); loadScraperLogs(); }
@@ -2632,6 +2701,128 @@ function renderCRM() {
       `).join('')}
     </div>
   `).join('');
+}
+
+// ============ CRM · TASKS ============
+async function loadTasksFromAPI() {
+  const panel = document.getElementById('tasksPanel');
+  if (panel) panel.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:14px;">Cargando tareas…</div>';
+  try {
+    const url = currentClient
+      ? `/api/tasks?cliente_id=${encodeURIComponent(currentClient)}`
+      : '/api/tasks';
+    const r = await fetch(url);
+    const d = await r.json();
+    crmTasks = (d && d.ok && Array.isArray(d.tasks)) ? d.tasks : [];
+  } catch (e) {
+    crmTasks = [];
+  }
+  renderTasksPanel();
+}
+
+function renderTasksPanel() {
+  const panel = document.getElementById('tasksPanel');
+  if (!panel) return;
+
+  const total     = crmTasks.length;
+  const open      = crmTasks.filter(t => t.status === 'open').length;
+  const delegated = crmTasks.filter(t => t.status === 'delegated').length;
+  const completed = crmTasks.filter(t => t.status === 'completed').length;
+
+  const sub = document.getElementById('tasksSubtitle');
+  if (sub) sub.textContent = `${total} tareas · ${currentClient || 'todos'}`;
+
+  if (total === 0) {
+    panel.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;color:var(--text-muted);text-align:center;border:1px dashed var(--border);border-radius:12px;">
+        <div style="font-size:36px;margin-bottom:10px;">📋</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">Sin tareas todavía</div>
+        <div style="font-size:13px;">Las tareas del CRM aparecerán aquí.</div>
+      </div>`;
+    return;
+  }
+
+  const stats = `
+    <div class="tasks-stats">
+      <div class="task-stat total"><span class="dot"></span><span class="num">${total}</span><span class="lbl">Total</span></div>
+      <div class="task-stat open"><span class="dot"></span><span class="num">${open}</span><span class="lbl">Abiertas</span></div>
+      <div class="task-stat delegated"><span class="dot"></span><span class="num">${delegated}</span><span class="lbl">Delegadas</span></div>
+      <div class="task-stat completed"><span class="dot"></span><span class="num">${completed}</span><span class="lbl">Completadas</span></div>
+    </div>`;
+
+  const cards = crmTasks.map(renderTaskCard).join('');
+
+  panel.innerHTML = stats + `<div class="tasks-grid">${cards}</div>`;
+}
+
+function renderTaskCard(t) {
+  const statusLabels = { open: 'Abierta', delegated: 'Delegada', completed: 'Completada' };
+  const prioLabels   = { high: 'Alta', normal: 'Normal', low: 'Baja' };
+  const status   = t.status || 'open';
+  const priority = t.priority || 'normal';
+  const isDone   = status === 'completed';
+
+  const created = t.created_at ? formatTaskDate(t.created_at) : '';
+  const assigned = t.assigned_to ? escapeTaskHtml(t.assigned_to) : 'Sin asignar';
+
+  const completeBtn = isDone ? '' : `
+    <div class="task-actions">
+      <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;" onclick="completeTask('${escapeTaskHtml(String(t.id))}')">✓ Marcar completada</button>
+    </div>`;
+
+  return `
+    <div class="task-card ${isDone ? 'done' : ''}">
+      <div class="task-card-top">
+        <div class="task-title">${escapeTaskHtml(t.title || '(sin título)')}</div>
+      </div>
+      <div class="task-badges">
+        <span class="task-badge status-${status}">${statusLabels[status] || status}</span>
+        <span class="task-badge prio-${priority}">${prioLabels[priority] || priority}</span>
+      </div>
+      <div class="task-meta">
+        <span class="icon">👤 ${assigned}</span>
+        ${created ? `<span class="icon">🕒 ${created}</span>` : ''}
+      </div>
+      ${completeBtn}
+    </div>`;
+}
+
+function formatTaskDate(iso) {
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return escapeTaskHtml(String(iso));
+    return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch (e) {
+    return escapeTaskHtml(String(iso));
+  }
+}
+
+function escapeTaskHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+async function completeTask(id) {
+  try {
+    const r = await fetch(`/api/tasks/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'completed' })
+    });
+    const d = await r.json().catch(() => null);
+    if (!r.ok || (d && d.ok === false)) {
+      alert('No se pudo completar la tarea: ' + ((d && d.error) || r.status));
+      return;
+    }
+  } catch (e) {
+    alert('Error de red al completar la tarea.');
+    return;
+  }
+  loadTasksFromAPI();
 }
 
 // ============ CALENDAR ============
