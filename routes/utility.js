@@ -5,6 +5,7 @@ const express  = require('express');
 const https    = require('https');
 const router   = express.Router();
 const { sbFetch } = require('../lib/db');
+const { requireAdmin } = require('../lib/admin-auth');
 
 const mammoth = require('mammoth');
 
@@ -42,7 +43,7 @@ router.get('/health', async (req, res) => {
 
 const CERRADO_STATUSES = new Set(['closed', 'cerrado', 'sold', 'completed', 'cerrada']);
 
-router.get('/home-stats', async (req, res) => {
+router.get('/home-stats', requireAdmin, async (req, res) => {
   try {
     const clienteFilter = req.query.cliente || null;
     const leadsPath = '/voice_leads?select=call_sid,call_status,status,ts_inicio&order=ts_inicio.desc&limit=200'

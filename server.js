@@ -5,6 +5,7 @@ const app = express();
 
 const chatRouter = require('./routes/chat');
 const pagesRouter = require('./routes/pages');
+const { requireAdmin } = require('./lib/admin-auth');
 
 app.disable('x-powered-by');
 
@@ -64,7 +65,7 @@ app.use('/api/scheduler', require('./routes/scheduler'));
 // ── Portal router ─────────────────────────────────────────────────────────
 const { portalRouter, portalUsersRouter } = require('./routes/portal');
 app.use('/api/portal', portalRouter);
-app.use('/api/portal-users', portalUsersRouter);
+app.use('/api/portal-users', requireAdmin, portalUsersRouter);
 
 
 
@@ -75,11 +76,11 @@ app.use('/api/supercomputer', require('./routes/supercomputer'));
 app.use('/api/connectors', require('./routes/connectors'));
 
 // ── CLIENTES ─────────────────────────────────────────────────────
-app.use('/api/clientes', require('./routes/clientes'));
+app.use('/api/clientes', requireAdmin, require('./routes/clientes'));
 
 // ── LEADS (CRM) ─────────────────────────────────────────────────
-app.use('/api/leads', require('./routes/leads'));
-app.use('/api/tasks', require('./routes/tasks'));
+app.use('/api/leads', requireAdmin, require('./routes/leads'));
+app.use('/api/tasks', requireAdmin, require('./routes/tasks'));
 app.use('/api', chatRouter);
 app.use('/api', require('./routes/crew'));
 app.use('/api', require('./routes/utility'));
