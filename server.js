@@ -6,19 +6,48 @@ const app = express();
 const chatRouter = require('./routes/chat');
 const pagesRouter = require('./routes/pages');
 
-app.use(express.static(path.join(__dirname), { index: false }));
+app.disable('x-powered-by');
+
+// Emergency source-code exposure protection.
+const BLOCKED_PUBLIC_PATHS = [
+  /^\/server\.js$/i,
+  /^\/package(?:-lock)?\.json$/i,
+  /^\/railway\.json$/i,
+  /^\/dockerfile$/i,
+  /^\/docker-compose(?:\.[a-z0-9_-]+)?\.ya?ml$/i,
+  /^\/\.env(?:\..*)?$/i,
+  /^\/readme(?:\.[a-z0-9_-]+)?$/i,
+  /^\/(?:routes|lib|supabase|memoria|_legacy|node_modules|\.git)(?:\/|$)/i,
+  /^\/.*\.(?:bak|backup|sql|log|md|map)$/i,
+];
+
+app.use((req, res, next) => {
+  const pathname = req.path || '/';
+
+  if (BLOCKED_PUBLIC_PATHS.some((pattern) => pattern.test(pathname))) {
+    return res.status(404).type('text/plain').send('Not found');
+  }
+
+  next();
+});
+
+app.use(express.static(path.join(__dirname), {
+  index: false,
+  dotfiles: 'deny',
+  fallthrough: true,
+}));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
-// Debug endpoint to verify code version
-app.get('/api/debug/version', (req, res) => {
-  res.json({
-    timestamp: new Date().toISOString(),
-    commit: 'hermes-proxy enabled',
-    proxy_port: 8888,
-    message: 'This is the Hermes-unified dashboard code'
+// Debug endpoint disabled by default in production.
+if (process.env.ENABLE_DEBUG_VERSION === 'true') {
+  app.get('/api/debug/version', (_req, res) => {
+    res.json({
+      timestamp: new Date().toISOString(),
+      commit: process.env.RAILWAY_GIT_COMMIT_SHA || 'unknown',
+    });
   });
-});
+}
 
 // ── Pages router (HTML, PWA icons, portal, onboarding) ───────────────────
 app.use('/', pagesRouter);
@@ -60,10 +89,23 @@ app.use('/gdrive', gdriveRouter);
 app.use('/mcp', require('./routes/mcp'));
 // ── Dev Agent — proxy de rutas ────────────────────────────────────────────────
 const DEVAGENT_URL    = process.env.DEVAGENT_URL    || '';
-const DEVAGENT_SECRET = process.env.DEVAGENT_SECRET || 'agencia-dev-2025';
+const DEVAGENT_SECRET = process.env.DEVAGENT_SECRET || '';
 
 async function devagentProxy(path, method, body, res) {
-  if (!DEVAGENT_URL) return res.json({ ok: false, error: 'DEVAGENT_URL no configurado' });
+  if (!DEVAGENT_URL) {
+    return res.status(503).json({
+      ok: false,
+      error: 'DEVAGENT_URL no configurado'
+    });
+  }
+
+  if (!DEVAGENT_SECRET) {
+    return res.status(503).json({
+      ok: false,
+      error: 'DEVAGENT_SECRET no configurado'
+    });
+  }
+
   try {
     const opts = {
       method,
