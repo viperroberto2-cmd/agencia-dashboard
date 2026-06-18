@@ -2213,7 +2213,7 @@ async function nextStep() {
     try {
       if (portalClient?.user_id) {
         // Cliente existente — actualizar sus datos
-        const res = await fetch('/api/portal/onboarding-submit', {
+        const res = await authFetch('/api/portal/onboarding-submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: portalClient.user_id, ...wizardData })
@@ -2609,7 +2609,7 @@ async function loadContentQueue() {
   const el = document.getElementById('contentQueueContainer');
   if (!el) return;
   try {
-    const r = await fetch(`/api/content/queue/${portalClient.user_id}`);
+    const r = await authFetch(`/api/content/queue/${portalClient.user_id}`);
     const d = await r.json();
     const queue = d.queue || [];
     const pending = queue.filter(i => i.status === 'pending');
@@ -2653,7 +2653,7 @@ async function approveContent(itemId) {
   const btn = event.target;
   btn.textContent = 'Publicando...'; btn.disabled = true;
   try {
-    const r = await fetch(`/api/content/approve/${portalClient.user_id}/${itemId}`, { method: 'POST' });
+    const r = await authFetch(`/api/content/approve/${portalClient.user_id}/${itemId}`, { method: 'POST' });
     const d = await r.json();
     if (d.published) {
       btn.textContent = '🚀 ¡Publicado!';
@@ -2670,7 +2670,7 @@ async function rejectContent(itemId) {
   const reason = prompt('¿Por qué rechazas este contenido? (opcional)') ?? '';
   if (reason === null) return;
   try {
-    await fetch(`/api/content/reject/${portalClient.user_id}/${itemId}`, {
+    await authFetch(`/api/content/reject/${portalClient.user_id}/${itemId}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reason })
     });
@@ -2768,13 +2768,11 @@ async function loginWithPassword() {
       errEl.style.display = 'block';
       return;
     }
-    // Crear token de sesión server-side — nunca almacenar la contraseña en el cliente
-    const _tr = await fetch('/api/auth/session/create', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: d.user_id })
-    });
-    const _td = await _tr.json();
-    if (_td.ok) sessionStorage.setItem('rg_token', _td.token);
+    if (!d.token) {
+      throw new Error('El servidor no devolvió un token de sesión');
+    }
+
+    sessionStorage.setItem('rg_token', d.token);
     populatePortal(d);
     goScreen('portal');
   } catch(e) {
@@ -2788,6 +2786,20 @@ async function loginWithPassword() {
 
 // Cliente logueado — fuente de verdad para toda la sesión del portal
 let portalClient = null;
+
+function authFetch(url, options = {}) {
+  const token = sessionStorage.getItem('rg_token');
+  const headers = new Headers(options.headers || {});
+
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  return fetch(url, {
+    ...options,
+    headers
+  });
+}
 
 function populatePortal(d) {
   portalClient = d;
@@ -2916,7 +2928,7 @@ async function saveSettingsEdit() {
     website:   getInp('set-website'),
   };
   try {
-    const r = await fetch('/api/portal/onboarding-submit', {
+    const r = await authFetch('/api/portal/onboarding-submit', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
@@ -3039,7 +3051,7 @@ async function uploadAvatarPhoto() {
   if (status) status.textContent = 'Subiendo foto...';
   try {
     // 1. Upload foto a Supabase Storage
-    const upRes = await fetch('/api/portal/upload-photo', {
+    const upRes = await authFetch('/api/portal/upload-photo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ base64: _avatarBase64, filename: _avatarFilename, user_id: portalClient.user_id })
@@ -3048,7 +3060,7 @@ async function uploadAvatarPhoto() {
     if (!upData.ok) { if (status) status.textContent = '❌ ' + (upData.error || 'Error subiendo foto'); if (btn) btn.disabled = false; return; }
     if (status) status.textContent = 'Creando avatar en HeyGen...';
     // 2. Crear Photo Avatar en HeyGen
-    const avRes = await fetch('/api/portal/create-avatar', {
+    const avRes = await authFetch('/api/portal/create-avatar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image_url: upData.url, user_id: portalClient.user_id, avatar_name: portalClient.nombre || 'Asistente' })
@@ -3069,7 +3081,7 @@ async function uploadAvatarPhoto() {
 async function loadPortalStats() {
   if (!portalClient?.user_id) return;
   try {
-    const r = await fetch(`/api/portal/stats?user_id=${encodeURIComponent(portalClient.user_id)}`);
+    const r = await authFetch(`/api/portal/stats?user_id=${encodeURIComponent(portalClient.user_id)}`);
     const d = await r.json();
     if (!d.ok) return;
     const set = (sel, val) => { const el = document.querySelector(sel); if (el) el.textContent = val; };
@@ -3083,7 +3095,7 @@ async function loadPortalStats() {
 async function loadPortalLeads() {
   if (!portalClient?.user_id) return;
   try {
-    const r = await fetch(`/api/portal/leads?user_id=${encodeURIComponent(portalClient.user_id)}`);
+    const r = await authFetch(`/api/portal/leads?user_id=${encodeURIComponent(portalClient.user_id)}`);
     const d = await r.json();
     if (!d.ok) return;
     leadsData.length = 0;
@@ -3117,7 +3129,7 @@ async function loadPortalRecordings() {
   const el = document.getElementById('portalRecordingsList');
   if (!el) return;
   try {
-    const r = await fetch(`/api/portal/recordings?user_id=${encodeURIComponent(portalClient.user_id)}`);
+    const r = await authFetch(`/api/portal/recordings?user_id=${encodeURIComponent(portalClient.user_id)}`);
     const d = await r.json();
     if (!d.ok || !d.recordings.length) {
       el.innerHTML = '<div style="color:#94a3b8;font-size:13px;padding:16px 0;">No hay grabaciones aún.</div>';
@@ -3186,7 +3198,7 @@ function connectLinkedIn() {
 }
 async function disconnectFacebook() {
   if (!portalClient?.user_id) return;
-  await fetch(`/api/auth/facebook/disconnect?user_id=${encodeURIComponent(portalClient.user_id)}`);
+  await authFetch(`/api/auth/facebook/disconnect?user_id=${encodeURIComponent(portalClient.user_id)}`);
   if (!portalClient.data) portalClient.data = {};
   delete portalClient.data.facebook_token;
   delete portalClient.data.facebook_pages;
@@ -3194,11 +3206,9 @@ async function disconnectFacebook() {
   populateSocialStatus(portalClient);
 }
 async function disconnectLinkedIn() {
-  if (!portalClient?.user_id) return;
-  await fetch(`/api/auth/linkedin/disconnect?user_id=${encodeURIComponent(portalClient.user_id)}`);
-  if (!portalClient.data) portalClient.data = {};
-  delete portalClient.data.linkedin_token;
-  populateSocialStatus(portalClient);
+  // LinkedIn aún no está implementado: no existe endpoint de desconexión.
+  // Evitamos llamar una ruta inexistente; solo informamos al usuario.
+  alert('La integración con LinkedIn todavía no está disponible.');
 }
 
 function populateSocialStatus(d) {
@@ -3370,6 +3380,7 @@ function populateSocialStatus(d) {
   var _msgs = [];
   var _open = false;
   var _sending = false;
+  var _sessionId = null;
 
   function getClientId(){
     if(typeof portalClient !== 'undefined' && portalClient){
@@ -3448,20 +3459,63 @@ function populateSocialStatus(d) {
       role: m.who === 'user' ? 'user' : 'assistant',
       content: m.text
     }));
+    // /api/stream/organizador responde text/event-stream (data: {...}\n\n ... data: [DONE]).
+    // Procesamos el stream incrementalmente; no usamos r.json().
     try {
-      var r = await fetch('/api/chat/organizador', {
+      var r = await authFetch('/api/stream/organizador', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({
           mensaje: msg,
           cliente_id: getClientId(),
           user_id: getClientId(),
+          session_id: _sessionId,
           historial: historial
         })
       });
-      var d = await r.json();
+      if(!r.ok || !r.body){ throw new Error('HTTP ' + r.status); }
+
       removeTyping();
-      addMsg('bot', d.respuesta || d.response || d.reply || 'No pude procesar tu mensaje.');
+      // Burbuja del bot que se va llenando con los tokens del stream.
+      var botBubble = document.createElement('div');
+      botBubble.className = 'cerebro-bubble bot';
+      var botContainer = document.getElementById('cerebro-msgs');
+      if(botContainer){ botContainer.appendChild(botBubble); scrollBottom(); }
+      var fullText = '';
+
+      var reader = r.body.getReader();
+      var decoder = new TextDecoder();
+      var buffer = '';
+      var done = false;
+      while(!done){
+        var chunk = await reader.read();
+        if(chunk.done){ break; }
+        buffer += decoder.decode(chunk.value, { stream: true });
+        var lines = buffer.split('\n');
+        buffer = lines.pop(); // conservar línea incompleta
+        for(var i=0; i<lines.length; i++){
+          var line = lines[i];
+          if(line.indexOf('data: ') !== 0) continue;
+          var data = line.slice(6).trim();
+          if(data === '[DONE]'){ done = true; break; }
+          try {
+            var parsed = JSON.parse(data);
+            if(parsed.token){
+              fullText += parsed.token;
+              botBubble.textContent = fullText;
+              scrollBottom();
+            } else if(parsed.error){
+              fullText = '⚠ ' + parsed.error;
+              botBubble.textContent = fullText;
+            } else if(parsed._meta && parsed._meta.session_id){
+              _sessionId = parsed._meta.session_id;
+            }
+          } catch(_e){}
+        }
+      }
+      if(!fullText){ fullText = 'No pude procesar tu mensaje.'; botBubble.textContent = fullText; }
+      // Registrar la respuesta final en el historial.
+      _msgs.push({ who: 'bot', text: fullText });
     } catch(e) {
       removeTyping();
       addMsg('bot', 'Error de conexión. Intenta de nuevo.');

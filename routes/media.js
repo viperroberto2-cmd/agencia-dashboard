@@ -3,6 +3,7 @@ const express = require('express');
 const https   = require('https');
 const { sbFetch } = require('../lib/db');
 const { getGoogleAccessToken } = require('../lib/media');
+const { requireClientSession } = require('../lib/auth-helpers');
 
 // ── API router (/api prefix provided by server.js) ──────────────────────────
 const apiRouter = express.Router();
@@ -49,9 +50,14 @@ apiRouter.get('/heygen/voces', async (req, res) => {
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
-apiRouter.post('/portal/create-avatar', async (req, res) => {
+apiRouter.post('/portal/create-avatar', requireClientSession, async (req, res) => {
   try {
     const { image_url, user_id, avatar_name } = req.body;
+    // Identidad confiable: solo desde la sesión, nunca desde el body del navegador.
+    const sessionUserId = req.clientSession.user_id;
+    if (user_id && user_id !== sessionUserId) {
+      return res.status(403).json({ ok: false, error: 'No autorizado' });
+    }
     const heygenKey = process.env.HEYGEN_API_KEY;
     if (!heygenKey) return res.json({ ok: false, error: 'HEYGEN_API_KEY no configurada' });
     if (!image_url) return res.status(400).json({ ok: false, error: 'image_url requerida' });
@@ -65,27 +71,31 @@ apiRouter.post('/portal/create-avatar', async (req, res) => {
       return res.json({ ok: false, error: heyData.message || 'Error al crear avatar', raw: heyData });
     }
     const avatar_id = heyData.data.photo_avatar_id;
-    if (user_id) {
-      await sbFetch(`/clientes?user_id=eq.${user_id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ heygen_avatar_id: avatar_id }),
-        headers: { 'Prefer': 'return=minimal' }
-      });
-    }
+    // Actualiza únicamente el cliente de la sesión.
+    await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(sessionUserId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ heygen_avatar_id: avatar_id }),
+      headers: { 'Prefer': 'return=minimal' }
+    });
     res.json({ ok: true, avatar_id });
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
-apiRouter.post('/portal/upload-photo', async (req, res) => {
+apiRouter.post('/portal/upload-photo', requireClientSession, async (req, res) => {
   try {
     const SUPABASE_URL = process.env.SUPABASE_PROJECT_URL || process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
     const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!SUPABASE_URL || !SUPABASE_KEY) return res.json({ ok: false, error: 'Supabase no configurado' });
     const { base64, filename, user_id } = req.body;
+    // Identidad confiable: solo desde la sesión, nunca desde el body del navegador.
+    const sessionUserId = req.clientSession.user_id;
+    if (user_id && user_id !== sessionUserId) {
+      return res.status(403).json({ ok: false, error: 'No autorizado' });
+    }
     if (!base64) return res.status(400).json({ ok: false, error: 'base64 requerido' });
     const buffer = Buffer.from(base64.replace(/^data:image\/\w+;base64,/, ''), 'base64');
     const ext    = (filename || 'photo.jpg').split('.').pop().replace(/[^a-z0-9]/gi, '') || 'jpg';
-    const fpath  = `avatars/${user_id || 'unknown'}_${Date.now()}.${ext}`;
+    const fpath  = `avatars/${encodeURIComponent(sessionUserId)}_${Date.now()}.${ext}`;
     const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/media/${fpath}`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': `image/${ext}`, 'x-upsert': 'true' },

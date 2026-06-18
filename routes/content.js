@@ -4,6 +4,28 @@ const router = express.Router();
 const { randomUUID } = require('crypto');
 const { sbFetch } = require('../lib/db');
 const { publishToFacebook } = require('../lib/facebook');
+const { requireClientSession } = require('../lib/auth-helpers');
+
+function requireContentOwnership(req, res, next) {
+  requireClientSession(req, res, () => {
+    const sessionUserId = req.clientSession.user_id;
+
+    const requestedUserId =
+      req.params?.user_id ||
+      req.body?.user_id ||
+      null;
+
+    if (requestedUserId && requestedUserId !== sessionUserId) {
+      return res.status(403).json({
+        ok: false,
+        error: 'No autorizado'
+      });
+    }
+
+    req.clientUserId = sessionUserId;
+    next();
+  });
+}
 
 async function getClientData(user_id) {
   const r = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data`);
@@ -41,36 +63,36 @@ router.post('/queue', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-router.get('/queue/:user_id', async (req, res) => {
+router.get('/queue/:user_id', requireContentOwnership, async (req, res) => {
   try {
-    const d = await getClientData(req.params.user_id);
+    const d = await getClientData(req.clientUserId);
     res.json({ ok: true, queue: d.content_queue || [], requires_approval: d.configuracion?.requires_approval !== false });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-router.post('/approve/:user_id/:item_id', async (req, res) => {
+router.post('/approve/:user_id/:item_id', requireContentOwnership, async (req, res) => {
   try {
-    const d = await getClientData(req.params.user_id);
+    const d = await getClientData(req.clientUserId);
     const queue = Array.isArray(d.content_queue) ? d.content_queue : [];
     const item  = queue.find(i => i.id === req.params.item_id);
     if (!item) return res.status(404).json({ ok: false, error: 'Item no encontrado' });
     item.status = 'approved';
     const result = await publishToFacebook(item, d);
     if (result.ok) { item.status = 'published'; item.published_at = new Date().toISOString(); item.post_id = result.post_id; }
-    await patchClientData(req.params.user_id, { ...d, content_queue: queue });
+    await patchClientData(req.clientUserId, { ...d, content_queue: queue });
     res.json({ ok: true, published: result.ok, item });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-router.post('/reject/:user_id/:item_id', async (req, res) => {
+router.post('/reject/:user_id/:item_id', requireContentOwnership, async (req, res) => {
   const { reason } = req.body || {};
   try {
-    const d = await getClientData(req.params.user_id);
+    const d = await getClientData(req.clientUserId);
     const queue = Array.isArray(d.content_queue) ? d.content_queue : [];
     const item  = queue.find(i => i.id === req.params.item_id);
     if (!item) return res.status(404).json({ ok: false, error: 'Item no encontrado' });
     item.status = 'rejected'; item.reject_reason = reason || '';
-    await patchClientData(req.params.user_id, { ...d, content_queue: queue });
+    await patchClientData(req.clientUserId, { ...d, content_queue: queue });
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });

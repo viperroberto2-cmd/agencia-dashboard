@@ -2,7 +2,13 @@
 const express = require('express');
 const router = express.Router();
 const { sbFetch, _mergeDataCol } = require('../lib/db');
-const { hashPassword, _sessions, crypto } = require('../lib/auth-helpers');
+const {
+  hashPassword,
+  _sessions,
+  crypto,
+  getBearerToken,
+  requireClientSession
+} = require('../lib/auth-helpers');
 
 const FB_APP_ID     = process.env.FB_APP_ID     || '1981039516112644';
 const FB_APP_SECRET = process.env.FB_APP_SECRET || '';
@@ -114,9 +120,13 @@ router.get('/facebook/callback', async (req, res) => {
   }
 });
 
-router.get('/facebook/disconnect', async (req, res) => {
-  const { user_id } = req.query;
-  if (!user_id) return res.status(400).json({ ok: false });
+router.get('/facebook/disconnect', requireClientSession, async (req, res) => {
+  // Identidad confiable: solo desde la sesión, nunca desde el query del navegador.
+  const sessionUserId = req.clientSession.user_id;
+  if (req.query.user_id && req.query.user_id !== sessionUserId) {
+    return res.status(403).json({ ok: false, error: 'No autorizado' });
+  }
+  const user_id = sessionUserId;
   try {
     const curRows = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data,nombre`).then(r=>r.json());
     const curData = (Array.isArray(curRows) && curRows[0]?.data) || {};
@@ -162,25 +172,46 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ ok: false, error: 'Contraseña incorrecta.' });
     const _clientData = _mergeDataCol(row);
     if (_clientData.data) delete _clientData.data.password_hash;
-    res.json({ ok: true, ..._clientData });
+
+    const token = crypto.randomBytes(32).toString('hex');
+
+    _sessions.set(token, {
+      user_id: row.user_id,
+      expires: Date.now() + 8 * 60 * 60 * 1000
+    });
+
+    res.json({
+      ok: true,
+      token,
+      ..._clientData
+    });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-router.post('/set-password', async (req, res) => {
+router.post('/set-password', requireClientSession, async (req, res) => {
   const { user_id, password } = req.body || {};
-  if (!user_id || !password) return res.status(400).json({ ok: false, error: 'user_id y contraseña requeridos' });
-  // Verificar que la sesión activa pertenece al mismo user_id
-  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
-  const session = token ? _sessions.get(token) : null;
-  if (!session || session.expires < Date.now() || session.user_id !== user_id) {
-    _sessions.delete(token);
-    return res.status(401).json({ ok: false, error: 'Sesión inválida o no autorizada' });
+
+  if (!password) {
+    return res.status(400).json({
+      ok: false,
+      error: 'Contraseña requerida'
+    });
   }
+
+  const sessionUserId = req.clientSession.user_id;
+
+  if (user_id && user_id !== sessionUserId) {
+    return res.status(403).json({
+      ok: false,
+      error: 'No autorizado'
+    });
+  }
+
   try {
-    const curR = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data`);
+    const curR = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(sessionUserId)}&select=data`);
     const curRows = await curR.json();
     const curData = (Array.isArray(curRows) && curRows[0]?.data) || {};
-    await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}`, {
+    await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(sessionUserId)}`, {
       method: 'PATCH',
       body: JSON.stringify({ data: { ...curData, password_hash: hashPassword(password) } }),
     });
@@ -207,8 +238,8 @@ router.post('/forgot-password', async (req, res) => {
     const nombre = row.nombre || email;
     const RESEND_KEY = process.env.RESEND_API_KEY;
     if (!RESEND_KEY) {
-      console.warn('[forgot-password] RESEND_API_KEY no configurado. Link:', resetLink);
-      return res.json({ ok: true, _debug_link: resetLink });
+      console.warn('[forgot-password] RESEND_API_KEY no configurado');
+      return res.json({ ok: true });
     }
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -257,36 +288,70 @@ router.post('/reset-password', async (req, res) => {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-router.post('/session/create', (req, res) => {
-  const { user_id } = req.body || {};
-  if (!user_id) return res.status(400).json({ ok: false });
-  const token = crypto.randomBytes(32).toString('hex');
-  _sessions.set(token, { user_id, expires: Date.now() + 8 * 60 * 60 * 1000 });
-  res.json({ ok: true, token });
+router.post('/session/create', (_req, res) => {
+  res.status(410).json({
+    ok: false,
+    error: 'Endpoint deshabilitado. La sesión se crea únicamente durante el login.'
+  });
 });
 
 router.post('/session/verify', async (req, res) => {
-  const { token } = req.body || {};
-  if (!token) return res.status(400).json({ ok: false });
+  const token = getBearerToken(req) || (req.body || {}).token;
+
+  if (!token) {
+    return res.status(400).json({
+      ok: false,
+      error: 'Token requerido'
+    });
+  }
+
   const session = _sessions.get(token);
+
   if (!session || session.expires < Date.now()) {
     _sessions.delete(token);
-    return res.status(401).json({ ok: false, error: 'Sesión expirada' });
+    return res.status(401).json({
+      ok: false,
+      error: 'Sesión expirada'
+    });
   }
+
   try {
-    const r = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(session.user_id)}&select=*`);
+    const r = await sbFetch(
+      `/clientes?user_id=eq.${encodeURIComponent(session.user_id)}&select=*`
+    );
+
     const rows = await r.json();
     const row = Array.isArray(rows) ? rows[0] : null;
-    if (!row) return res.status(404).json({ ok: false });
+
+    if (!row) {
+      return res.status(404).json({ ok: false });
+    }
+
     const clientData = _mergeDataCol(row);
-    if (clientData.data) delete clientData.data.password_hash;
-    res.json({ ok: true, ...clientData });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+
+    if (clientData.data) {
+      delete clientData.data.password_hash;
+    }
+
+    res.json({
+      ok: true,
+      ...clientData
+    });
+  } catch (e) {
+    res.status(500).json({
+      ok: false,
+      error: e.message
+    });
+  }
 });
 
 router.post('/session/destroy', (req, res) => {
-  const { token } = req.body || {};
-  if (token) _sessions.delete(token);
+  const token = getBearerToken(req) || (req.body || {}).token;
+
+  if (token) {
+    _sessions.delete(token);
+  }
+
   res.json({ ok: true });
 });
 

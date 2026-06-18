@@ -1,29 +1,39 @@
 // routes/portal.js — /api/portal/* and /api/portal-users/* routes
 const express = require('express');
 const { sbFetch, _mergeDataCol } = require('../lib/db');
-const { hashPassword, _sessions } = require('../lib/auth-helpers');
+const {
+  hashPassword,
+  requireClientSession
+} = require('../lib/auth-helpers');
 
 // ── /api/portal/* ────────────────────────────────────────────────
 const portalRouter = express.Router();
 
-// Verifica que el token de sesión pertenezca al user_id solicitado (evita IDOR).
+// Verifica sesión y evita que el navegador seleccione otro cliente.
 function requireOwnership(req, res, next) {
-  const { user_id } = req.query;
-  if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
-  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
-  const session = token ? _sessions.get(token) : null;
-  if (!session || session.expires < Date.now()) {
-    if (token) _sessions.delete(token);
-    return res.status(401).json({ ok: false, error: 'Sesión inválida' });
-  }
-  if (session.user_id !== user_id) {
-    return res.status(403).json({ ok: false, error: 'No autorizado' });
-  }
-  next();
+  requireClientSession(req, res, () => {
+    const sessionUserId = req.clientSession.user_id;
+
+    const requestedUserId =
+      req.query?.user_id ||
+      req.body?.user_id ||
+      req.params?.user_id ||
+      null;
+
+    if (requestedUserId && requestedUserId !== sessionUserId) {
+      return res.status(403).json({
+        ok: false,
+        error: 'No autorizado'
+      });
+    }
+
+    req.clientUserId = sessionUserId;
+    next();
+  });
 }
 
 portalRouter.get('/leads', requireOwnership, async (req, res) => {
-  const { user_id } = req.query;
+  const user_id = req.clientUserId;
   try {
     const r = await sbFetch(`/voice_leads?cliente=eq.${user_id}&select=*&order=created_at.desc&limit=100`);
     const data = await r.json();
@@ -41,7 +51,7 @@ portalRouter.get('/leads', requireOwnership, async (req, res) => {
 });
 
 portalRouter.get('/recordings', requireOwnership, async (req, res) => {
-  const { user_id } = req.query;
+  const user_id = req.clientUserId;
   try {
     const r = await sbFetch(`/voice_leads?cliente=eq.${user_id}&recording_url=not.is.null&select=call_sid,recording_url,agent,call_status,created_at&order=created_at.desc&limit=50`);
     const data = await r.json();
@@ -50,7 +60,7 @@ portalRouter.get('/recordings', requireOwnership, async (req, res) => {
 });
 
 portalRouter.get('/stats', requireOwnership, async (req, res) => {
-  const { user_id } = req.query;
+  const user_id = req.clientUserId;
   try {
     const [leadsR, clienteR] = await Promise.all([
       sbFetch(`/voice_leads?cliente=eq.${user_id}&select=status,created_at`),
@@ -147,12 +157,13 @@ portalRouter.post('/onboarding-new', async (req, res) => {
   } catch(e) { res.json({ ok: false, error: e.message }); }
 });
 
-portalRouter.post('/onboarding-submit', async (req, res) => {
-  const { user_id, whatsapp, asistente, idioma, tono, horario, wa_status,
+portalRouter.post('/onboarding-submit', requireOwnership, async (req, res) => {
+  const { whatsapp, asistente, idioma, tono, horario, wa_status,
           facebook, instagram, youtube, tiktok, website, google_business,
           goals, presupuesto, notas, ciudad,
           negocio, nombre, email, telefono } = req.body;
-  if (!user_id) return res.status(400).json({ ok: false, error: 'user_id requerido' });
+  const user_id = req.clientUserId;
+
   try {
     const curR = await sbFetch(`/clientes?user_id=eq.${encodeURIComponent(user_id)}&select=data`);
     const curRows = await curR.json();
