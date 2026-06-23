@@ -2,10 +2,8 @@
 const express = require('express');
 const https   = require('https');
 const router  = express.Router();
-const { proxyPost, proxyGet } = require('../lib/proxy');
 const { _generarImagenHiggsfieldMCP } = require('../lib/tools');
 
-const CREW_URL = 'https://worker-production-34f9.up.railway.app';
 
 router.post('/call/iniciar', async (req, res) => {
   const { to, cliente } = req.body;
@@ -46,26 +44,6 @@ router.post('/generar-bot', (req, res) => {
   proxyReq.on('error', e => res.status(500).json({ error: e.message }));
   proxyReq.write(body);
   proxyReq.end();
-});
-
-router.post('/crew/seedance', (req, res) => {
-  proxyPost(`${CREW_URL}/crew/seedance`, req, res);
-});
-
-router.get('/crew/seedance/:jobId', (req, res) => {
-  proxyGet(`${CREW_URL}/api/crew/seedance/${req.params.jobId}`, res);
-});
-
-router.post('/crew/imagen', (req, res) => {
-  proxyPost(`${CREW_URL}/api/crew/imagen`, req, res);
-});
-
-router.get('/crew/imagen/:jobId', (req, res) => {
-  proxyGet(`${CREW_URL}/api/crew/imagen/${req.params.jobId}`, res);
-});
-
-router.post('/crew/heygen', (req, res) => {
-  proxyPost(`${CREW_URL}/generar-avatar/heygen`, req, res);
 });
 
 router.post('/setup/higgsfield-agent', async (req, res) => {
