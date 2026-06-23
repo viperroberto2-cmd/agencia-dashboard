@@ -2,6 +2,7 @@
 //                     /api/scraper/*, /api/env-check, /api/ms/jobs,
 //                     /api/vision, /api/document-docx, /api/document
 const express  = require('express');
+const http     = require('http');
 const https    = require('https');
 const router   = express.Router();
 const { sbFetch } = require('../lib/db');
@@ -9,27 +10,33 @@ const { requireAdmin } = require('../lib/admin-auth');
 
 const mammoth = require('mammoth');
 
+const HERMES_PROXY_URL = (
+  process.env.HERMES_PROXY_URL || 'http://168.231.66.172:8000'
+).replace(/\/$/, '');
+
 const BOTS = {
-  b1:        'https://worker-production-0c858.up.railway.app/bot1/health',
-  b2:        'https://worker-production-34f9.up.railway.app/crew/health',
-  b3:        'https://worker-production-035f.up.railway.app/strategy/health',
-  org:       'https://web-production-77871.up.railway.app/health',
-  b5:        'https://worker-production-aa53.up.railway.app/scheduler/health',
-  web:       'https://agencia-ai-web-designer-production.up.railway.app/web/health',
-  motion:    'https://web-production-d67bad.up.railway.app/motion/health',
-  scraper:   'https://agencia-ai-scraper-production.up.railway.app/health',
-  seo:       'https://agencia-ai-seo-production.up.railway.app/health',
-  analytics: 'https://agencia-ai-analytics-production.up.railway.app/analytics/health',
-  compositor:'https://compositorbot-production.up.railway.app/compositor/health',
+  main:       `${HERMES_PROXY_URL}/healthz`,
+  motion:     'https://web-production-d67bad.up.railway.app/motion/health',
+  seo:        'https://agencia-ai-seo-production.up.railway.app/health',
+  compositor: 'https://compositorbot-production.up.railway.app/compositor/health',
 };
 
 function checkUrl(url) {
   return new Promise((resolve) => {
-    const req = https.get(url, { timeout: 5000 }, (res) => {
-      resolve({ ok: res.statusCode >= 200 && res.statusCode < 400, status: res.statusCode });
+    const client = url.startsWith('https:') ? https : http;
+
+    const req = client.get(url, { timeout: 5000 }, (res) => {
+      resolve({
+        ok: res.statusCode >= 200 && res.statusCode < 400,
+        status: res.statusCode,
+      });
     });
+
     req.on('error', () => resolve({ ok: false, status: 0 }));
-    req.on('timeout', () => { req.destroy(); resolve({ ok: false, status: 0 }); });
+    req.on('timeout', () => {
+      req.destroy();
+      resolve({ ok: false, status: 0 });
+    });
   });
 }
 
