@@ -2332,7 +2332,7 @@ input, textarea { font-family: inherit; }
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:20px;width:min(480px,95vw);max-height:90vh;overflow-y:auto;padding:28px;position:relative;">
     <button onclick="closeScheduleModal()" style="position:absolute;top:16px;right:16px;background:var(--bg-elevated);border:none;border-radius:8px;width:32px;height:32px;font-size:16px;color:var(--text-muted);cursor:pointer;">✕</button>
     <div style="font-size:17px;font-weight:700;margin-bottom:4px;">📅 Programar post</div>
-    <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">El Scheduler pide aprobación vía Telegram antes de publicar.</div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Agrega contenido al calendario para organizar y programar publicaciones.</div>
     <div style="margin-bottom:14px;">
       <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;">Copy / contenido</div>
       <textarea id="sp-contenido" rows="4" style="width:100%;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;color:var(--text);font-family:inherit;resize:vertical;outline:none;" placeholder="Escribe el texto del post…"></textarea>
@@ -2364,7 +2364,7 @@ input, textarea { font-family: inherit; }
       </div>
     </div>
     <div id="sp-error" style="display:none;font-size:13px;color:#f87171;margin-bottom:12px;"></div>
-    <button id="sp-btn" onclick="submitSchedulePost()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;">Enviar para aprobación →</button>
+    <button id="sp-btn" onclick="submitSchedulePost()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:600;cursor:pointer;">Agregar al calendario →</button>
   </div>
 </div>
 
@@ -5354,7 +5354,7 @@ async function openScheduleModal() {
   document.getElementById('sp-hora').value = '10:00';
   document.getElementById('sp-contenido').value = '';
   document.getElementById('sp-error').style.display = 'none';
-  document.getElementById('sp-btn').textContent = 'Enviar para aprobación →';
+  document.getElementById('sp-btn').textContent = 'Agregar al calendario →';
   document.getElementById('sp-btn').disabled = false;
   // Poblar dropdown de clientes dinámicamente
   const sel = document.getElementById('sp-cliente');
@@ -5383,7 +5383,7 @@ async function submitSchedulePost() {
   const errEl      = document.getElementById('sp-error');
   const btn        = document.getElementById('sp-btn');
   if (!contenido) { errEl.textContent = 'El contenido no puede estar vacío.'; errEl.style.display = 'block'; return; }
-  btn.textContent = 'Enviando...'; btn.disabled = true; errEl.style.display = 'none';
+  btn.textContent = 'Guardando...'; btn.disabled = true; errEl.style.display = 'none';
   try {
     const r = await fetch('/api/scheduler/post', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -5393,14 +5393,14 @@ async function submitSchedulePost() {
     if (d.status === 'ok' || d.post_id) {
       closeScheduleModal();
       loadSchedulerPosts();
-      alert('✅ Post enviado al Scheduler. Recibirás aprobación vía Telegram antes de publicar.');
+      alert('✅ Post agregado al calendario.');
     } else {
       errEl.textContent = d.error || 'Error del servidor.'; errEl.style.display = 'block';
-      btn.textContent = 'Enviar para aprobación →'; btn.disabled = false;
+      btn.textContent = 'Agregar al calendario →'; btn.disabled = false;
     }
   } catch(e) {
     errEl.textContent = 'Error de conexión.'; errEl.style.display = 'block';
-    btn.textContent = 'Enviar para aprobación →'; btn.disabled = false;
+    btn.textContent = 'Agregar al calendario →'; btn.disabled = false;
   }
 }
 
