@@ -3,6 +3,7 @@ const express = require('express');
 const path    = require('path');
 const fs      = require('fs');
 const router  = express.Router();
+const { requireAdmin } = require('../lib/admin-auth');
 
 const ROOT = path.join(__dirname, '..');
 
@@ -66,9 +67,15 @@ router.get('/icon-512.png', (_, res) => {
 });
 
 // ── Admin dashboard ───────────────────────────────────────────────────────
-router.get('/',          (_, res) => serveIndex(res));
-router.get('/v2',        (_, res) => serveIndex(res));
-router.get('/index.html',(_, res) => serveIndex(res));
+// Protegido con HTTP Basic Auth (requireAdmin). Al pedir la página, el navegador
+// muestra el login nativo y, una vez autenticado, adjunta el header
+// Authorization a TODAS las llamadas a las APIs admin (/api/clientes, /leads…),
+// que también están detrás de requireAdmin. Sin esto el panel cargaba pero no
+// podía crear/listar clientes (401/503). Requiere ADMIN_BASIC_USER y
+// ADMIN_BASIC_PASSWORD en las env vars de Railway.
+router.get('/',          requireAdmin, (_, res) => serveIndex(res));
+router.get('/v2',        requireAdmin, (_, res) => serveIndex(res));
+router.get('/index.html',requireAdmin, (_, res) => serveIndex(res));
 
 // ── Client portal ─────────────────────────────────────────────────────────
 router.get('/portal',        (_, res) => servePortal(res));
