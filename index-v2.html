@@ -288,6 +288,27 @@ input, textarea { font-family: inherit; }
 .activity-text strong { font-weight: 600; }
 .activity-time { color: var(--text-dim); font-size: 11px; margin-top: 2px; }
 
+/* ── "Hermes está trabajando" — indicador de carga reutilizable ── */
+.hermes-working {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 40px 20px; color: var(--text-muted); text-align: center;
+}
+.hermes-working.compact { padding: 20px 16px; gap: 10px; }
+.hermes-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--accent);
+  animation: hermesSpin 0.8s linear infinite;
+}
+.hermes-working.compact .hermes-spinner { width: 28px; height: 28px; border-width: 2px; }
+@keyframes hermesSpin { to { transform: rotate(360deg); } }
+.hermes-working-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.hermes-working-title::after {
+  content: ''; display: inline-block; width: 1.2em; text-align: left;
+  animation: hermesDots 1.4s steps(4, end) infinite;
+}
+@keyframes hermesDots { 0% { content: ''; } 25% { content: '·'; } 50% { content: '··'; } 75%, 100% { content: '···'; } }
+.hermes-working-sub { font-size: 12px; color: var(--text-dim); }
+
 .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .quick-action {
   background: var(--bg-elevated);
@@ -2398,6 +2419,32 @@ input, textarea { font-family: inherit; }
 </aside>
 
 <script>
+// ============ UI HELPERS ============
+// Indicador de carga reutilizable "Hermes está trabajando".
+// `compact:true` reduce el padding para tarjetas/paneles pequeños.
+function hermesWorkingHTML(text, opts) {
+  const o = opts || {};
+  const sub = o.sub ? `<div class="hermes-working-sub">${o.sub}</div>` : '';
+  return `<div class="hermes-working${o.compact ? ' compact' : ''}">
+    <div class="hermes-spinner"></div>
+    <div class="hermes-working-title">${text || 'Hermes está trabajando'}</div>
+    ${sub}
+  </div>`;
+}
+function showHermesWorking(elOrId, text, opts) {
+  const el = typeof elOrId === 'string' ? document.getElementById(elOrId) : elOrId;
+  if (el) el.innerHTML = hermesWorkingHTML(text, opts);
+}
+
+// Estado vacío cuando una API admin responde 401 (sesión sin auth admin).
+function adminAuthRequiredHTML() {
+  return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;color:var(--text-muted);text-align:center;border:1px dashed var(--border);border-radius:12px;">
+    <div style="font-size:36px;margin-bottom:10px;">🔒</div>
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">Requiere autenticación admin</div>
+    <div style="font-size:13px;">Inicia sesión como admin para ver esta información.</div>
+  </div>`;
+}
+
 // ============ DATA ============
 const agents = [
   { id: 'organizador', emoji: '🧠', name: 'Cerebro', role: 'CEO · Delega y coordina', status: 'online', skills: ['Razona', 'Delega', 'Evalúa', 'Memoria'] },
@@ -2675,6 +2722,13 @@ function renderCRM() {
     { id: 'closed',     label: '✅ Cerrado',      items: leads.closed }
   ];
   const total = cols.reduce((s, c) => s + c.items.length, 0);
+  if (leadsAuthRequired) {
+    const sub = document.getElementById('crmSubtitle');
+    if (sub) sub.textContent = 'Requiere autenticación admin';
+    document.getElementById('crmBoard').innerHTML =
+      `<div style="grid-column:1/-1;">${adminAuthRequiredHTML()}</div>`;
+    return;
+  }
   if (total === 0) {
     document.getElementById('crmBoard').innerHTML = `
       <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text-muted);text-align:center;">
@@ -2702,14 +2756,22 @@ function renderCRM() {
 }
 
 // ============ CRM · TASKS ============
+let tasksAuthRequired = false;
 async function loadTasksFromAPI() {
   const panel = document.getElementById('tasksPanel');
-  if (panel) panel.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:14px;">Cargando tareas…</div>';
+  showHermesWorking(panel, 'Hermes está cargando tus tareas', { compact: true });
+  tasksAuthRequired = false;
   try {
     const url = currentClient
       ? `/api/tasks?cliente_id=${encodeURIComponent(currentClient)}`
       : '/api/tasks';
     const r = await fetch(url);
+    if (r.status === 401) {
+      tasksAuthRequired = true;
+      crmTasks = [];
+      renderTasksPanel();
+      return;
+    }
     const d = await r.json();
     crmTasks = (d && d.ok && Array.isArray(d.tasks)) ? d.tasks : [];
   } catch (e) {
@@ -2728,6 +2790,13 @@ function renderTasksPanel() {
   const completed = crmTasks.filter(t => t.status === 'completed').length;
 
   const sub = document.getElementById('tasksSubtitle');
+
+  if (tasksAuthRequired) {
+    if (sub) sub.textContent = 'Requiere autenticación admin';
+    panel.innerHTML = adminAuthRequiredHTML();
+    return;
+  }
+
   if (sub) sub.textContent = `${total} tareas · ${currentClient || 'todos'}`;
 
   if (total === 0) {
@@ -4370,6 +4439,7 @@ setInterval(loadHealth, 30000);
 
 // ── HOME STATS ────────────────────────────────────────────────────
 async function loadHomeStats() {
+  showHermesWorking('homeActividad', 'Hermes está reuniendo la actividad', { compact: true });
   try {
     const clienteParam = currentClient ? `?cliente=${encodeURIComponent(currentClient)}` : '';
     const res = await fetch(`/api/home-stats${clienteParam}`);
@@ -4430,7 +4500,7 @@ loadClientSwitcher();
 async function loadDriveFromAPI() {
   const content = document.getElementById('driveContent');
   if (content && !window._driveAPIItems) {
-    content.innerHTML = '<div style="padding:32px;color:var(--text-muted);font-size:14px;">Cargando media generada…</div>';
+    showHermesWorking(content, 'Hermes está cargando tu Drive');
   }
   const iconMap = { video: '🎬', audio: '🎵', image: '🖼️' };
   let allItems = [];
@@ -4905,10 +4975,17 @@ async function loadInboxFromSupabase() {
   } catch(e) { /* keep current inboxItems */ }
 }
 
+let leadsAuthRequired = false;
 async function loadLeadsFromAPI() {
+  leadsAuthRequired = false;
   try {
     const clienteParam = currentClient ? `?cliente=${encodeURIComponent(currentClient)}` : '';
     const r = await fetch(`/api/leads${clienteParam}`);
+    if (r.status === 401) {
+      leadsAuthRequired = true;
+      renderCRM();
+      return;
+    }
     const d = await r.json();
     if (!d.ok) return;
     const total = d.total || 0;
@@ -5522,8 +5599,16 @@ const SECTOR_EMOJI = {
 async function loadClientSwitcher() {
   try {
     const res = await fetch('/api/clientes');
-    const d = await res.json();
     const list = document.getElementById('clientDropdownList');
+    if (res.status === 401) {
+      if (list) list.innerHTML = '<div style="padding:10px 16px;font-size:12px;color:var(--text-dim);">🔒 Requiere autenticación admin</div>';
+      const cn = document.getElementById('clientName');
+      if (cn) cn.textContent = 'Requiere autenticación admin';
+      const av = document.getElementById('clientAvatar');
+      if (av) av.textContent = '🔒';
+      return;
+    }
+    const d = await res.json();
     if (!list) return;
     if (!d.ok || !d.clientes || !d.clientes.length) {
       list.innerHTML = '<div style="padding:10px 16px;font-size:12px;color:var(--text-dim);">Sin clientes — usa Onboarding para agregar uno</div>';
@@ -5562,6 +5647,10 @@ async function loadConfigClientes() {
   if (!el) return;
   try {
     const res = await fetch('/api/clientes');
+    if (res.status === 401) {
+      el.innerHTML = adminAuthRequiredHTML();
+      return;
+    }
     const d = await res.json();
     if (!d.ok || !d.clientes.length) {
       el.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:16px 0;">No hay clientes aún. Usa Onboarding para agregar uno.</div>';
