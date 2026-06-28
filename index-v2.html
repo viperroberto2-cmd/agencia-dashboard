@@ -2,6 +2,53 @@
 <html lang="es">
 <head>
 <script>
+// ── Hermes UI helpers: "trabajando" animation + admin-auth (401) handling ──
+(function(){
+  var css = ''
+    + '.hermes-working{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center;gap:12px}'
+    + '.hermes-working .hw-orb{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#a78bfa,#6d28d9);animation:hwPulse 1.3s ease-in-out infinite}'
+    + '@keyframes hwPulse{0%{transform:scale(.85);box-shadow:0 0 0 0 rgba(124,58,237,.45)}70%{transform:scale(1);box-shadow:0 0 0 14px rgba(124,58,237,0)}100%{transform:scale(.85);box-shadow:0 0 0 0 rgba(124,58,237,0)}}'
+    + '.hermes-working .hw-text{font-size:13px;font-weight:600;color:var(--text,#e5e7eb)}'
+    + '.admin-auth-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center;border:1px dashed var(--border,#333);border-radius:12px;gap:6px;color:var(--text-muted,#9ca3af)}';
+  try { var s=document.createElement('style'); s.textContent=css; (document.head||document.documentElement).appendChild(s); } catch(e){}
+})();
+// Spinner reutilizable "Hermes está trabajando"
+window.hermesWorking = function(text){
+  return '<div class="hermes-working"><div class="hw-orb"></div><div class="hw-text">'+(text||'Hermes está trabajando…')+'</div></div>';
+};
+// Mensaje de estado cuando una API admin pide autenticación (en vez de un falso "sin datos")
+window.adminAuthMsg = function(label){
+  return '<div class="admin-auth-box"><div style="font-size:32px;">🔒</div>'
+    + '<div style="font-size:14px;font-weight:600;color:var(--text,#e5e7eb);">Requiere autenticación admin</div>'
+    + '<div style="font-size:13px;">Inicia sesión como admin para ver '+(label||'esto')+'.</div></div>';
+};
+// Banner global: si CUALQUIER API admin responde 401, avisa claramente (no "sin clientes/leads" falso)
+window.showAdminAuthBanner = function(){
+  try {
+    if (document.getElementById('adminAuthBanner')) return;
+    var b=document.createElement('div'); b.id='adminAuthBanner';
+    b.innerHTML='🔒 <strong>Requiere autenticación admin</strong> — inicia sesión como admin para ver clientes, leads y tareas.';
+    b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#7c3aed;color:#fff;padding:10px 16px;text-align:center;font-size:14px;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,.25)';
+    var x=document.createElement('span'); x.textContent=' ✕'; x.style.cssText='cursor:pointer;margin-left:12px;opacity:.85'; x.onclick=function(){ b.remove(); };
+    b.appendChild(x); (document.body||document.documentElement).appendChild(b);
+  } catch(e){}
+};
+// Envoltura de fetch: observa (no altera) respuestas; ante 401 en /api/ muestra el banner.
+(function(){
+  if (window.__hermesFetchWrapped || typeof window.fetch !== 'function') return;
+  window.__hermesFetchWrapped = true;
+  var orig = window.fetch;
+  window.fetch = function(){
+    var args = arguments;
+    return orig.apply(this, args).then(function(res){
+      try {
+        var u = (typeof args[0]==='string') ? args[0] : (args[0] && args[0].url) || '';
+        if (res && res.status === 401 && u.indexOf('/api/') !== -1) { window.showAdminAuthBanner(); }
+      } catch(e){}
+      return res;
+    });
+  };
+})();
 // If Supabase redirects here with an auth token, forward to client portal
 (function(){
   const hash = new URLSearchParams(location.hash.slice(1));
@@ -2704,12 +2751,14 @@ function renderCRM() {
 // ============ CRM · TASKS ============
 async function loadTasksFromAPI() {
   const panel = document.getElementById('tasksPanel');
-  if (panel) panel.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:14px;">Cargando tareas…</div>';
+  if (panel) panel.innerHTML = hermesWorking('Hermes está cargando las tareas…');
   try {
     const url = currentClient
       ? `/api/tasks?cliente_id=${encodeURIComponent(currentClient)}`
       : '/api/tasks';
     const r = await fetch(url);
+    if (r.status === 401) { window.__tasksAuth = true; renderTasksPanel(); return; }
+    window.__tasksAuth = false;
     const d = await r.json();
     crmTasks = (d && d.ok && Array.isArray(d.tasks)) ? d.tasks : [];
   } catch (e) {
@@ -2721,6 +2770,13 @@ async function loadTasksFromAPI() {
 function renderTasksPanel() {
   const panel = document.getElementById('tasksPanel');
   if (!panel) return;
+
+  if (window.__tasksAuth) {
+    panel.innerHTML = adminAuthMsg('las tareas');
+    const sub = document.getElementById('tasksSubtitle');
+    if (sub) sub.textContent = 'requiere autenticación admin';
+    return;
+  }
 
   const total     = crmTasks.length;
   const open      = crmTasks.filter(t => t.status === 'open').length;
@@ -4370,11 +4426,18 @@ setInterval(loadHealth, 30000);
 
 // ── HOME STATS ────────────────────────────────────────────────────
 async function loadHomeStats() {
+  const _act = document.getElementById('homeActividad');
+  if (_act) _act.innerHTML = hermesWorking('Hermes está cargando la actividad…');
   try {
     const clienteParam = currentClient ? `?cliente=${encodeURIComponent(currentClient)}` : '';
     const res = await fetch(`/api/home-stats${clienteParam}`);
     const d = await res.json();
-    if (!d.ok) return;
+    if (!d.ok) {
+      if (_act) _act.innerHTML = (res.status === 401)
+        ? adminAuthMsg('la actividad')
+        : '<div style="color:var(--text-dim);font-size:13px;padding:12px 0;">Sin actividad reciente.</div>';
+      return;
+    }
 
     document.getElementById('kpiClientes').textContent = d.clientes;
     document.getElementById('kpiClientesTrend').textContent =
@@ -4421,7 +4484,10 @@ async function loadHomeStats() {
         }).join('');
       }
     }
-  } catch(e) { console.warn('loadHomeStats error:', e.message); }
+  } catch(e) {
+    console.warn('loadHomeStats error:', e.message);
+    if (_act) _act.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:12px 0;">Sin actividad reciente.</div>';
+  }
 }
 loadHomeStats();
 loadClientSwitcher();
@@ -4430,7 +4496,7 @@ loadClientSwitcher();
 async function loadDriveFromAPI() {
   const content = document.getElementById('driveContent');
   if (content && !window._driveAPIItems) {
-    content.innerHTML = '<div style="padding:32px;color:var(--text-muted);font-size:14px;">Cargando media generada…</div>';
+    content.innerHTML = hermesWorking('Hermes está cargando la media…');
   }
   const iconMap = { video: '🎬', audio: '🎵', image: '🖼️' };
   let allItems = [];
